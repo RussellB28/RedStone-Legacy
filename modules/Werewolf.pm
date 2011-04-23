@@ -1011,7 +1011,6 @@ sub cmd_wolf {
                 # Run nighttime force end check.
                 _chknight();
             }
-            default { notice($src->{svr}, $src->{nick}, trans('Unknown action', $_).q{.}); }
         }
     }
 
@@ -1174,6 +1173,17 @@ sub _init_day {
     if (_getrole($victim, 2) eq 'harlot' and $VISIT) { if ($VISIT ne 1) {
         privmsg($gsvr, $gchan, 'The wolves attempted to attack the harlot last night, but (s)he wasn\'t home...');
         $victim = 0;
+    } }
+    
+    # Check if the victim was the gunner.
+    if ($victim and int rand 3 == 1) { if ($victim ne 1) {
+        if ($PLAYERS{$victim} =~ m/b/xsm and $BULLETS) {
+            # Select a random wolf to die.
+            my $rwolf;
+            while (my ($wp, $wv) = each %PLAYERS) { if ($wv =~ m/w/xsm) { $rwolf = $wp } }
+            privmsg($gsvr, $gchan, "The wolves made the fortunate mistake of attacking the gunner last night, and \2$NICKS{$rwolf}\2 was shot dead.");
+            _player_del($rwolf);
+        }
     } }
 
     # Set phase to day.
@@ -1710,7 +1720,7 @@ sub on_rehash {
 }
 
 # Start initialization.
-API::Std::mod_init('Werewolf', 'Xelhua', '1.07', '3.0.0a11');
+API::Std::mod_init('Werewolf', 'Xelhua', '1.08', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -1721,7 +1731,7 @@ Werewolf - IRC version of the Werewolf detective/social party game
 
 =head1 VERSION
 
- 1.07
+ 1.08
 
 =head1 SYNOPSIS
 
@@ -1957,6 +1967,9 @@ wolves and traitors don't get to have guns.
 
 So, obviously no matter what the case might be, the gun holder will always
 reveal the innocence of at least someone.
+
+And, if the wolves attack the gunner, there's a 50/50 chance of a wolf dying
+as well.
 
 =item Villager (drunk)
 
