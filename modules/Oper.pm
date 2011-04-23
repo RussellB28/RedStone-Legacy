@@ -77,6 +77,19 @@ sub deoper {
     return 1;
 }
 
+# Kills a user.
+sub kill {
+    my ($svr, $user, $reason) = @_;
+    return if !is_opered();
+    if (defined $reason) {
+        Auto::socksnd($svr, "KILL $user :$reason");
+    }
+    else {
+        Auto::socksnd($svr, "KILL $user :Killed.");
+    }
+    return 1;
+}
+
 # End of the API
 
 # Start initialization.
