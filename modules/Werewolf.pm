@@ -8,7 +8,7 @@ use feature qw(switch);
 use API::Std qw(cmd_add cmd_del trans hook_add hook_del timer_add timer_del trans conf_get has_priv match_user);
 use API::IRC qw(privmsg notice cmode);
 our ($GAME, $PGAME, $GAMECHAN, $GAMETIME, %PLAYERS, %NICKS, @STATIC, $PHASE, $SEEN, $VISIT, $GUARD, %KILL, %WKILL, %LYNCH, %SPOKE, %WARN, $LVOTEN, @SHOT, 
-     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM);
+     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM, $LASTTIME, @TIMES);
 my $FCHAR = (conf_get('fantasy_pf'))[0][0];
 
 # Initialization subroutine.
@@ -346,6 +346,9 @@ sub cmd_wolf {
                 # Set variables.
                 $GAME = 1;
                 $PGAME = 0;
+                $GAMETIME = time;
+                @TIMES = (0, 0);
+                $LASTTIME = 0;
 
                 # Set spoke variables.
                 foreach (keys %PLAYERS) { $SPOKE{$_} = time }
@@ -1022,6 +1025,13 @@ sub _init_night {
     my ($gsvr, $gchan) = split '/', $GAMECHAN;
     $PHASE = 'n';
 
+    # Clock stuff.
+    if ($LASTTIME) {
+        privmsg($gsvr, $gchan, "Day lasted \2"._fmttime(time - $LASTTIME)."\2.");
+        $TIMES[0] += time - $LASTTIME;
+    }
+    $LASTTIME = time;
+
     # Iterate through all players.
     foreach my $plyr (keys %PLAYERS) {
         my $role = $PLAYERS{$plyr};
@@ -1111,6 +1121,13 @@ sub _init_night {
 # Change time to day.
 sub _init_day {
     my ($gsvr, $gchan) = split '/', $GAMECHAN;
+    
+    # Clock stuff.
+    if ($LASTTIME) {
+        privmsg($gsvr, $gchan, "Night lasted \2"._fmttime(time - $LASTTIME)."\2.");
+        $TIMES[1] += time - $LASTTIME;
+    }
+    $LASTTIME = time;
     
     # We need wolf count.
     my $wolves = 0;
@@ -1486,6 +1503,9 @@ sub _gameover {
     else { # No players.
         privmsg($gsvr, $gchan, 'No more players remaining. Game ended.');
     }
+    if ($LASTTIME) {
+        privmsg($gsvr, $gchan, "Game lasted \2"._fmttime(time - $GAMETIME)."\2. \2"._fmttime($TIMES[0])."\2 was day. \2"._fmttime($TIMES[1])."\2 was night.");
+    }
 
     if ($GAME) {
         my $smsg = "The wolves were $STATIC[0]. The seer was $STATIC[1].";
@@ -1514,7 +1534,7 @@ sub _gameover {
     if ($PHASE) { if ($PHASE eq 'n') { timer_del('werewolf.goto_daytime') } }
     timer_del('werewolf.chkbed');
     timer_del('werewolf.joinwait');
-    $GAME = $PGAME = $GAMECHAN = $GAMETIME = $PHASE = $SEEN = $VISIT = $GUARD = $LVOTEN = $BULLETS = $DETECTED = $WAIT = $WAITED = 0;
+    $GAME = $PGAME = $GAMECHAN = $GAMETIME = $PHASE = $SEEN = $VISIT = $GUARD = $LVOTEN = $BULLETS = $DETECTED = $WAIT = $WAITED = $LASTTIME = 0;
     %PLAYERS = ();
     %NICKS = ();
     %KILL = ();
@@ -1524,8 +1544,25 @@ sub _gameover {
     %WARN = ();
     @STATIC = ();
     @SHOT = ();
+    @TIMES = ();
 
     return 1;
+}
+
+# Format times.
+sub _fmttime {
+    my ($unix) = @_;
+
+    my $hours = my $mins = my $secs = 0;
+    while ($unix >= 3600) { $hours++; $unix -= 3600 }
+    while ($unix >= 60) { $mins++; $unix -= 60 }
+    while ($unix >= 1) { $secs++; $unix-- }
+
+    if (length $hours < 2) { $hours = "0$hours" }
+    if (length $mins < 2) { $mins = "0$mins" }
+    if (length $secs < 2) { $secs .= "0$secs" }
+
+    return "$hours:$mins:$secs";
 }
 
 # Handle channel messages.
