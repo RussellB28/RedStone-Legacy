@@ -23,12 +23,10 @@ if exist "%pidfile" (
     if "%2" == "force" (
         echo Starting Auto. . .
         perl bin/auto
-    )
-    else (
+    ) else (
         echo Auto appears to be running already. Run `auto.bat start force` to start anyway.
     )
-)
-else (
+) else (
     echo Starting Auto. . .
     perl bin/auto
 )
@@ -38,8 +36,7 @@ else (
 echo.
 if exist "%pidfile" (
     echo Status: Auto appears to be running.
-)
-else (
+) else (
     echo Status: Auto appears to not be running.
 )
 :end

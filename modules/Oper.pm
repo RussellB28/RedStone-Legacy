@@ -22,8 +22,6 @@ sub _void
 {
     # Delete the hooks.
     hook_del('on_connect', 'Oper.onconnect') or return;
-    rchook_del('381', 'Oper.on381') or return;
-    rchook_del('313', 'Oper.on313') or return;
     rchook_del('491', 'Oper.on491') or return;
     return 1;
 }
@@ -74,6 +72,19 @@ sub oper {
 sub deoper {
     my ($svr) = @_;
     Auto::socksnd($svr, "MODE $State::IRC::botinfo{$svr}{nick} -o");
+    return 1;
+}
+
+# Kills a user.
+sub kill {
+    my ($svr, $user, $reason) = @_;
+    return if !is_opered();
+    if (defined $reason) {
+        Auto::socksnd($svr, "KILL $user :$reason");
+    }
+    else {
+        Auto::socksnd($svr, "KILL $user :Killed.");
+    }
     return 1;
 }
 
