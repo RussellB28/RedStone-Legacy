@@ -1027,8 +1027,9 @@ sub _init_night {
 
     # Clock stuff.
     if ($LASTTIME) {
-        privmsg($gsvr, $gchan, "Day lasted \2"._fmttime(time - $LASTTIME)."\2.");
-        $TIMES[0] += time - $LASTTIME;
+        my $dur = time - $LASTTIME;
+        privmsg($gsvr, $gchan, "Day lasted \2"._fmttime($dur)."\2.");
+        $TIMES[0] += $dur;
     }
     $LASTTIME = time;
 
@@ -1124,8 +1125,9 @@ sub _init_day {
     
     # Clock stuff.
     if ($LASTTIME) {
-        privmsg($gsvr, $gchan, "Night lasted \2"._fmttime(time - $LASTTIME)."\2.");
-        $TIMES[1] += time - $LASTTIME;
+        my $dur = time - $LASTTIME;
+        privmsg($gsvr, $gchan, "Night lasted \2"._fmttime($dur)."\2.");
+        $TIMES[1] += $dur;
     }
     $LASTTIME = time;
     
@@ -1494,6 +1496,16 @@ sub _gameover {
     my ($winner) = @_;
     my ($gsvr, $gchan) = split '/', $GAMECHAN;
 
+    # Tally times.
+    if ($LASTTIME) {
+        my ($ph, $i);
+        if ($PHASE eq 'n') { $ph = 'Night'; $i = 1 }
+        if ($PHASE eq 'd') { $ph = 'Day'; $i = 0 }
+        my $dur = time - $LASTTIME;
+        privmsg($gsvr, $gchan, "$ph lasted \2"._fmttime($dur)."\2.");
+        $TIMES[$i] += $dur;
+    }
+
     if ($winner eq 'v') { # The villagers won!
         privmsg($gsvr, $gchan, 'Game over! All the wolves are dead! The villagers chop them up, BBQ them, and have a hearty meal.');
     }
@@ -1560,7 +1572,7 @@ sub _fmttime {
 
     if (length $hours < 2) { $hours = "0$hours" }
     if (length $mins < 2) { $mins = "0$mins" }
-    if (length $secs < 2) { $secs .= "0$secs" }
+    if (length $secs < 2) { $secs = "0$secs" }
 
     return "$hours:$mins:$secs";
 }
