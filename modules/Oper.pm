@@ -22,8 +22,6 @@ sub _void
 {
     # Delete the hooks.
     hook_del('on_connect', 'Oper.onconnect') or return;
-    rchook_del('381', 'Oper.on381') or return;
-    rchook_del('313', 'Oper.on313') or return;
     rchook_del('491', 'Oper.on491') or return;
     return 1;
 }
