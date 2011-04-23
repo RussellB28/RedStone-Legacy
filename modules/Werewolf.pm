@@ -1175,6 +1175,9 @@ sub _init_day {
         $victim = 0;
     } }
     
+    # Set phase to day.
+    $PHASE = 'd';
+    
     # Check if the victim was the gunner.
     if ($victim and int rand 3 == 1) { if ($victim ne 1) {
         if ($PLAYERS{$victim} =~ m/b/xsm and $BULLETS) {
@@ -1186,9 +1189,6 @@ sub _init_day {
         }
     } }
 
-    # Set phase to day.
-    $PHASE = 'd';
-    
     # Cool, all data should be ready for shipment. Lets go!
     my $continue = 1;
     my $msg = 'It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';

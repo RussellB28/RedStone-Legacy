@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Werewolf: Fixed an issue in the clock.
     * Werewolf 1.08: New gunner feature.
     * Werewolf 1.07: Various improvements.
     * Updated Core::IRC::Users to be more efficient.
