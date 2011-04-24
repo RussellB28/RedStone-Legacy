@@ -237,6 +237,9 @@ sub cmd_wolfa {
             # Set variables.
             $M::Werewolf::GAME = 1;
             $M::Werewolf::PGAME = 0;
+            $M::Werewolf::GAMETIME = time;
+            @M::Werewolf::TIMES = (0, 0);
+            $M::Werewolf::LASTTIME = 0;
 
             # Set spoke variables.
             foreach (keys %M::Werewolf::PLAYERS) { $M::Werewolf::SPOKE{$_} = time }
