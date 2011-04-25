@@ -56,8 +56,8 @@ sub alog
     my $time = POSIX::strftime('%Y-%m-%d %I:%M:%S %p', localtime);
 
     # Create var/ if it doesn't exist.
-    if (!-d "$Auto::bin{var}") {
-        mkdir "$Auto::bin{var}", 0600; ## no critic qw(ValuesAndExpressions::ProhibitMagicNumbers)
+    if (!-d $Auto::bin{var}) {
+        mkdir $Auto::bin{var}, 0644; ## no critic qw(ValuesAndExpressions::ProhibitMagicNumbers)
     }
 
     # Open the logfile, print the log message to it and close it.
