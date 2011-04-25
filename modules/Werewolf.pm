@@ -1213,7 +1213,7 @@ sub _init_day {
     my $msg = 'It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';
     if (!$victim) { privmsg($gsvr, $gchan, "$msg ".$NOVICTIM[int rand scalar @NOVICTIM]." All villagers however, have survived.") }
     elsif ($victim eq 1) {
-        privmsg($gsvr, $gchan, "$msg \2$NICKS{$GUARD}\2 was attacked by the wolves last night, but luckily, the guardian angel protected them.");
+        privmsg($gsvr, $gchan, "$msg \2$NICKS{$GUARD}\2 was attacked by the wolves last night, but luckily, the guardian angel protected him/her.");
     }
     else {
         privmsg($gsvr, $gchan, "$msg The dead body of \2$NICKS{$victim}\2, a \2"._getrole($victim, 2)."\2, is found. Those remaining mourn his/her death.");
