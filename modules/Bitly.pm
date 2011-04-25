@@ -108,7 +108,12 @@ sub reverse
         my $d = $response->decoded_content;
         chomp $d;
         # And send it to channel.
-        privmsg($src->{svr}, $src->{chan}, "URL: ".$d);
+        if ($d ne 'NOT_FOUND') {
+            privmsg($src->{svr}, $src->{chan}, "URL: ".$d);
+        }
+        else {
+            privmsg($src->{svr}, $src->{chan}, "URL not found");
+        }
     }
     else {
         # Otherwise, send an error message.
