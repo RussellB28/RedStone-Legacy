@@ -1204,7 +1204,8 @@ sub _init_day {
             my $rwolf;
             while (my ($wp, $wv) = each %PLAYERS) { if ($wv =~ m/w/xsm) { $rwolf = $wp } }
             privmsg($gsvr, $gchan, "The wolves made the fortunate mistake of attacking the gunner last night, and \2$NICKS{$rwolf}\2 was shot dead.");
-            _player_del($rwolf);
+            my $egres = _player_del($rwolf);
+            if (!$egres) { return 1 }
         }
     } }
 
@@ -1322,7 +1323,7 @@ sub _judgment {
 sub _calclvn {
     my $pc = keys %PLAYERS;
     $pc -= scalar @SHOT;
-    $LVOTEN = int($pc / 2) + 1;
+    $LVOTEN = POSIX::ceil($pc / 2) + 1;
 
     return 1;
 }
