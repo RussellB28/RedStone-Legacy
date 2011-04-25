@@ -1027,9 +1027,11 @@ sub _init_night {
 
     # Clock stuff.
     if ($LASTTIME) {
-        my $dur = time - $LASTTIME;
-        privmsg($gsvr, $gchan, "Day lasted \2"._fmttime($dur)."\2.");
-        $TIMES[0] += $dur;
+        if ($dur) {
+            my $dur = time - $LASTTIME;
+            privmsg($gsvr, $gchan, "Day lasted \2"._fmttime($dur)."\2.");
+            $TIMES[0] += $dur;
+        }
     }
     $LASTTIME = time;
 
@@ -1126,9 +1128,11 @@ sub _init_day {
     
     # Clock stuff.
     if ($LASTTIME) {
-        my $dur = time - $LASTTIME;
-        privmsg($gsvr, $gchan, "Night lasted \2"._fmttime($dur)."\2.");
-        $TIMES[1] += $dur;
+        if ($dur) {
+            my $dur = time - $LASTTIME;
+            privmsg($gsvr, $gchan, "Night lasted \2"._fmttime($dur)."\2.");
+            $TIMES[1] += $dur;
+        }
     }
     $LASTTIME = time;
     
@@ -1503,8 +1507,10 @@ sub _gameover {
         if ($PHASE eq 'n') { $ph = 'Night'; $i = 1 }
         if ($PHASE eq 'd') { $ph = 'Day'; $i = 0 }
         my $dur = time - $LASTTIME;
-        privmsg($gsvr, $gchan, "$ph lasted \2"._fmttime($dur)."\2.");
-        $TIMES[$i] += $dur;
+        if ($dur) {
+            privmsg($gsvr, $gchan, "$ph lasted \2"._fmttime($dur)."\2.");
+            $TIMES[$i] += $dur;
+        }
     }
 
     if ($winner eq 'v') { # The villagers won!

@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Werewolf: Fixed a small clock bug.
     * Fixed a bug with var/ being created as 0600 instead of 0644.
     * WerewolfExtra: Added a silly addon module for Werewolf.
     * Werewolf: Time recording.
