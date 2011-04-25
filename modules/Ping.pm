@@ -37,7 +37,7 @@ sub _void {
 
 # Help for PING.
 our %HELP_PING = (
-    en => "This command will ping all non-/away users in the channel. \2Syntax:\2 PING",
+    'en' => "This command will ping all non-/away users in the channel. \2Syntax:\2 PING",
 );
 
 # Callback for PING command.

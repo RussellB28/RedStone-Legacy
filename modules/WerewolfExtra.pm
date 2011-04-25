@@ -29,7 +29,7 @@ sub _void {
 
 # Help hash for the WOLFE command.
 our %HELP_WOLFE = (
-    en => "This command allows you to perform various idle actions in a game of Werewolf (A.K.A. Mafia). \2Syntax:\2 WOLFE (GOAT) [parameters]",
+    'en' => "This command allows you to perform various idle actions in a game of Werewolf (A.K.A. Mafia). \2Syntax:\2 WOLFE (GOAT) [parameters]",
 );
 
 # Callback for the WOLFE command.
