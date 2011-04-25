@@ -8,7 +8,7 @@ use feature qw(switch);
 use API::Std qw(cmd_add cmd_del trans hook_add hook_del timer_add timer_del trans conf_get has_priv match_user);
 use API::IRC qw(privmsg notice cmode);
 our ($GAME, $PGAME, $GAMECHAN, $GAMETIME, %PLAYERS, %NICKS, @STATIC, $PHASE, $SEEN, $VISIT, $GUARD, %KILL, %WKILL, %LYNCH, %SPOKE, %WARN, $LVOTEN, @SHOT, 
-     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM);
+     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM, $LASTTIME, @TIMES);
 my $FCHAR = (conf_get('fantasy_pf'))[0][0];
 
 # Initialization subroutine.
@@ -346,6 +346,9 @@ sub cmd_wolf {
                 # Set variables.
                 $GAME = 1;
                 $PGAME = 0;
+                $GAMETIME = time;
+                @TIMES = (0, 0);
+                $LASTTIME = 0;
 
                 # Set spoke variables.
                 foreach (keys %PLAYERS) { $SPOKE{$_} = time }
@@ -1011,7 +1014,6 @@ sub cmd_wolf {
                 # Run nighttime force end check.
                 _chknight();
             }
-            default { notice($src->{svr}, $src->{nick}, trans('Unknown action', $_).q{.}); }
         }
     }
 
@@ -1022,6 +1024,14 @@ sub cmd_wolf {
 sub _init_night {
     my ($gsvr, $gchan) = split '/', $GAMECHAN;
     $PHASE = 'n';
+
+    # Clock stuff.
+    if ($LASTTIME) {
+        my $dur = time - $LASTTIME;
+        privmsg($gsvr, $gchan, "Day lasted \2"._fmttime($dur)."\2.");
+        $TIMES[0] += $dur;
+    }
+    $LASTTIME = time;
 
     # Iterate through all players.
     foreach my $plyr (keys %PLAYERS) {
@@ -1113,6 +1123,14 @@ sub _init_night {
 sub _init_day {
     my ($gsvr, $gchan) = split '/', $GAMECHAN;
     
+    # Clock stuff.
+    if ($LASTTIME) {
+        my $dur = time - $LASTTIME;
+        privmsg($gsvr, $gchan, "Night lasted \2"._fmttime($dur)."\2.");
+        $TIMES[1] += $dur;
+    }
+    $LASTTIME = time;
+    
     # We need wolf count.
     my $wolves = 0;
     for (values %PLAYERS) { if (m/w/xsm) { $wolves++ } }
@@ -1175,10 +1193,21 @@ sub _init_day {
         privmsg($gsvr, $gchan, 'The wolves attempted to attack the harlot last night, but (s)he wasn\'t home...');
         $victim = 0;
     } }
-
+    
     # Set phase to day.
     $PHASE = 'd';
     
+    # Check if the victim was the gunner.
+    if ($victim and int rand 3 == 1) { if ($victim ne 1) {
+        if ($PLAYERS{$victim} =~ m/b/xsm and $BULLETS) {
+            # Select a random wolf to die.
+            my $rwolf;
+            while (my ($wp, $wv) = each %PLAYERS) { if ($wv =~ m/w/xsm) { $rwolf = $wp } }
+            privmsg($gsvr, $gchan, "The wolves made the fortunate mistake of attacking the gunner last night, and \2$NICKS{$rwolf}\2 was shot dead.");
+            _player_del($rwolf);
+        }
+    } }
+
     # Cool, all data should be ready for shipment. Lets go!
     my $continue = 1;
     my $msg = 'It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';
@@ -1467,6 +1496,16 @@ sub _gameover {
     my ($winner) = @_;
     my ($gsvr, $gchan) = split '/', $GAMECHAN;
 
+    # Tally times.
+    if ($LASTTIME) {
+        my ($ph, $i);
+        if ($PHASE eq 'n') { $ph = 'Night'; $i = 1 }
+        if ($PHASE eq 'd') { $ph = 'Day'; $i = 0 }
+        my $dur = time - $LASTTIME;
+        privmsg($gsvr, $gchan, "$ph lasted \2"._fmttime($dur)."\2.");
+        $TIMES[$i] += $dur;
+    }
+
     if ($winner eq 'v') { # The villagers won!
         privmsg($gsvr, $gchan, 'Game over! All the wolves are dead! The villagers chop them up, BBQ them, and have a hearty meal.');
     }
@@ -1475,6 +1514,9 @@ sub _gameover {
     }
     else { # No players.
         privmsg($gsvr, $gchan, 'No more players remaining. Game ended.');
+    }
+    if ($LASTTIME) {
+        privmsg($gsvr, $gchan, "Game lasted \2"._fmttime(time - $GAMETIME)."\2. \2"._fmttime($TIMES[0])."\2 was day. \2"._fmttime($TIMES[1])."\2 was night.");
     }
 
     if ($GAME) {
@@ -1504,7 +1546,7 @@ sub _gameover {
     if ($PHASE) { if ($PHASE eq 'n') { timer_del('werewolf.goto_daytime') } }
     timer_del('werewolf.chkbed');
     timer_del('werewolf.joinwait');
-    $GAME = $PGAME = $GAMECHAN = $GAMETIME = $PHASE = $SEEN = $VISIT = $GUARD = $LVOTEN = $BULLETS = $DETECTED = $WAIT = $WAITED = 0;
+    $GAME = $PGAME = $GAMECHAN = $GAMETIME = $PHASE = $SEEN = $VISIT = $GUARD = $LVOTEN = $BULLETS = $DETECTED = $WAIT = $WAITED = $LASTTIME = 0;
     %PLAYERS = ();
     %NICKS = ();
     %KILL = ();
@@ -1514,8 +1556,25 @@ sub _gameover {
     %WARN = ();
     @STATIC = ();
     @SHOT = ();
+    @TIMES = ();
 
     return 1;
+}
+
+# Format times.
+sub _fmttime {
+    my ($unix) = @_;
+
+    my $hours = my $mins = my $secs = 0;
+    while ($unix >= 3600) { $hours++; $unix -= 3600 }
+    while ($unix >= 60) { $mins++; $unix -= 60 }
+    while ($unix >= 1) { $secs++; $unix-- }
+
+    if (length $hours < 2) { $hours = "0$hours" }
+    if (length $mins < 2) { $mins = "0$mins" }
+    if (length $secs < 2) { $secs = "0$secs" }
+
+    return "$hours:$mins:$secs";
 }
 
 # Handle channel messages.
@@ -1710,7 +1769,7 @@ sub on_rehash {
 }
 
 # Start initialization.
-API::Std::mod_init('Werewolf', 'Xelhua', '1.07', '3.0.0a11');
+API::Std::mod_init('Werewolf', 'Xelhua', '1.08', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -1721,7 +1780,7 @@ Werewolf - IRC version of the Werewolf detective/social party game
 
 =head1 VERSION
 
- 1.07
+ 1.08
 
 =head1 SYNOPSIS
 
@@ -1957,6 +2016,9 @@ wolves and traitors don't get to have guns.
 
 So, obviously no matter what the case might be, the gun holder will always
 reveal the innocence of at least someone.
+
+And, if the wolves attack the gunner, there's a 50/50 chance of a wolf dying
+as well.
 
 =item Villager (drunk)
 
