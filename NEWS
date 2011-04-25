@@ -19,6 +19,7 @@ In this alpha11 release, we have added:
 Bug fixes:
 
 * Fixed significant state mismatched data bugs.
+* Fixed a bug with var/ being created as 0600 instead of 0644.
 
 Incompatibilities:
 
