@@ -65,7 +65,7 @@ sub mod_init {
 sub mod_exists {
     my ($name) = @_;
 
-    if (defined $API::Std::MODULE{$name}) { return 1 }
+    if (exists $API::Std::MODULE{$name}) { return 1 }
 
     return;
 }
