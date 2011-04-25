@@ -87,7 +87,7 @@ my @NOVICTIM = (
 my @LYNCHMSG = (
     "The villagers, after much debate, finally decide on lynching \2%s\2, who turned out to be... a \2%s\2.",
     "Under a lot of noise, the pitchfork-bearing villagers lynch \2%s\2, who turned out to be... a \2%s\2.",
-    "The mob drags a protesting \2%s\2 to the hanging tree. He/She succumbs to the will of the horde, and is hanged. It is discovered (s)he was a \2%s\2.",
+    "The mob drags a protesting \2%s\2 to the hanging tree. S/He succumbs to the will of the horde, and is hanged. It is discovered (s)he was a \2%s\2.",
     "Resigned to his/her fate, \2%s\2 is led to the gallows. After death, it is discovered (s)he was a \2%s\2.",
 );
 
@@ -577,7 +577,7 @@ sub cmd_wolf {
                 my $myr = int rand 8;
                 given ($myr) {
                     when (4) { # It's a miss.
-                        privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 is a lousy shooter. He/She missed!");
+                        privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 is a lousy shooter. S/He missed!");
                     }
                     when (5) { # Gun explodes = suicide.
                         privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 should clean his/her weapons more often. The gun exploded and killed him/her!");
@@ -588,7 +588,7 @@ sub cmd_wolf {
                     default { # It's a hit.
                         # Or not!
                         if ($PLAYERS{lc $src->{nick}} =~ m/i/xsm and $_ =~ m/^[1-3]$/xsm) {
-                            privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 is a lousy shooter. He/She missed!");
+                            privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 is a lousy shooter. S/He missed!");
                         }
                         else {
                             privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 shot \2$real\2 with a silver bullet!");
@@ -603,13 +603,13 @@ sub cmd_wolf {
                                 my $rint = int rand 6;
                                 given ($rint) {
                                     when (5) { # Killed.
-                                        privmsg($src->{svr}, $src->{chan}, "\2$real\2 is a villager, but \2$src->{nick}\2 accidentally shot them in the head and they are now dying.");
+                                        privmsg($src->{svr}, $src->{chan}, "\2$real\2 is a villager, but \2$src->{nick}\2 accidentally shot him/her in the head and (s)he is now dying.");
                                         if (_getrole(lc $real, 2) ne 'villager') { privmsg($src->{svr}, $src->{chan}, "Appears (s)he was a \2"._getrole(lc $real, 2)."\2."); }
                                         # Kill them.
                                         _player_del(lc $real);
                                     }
                                     default { # Only hurt.
-                                        privmsg($src->{svr}, $src->{chan}, "\2$real\2 is a villager, and is hurt but will have a full recovery. He/She will be resting for the day.");
+                                        privmsg($src->{svr}, $src->{chan}, "\2$real\2 is a villager, and is hurt but will have a full recovery. S/He will be resting for the day.");
                                         push @SHOT, lc $real;
                                         # Delete any votes they might've made today.
                                         foreach my $plyr (keys %LYNCH) {
@@ -644,12 +644,6 @@ sub cmd_wolf {
                 # Check if this is the game channel.
                 if ($src->{svr}.'/'.$src->{chan} ne $GAMECHAN) {
                     notice($src->{svr}, $src->{nick}, "Werewolf is currently running in \2$GAMECHAN\2.");
-                    return;
-                }
-
-                # Make sure they're playing.
-                if (!defined $PLAYERS{lc $src->{nick}}) {
-                    notice($src->{svr}, $src->{nick}, 'You\'re not currently playing.');
                     return;
                 }
 
@@ -710,7 +704,7 @@ sub cmd_wolf {
                 }
                 
                 # Kill the target.
-                privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 died of an unknown disease. He/She was a \2"._getrole(lc $src->{nick}, 2)."\2.");
+                privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 died of an unknown disease. S/He was a \2"._getrole(lc $src->{nick}, 2)."\2.");
                 _player_del(lc $src->{nick});
             }
             default { notice($src->{svr}, $src->{nick}, trans('Unknown action', $_).q{.}); }
@@ -1005,6 +999,7 @@ sub cmd_wolf {
                 # If they're changing their selection, reverse the old victim's data.
                 if ($WKILL{lc $src->{nick}}) {
                     $KILL{lc $WKILL{lc $src->{nick}}}--;
+                    if (!$KILL{lc $WKILL{lc $src->{nick}}}) { delete $KILL{lc $WKILL{lc $src->{nick}}} }
                 }
 
                 # All good, proceed.
@@ -1166,7 +1161,7 @@ sub _init_day {
     if (defined $victim and $VISIT) {
         if ($victim !~ m/^(0|1)$/xsm) {
             if ($VISIT eq $victim) {
-                # Ouch! He/She did, gotta kill them. :(
+                # Ouch! S/He did, gotta kill them. :(
                 $harlotd = 1;
             }
         }
@@ -1174,7 +1169,7 @@ sub _init_day {
     # Now check if the harlot spent the night with a wolf last night.
     if (!$harlotd and $VISIT) { if (exists $PLAYERS{$VISIT}) {
         if ($PLAYERS{$VISIT} =~ m/w/xsm) {
-            # Ouch! He/She did, gotta kill them. :(
+            # Ouch! S/He did, gotta kill them. :(
             $harlotd = 2;
         }
     } }
@@ -1183,7 +1178,7 @@ sub _init_day {
     my $angeld;
     if ($GUARD) {
         if ($PLAYERS{$GUARD} =~ m/w/xsm) {
-            # Ouch. He/She did, so determine if they die or not. (50/50 chance)
+            # Ouch. S/He did, so determine if they die or not. (50/50 chance)
             my $rint = int rand 11;
             given ($rint) {
                 when (/^(1|3|5|7|9)$/) { $angeld = 0 }
@@ -1342,7 +1337,7 @@ sub _chkbed {
         my $since = time - $time;
         # Check if they should be kicked right now.
         if ($since >= 300) {
-            privmsg($gsvr, $gchan, "\2$NICKS{$plyr}\2 didn't get out of bed for a very long time. He/She is declared dead. Appears (s)he was a \2"._getrole($plyr, 2)."\2.");
+            privmsg($gsvr, $gchan, "\2$NICKS{$plyr}\2 didn't get out of bed for a very long time. S/He is declared dead. Appears (s)he was a \2"._getrole($plyr, 2)."\2.");
             my $ri = _player_del($plyr);
             if (!$ri) { last }
         }
