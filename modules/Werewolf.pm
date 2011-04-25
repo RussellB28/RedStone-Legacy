@@ -1027,8 +1027,8 @@ sub _init_night {
 
     # Clock stuff.
     if ($LASTTIME) {
+        my $dur = time - $LASTTIME;
         if ($dur) {
-            my $dur = time - $LASTTIME;
             privmsg($gsvr, $gchan, "Day lasted \2"._fmttime($dur)."\2.");
             $TIMES[0] += $dur;
         }
@@ -1128,8 +1128,8 @@ sub _init_day {
     
     # Clock stuff.
     if ($LASTTIME) {
+        my $dur = time - $LASTTIME;
         if ($dur) {
-            my $dur = time - $LASTTIME;
             privmsg($gsvr, $gchan, "Night lasted \2"._fmttime($dur)."\2.");
             $TIMES[1] += $dur;
         }
