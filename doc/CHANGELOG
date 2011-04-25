@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * WerewolfExtra: Added a silly addon module for Werewolf.
     * Werewolf: Time recording.
     * Werewolf: Fixed an issue in the clock.
     * Werewolf 1.08: New gunner feature.

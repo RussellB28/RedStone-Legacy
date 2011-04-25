@@ -1115,6 +1115,7 @@ sub _init_night {
     $DETECTED = 0;
     privmsg($gsvr, $gchan, 'It is now nighttime. All players check for PM\'s from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.');
     timer_add('werewolf.goto_daytime', 1, 90, sub { M::Werewolf::_init_day() });
+    if (defined $M::WerewolfExtra::GOAT) { $M::WerewolfExtra::GOAT = 0 }
 
     return 1;
 }
