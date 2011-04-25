@@ -93,7 +93,7 @@ my @LYNCHMSG = (
 
 # Help hash for the WOLF command.
 our %HELP_WOLF = (
-    'en' => "This command allows you to perform various actions in a game of Werewolf (A.K.A. Mafia). \2Syntax:\2 WOLF (JOIN|WAIT|START|LYNCH|RETRACT|SHOOT|QUIT|VOTES|STATS / SEE|ID|VISIT|GUARD|KILL) [parameters]",
+    en => "This command allows you to perform various actions in a game of Werewolf (A.K.A. Mafia). \2Syntax:\2 WOLF (JOIN|WAIT|START|LYNCH|RETRACT|SHOOT|QUIT|VOTES|STATS / SEE|ID|VISIT|GUARD|KILL) [parameters]",
 );
 
 # Callback for the WOLF command.

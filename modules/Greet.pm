@@ -39,8 +39,8 @@ sub _void
 
 # Help hash for GREET. Spanish and French translation needed.
 our %HELP_GREET = (
-    'en' => "This command allows management of greets. \2Syntax:\2 GREET (ADD|DEL) [nick] [greet]",
-    'de' => "Dieser Befehl ermoeglicht die Verwaltung von Gruesse. \2Syntax:\2 GREET (ADD|DEL) [nick] [greet]",
+    en => "This command allows management of greets. \2Syntax:\2 GREET (ADD|DEL) [nick] [greet]",
+    de => "Dieser Befehl ermoeglicht die Verwaltung von Gruesse. \2Syntax:\2 GREET (ADD|DEL) [nick] [greet]",
 );
 
 # Callback for GREET.

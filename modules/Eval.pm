@@ -28,9 +28,9 @@ sub _void {
 
 # Help hash for EVAL command. Spanish and French translations are needed.
 our %HELP_EVAL = (
-    'en' => "This command allows you to eval Perl code. USE WITH CAUTION. \2Syntax:\2 EVAL <expression>",
-    'de' => "Dieser Befehl ermoeglicht du auf bewertst Perl Code. GEBRAUCH MIT VORSICHT. \2Syntax:\2 EVAL <expression>",
-    'fr' => "Cette commande vous permet d'évaluer du code Perl. UTILISER AVEC PRUDENCE. \2Syntaxe:\2 EVAL <expression>",
+    en => "This command allows you to eval Perl code. USE WITH CAUTION. \2Syntax:\2 EVAL <expression>",
+    de => "Dieser Befehl ermoeglicht du auf bewertst Perl Code. GEBRAUCH MIT VORSICHT. \2Syntax:\2 EVAL <expression>",
+    fr => "Cette commande vous permet d'évaluer du code Perl. UTILISER AVEC PRUDENCE. \2Syntaxe:\2 EVAL <expression>",
 );
 
 # Callback for EVAL command.

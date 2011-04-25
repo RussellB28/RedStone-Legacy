@@ -54,28 +54,28 @@ sub _void
 
 # Help hashes for the TOPIC, OWNER, VERB, STATUS, OTHER, STATIC, DIVIDER and TSYNC commands. Spanish, French and German translations needed.
 our %HELP_TOPIC = (
-    'en' => "This command allows you to set the topic section of a channel topic. \002Syntax:\002 TOPIC <new topic>",
+    en => "This command allows you to set the topic section of a channel topic. \002Syntax:\002 TOPIC <new topic>",
 );
 our %HELP_DIVIDER = (
-    'en' => "This command allows you to set the divider for topic sections in a channel topic. \002Syntax:\002 DIVIDER <new divider>",
+    en => "This command allows you to set the divider for topic sections in a channel topic. \002Syntax:\002 DIVIDER <new divider>",
 );
 our %HELP_OWNER = (
-    'en' => "This command allows you to set the channel owner section of a channel topic. \002Syntax:\002 OWNER <new owner>",
+    en => "This command allows you to set the channel owner section of a channel topic. \002Syntax:\002 OWNER <new owner>",
 );
 our %HELP_VERB = (
-    'en' => "This command allows you to set the status verb section of a channel topic. \002Syntax:\002 VERB <new verb>",
+    en => "This command allows you to set the status verb section of a channel topic. \002Syntax:\002 VERB <new verb>",
 );
 our %HELP_STATUS = (
-    'en' => "This command allows you to set the status section of a channel topic. \002Syntax:\002 STATUS <new status>",
+    en => "This command allows you to set the status section of a channel topic. \002Syntax:\002 STATUS <new status>",
 );
 our %HELP_OTHER = (
-    'en' => "This command allows you to set the other static section of a channel topic. \002Syntax:\002 OTHER <new other static>",
+    en => "This command allows you to set the other static section of a channel topic. \002Syntax:\002 OTHER <new other static>",
 );
 our %HELP_STATIC = (
-    'en' => "This command allows you to set the static section of a channel topic. \002Syntax:\002 STATIC <new static>",
+    en => "This command allows you to set the static section of a channel topic. \002Syntax:\002 STATIC <new static>",
 );
 our %HELP_TSYNC = (
-    'en' => "This command allows you to sync the channel topic with the topic in the database. \002Syntax:\002 TSYNC",
+    en => "This command allows you to sync the channel topic with the topic in the database. \002Syntax:\002 TSYNC",
 );
 
 # Callback for TOPIC command.

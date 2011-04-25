@@ -28,7 +28,7 @@ sub _void {
 
 # Help hash for STATS. Spanish, German and French translations needed.
 our %HELP_STATS = (
-    'en' => "This command will return information about the bot (uptime, version, etc.). \2Syntax:\2 STATS",
+    en => "This command will return information about the bot (uptime, version, etc.). \2Syntax:\2 STATS",
 );
 
 # Callback for STATS command.

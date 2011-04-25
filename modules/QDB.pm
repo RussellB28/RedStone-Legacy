@@ -35,8 +35,9 @@ sub _void
 
 # Help hash for QDB. Spanish, French and German translations needed.
 our %HELP_QDB = (
-    'en' => "This command allows you to add, read, and delete quotes. \002Syntax:\002 QDB (ADD|VIEW|COUNT|RAND|SEARCH|MORE|DEL) [quote|expression]",
+    en => "This command allows you to add, read, and delete quotes. \002Syntax:\002 QDB (ADD|VIEW|COUNT|RAND|SEARCH|MORE|DEL) [quote|expression]",
 );
+
 sub cmd_qdb
 {
     my ($src, @argv) = @_;

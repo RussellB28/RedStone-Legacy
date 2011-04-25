@@ -38,12 +38,12 @@ sub _void
 
 # Help hashes.
 our %HELP_SHORTEN = (
-    'en' => "This command will shorten an URL using Bit.ly. \2Syntax:\2 SHORTEN <url>",
-    'de' => "Dieser Befehl wird eine URL verkuerzen. \2Syntax:\2 SHORTEN <url>",
+    en => "This command will shorten an URL using Bit.ly. \2Syntax:\2 SHORTEN <url>",
+    de => "Dieser Befehl wird eine URL verkuerzen. \2Syntax:\2 SHORTEN <url>",
 );
 our %HELP_REVERSE = (
-    'en' => "This command will expand a Bit.ly URL. \2Syntax:\2 REVERSE <url>",
-    'de' => "Dieser Befehl wird eine URL erweitern. \2Syntax:\2 REVERSE <url>",
+    en => "This command will expand a Bit.ly URL. \2Syntax:\2 REVERSE <url>",
+    de => "Dieser Befehl wird eine URL erweitern. \2Syntax:\2 REVERSE <url>",
 );
 
 # Callback for SHORTEN command.

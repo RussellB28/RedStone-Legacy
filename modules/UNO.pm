@@ -87,7 +87,7 @@ sub _void {
 
 # Help hash for UNO command. Spanish, German and French translations needed.
 our %HELP_UNO = (
-    'en' => "This command allows you to take various actions in a game of UNO. \2Syntax:\2 UNO (START|JOIN|DEAL|PLAY|DRAW|PASS|CARDS|TOPCARD|STATS|KICK|QUIT|STOP|TOPTEN|RECORDS|SCORE) [parameters]",
+    en => "This command allows you to take various actions in a game of UNO. \2Syntax:\2 UNO (START|JOIN|DEAL|PLAY|DRAW|PASS|CARDS|TOPCARD|STATS|KICK|QUIT|STOP|TOPTEN|RECORDS|SCORE) [parameters]",
 );
 
 # Callback for UNO command.

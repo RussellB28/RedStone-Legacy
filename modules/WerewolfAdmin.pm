@@ -28,7 +28,7 @@ sub _void {
 
 # Help hash for the WOLFA command.
 our %HELP_WOLFA = (
-    'en' => "This command allows you to perform various administrative actions in a game of Werewolf (A.K.A. Mafia). \2Syntax:\2 WOLFA (JOIN|WAIT|START|KICK|STOP) [parameters]",
+    en => "This command allows you to perform various administrative actions in a game of Werewolf (A.K.A. Mafia). \2Syntax:\2 WOLFA (JOIN|WAIT|START|KICK|STOP) [parameters]",
 );
 
 # Callback for the WOLFA command.
