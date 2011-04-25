@@ -76,7 +76,7 @@ sub cmd_wolfe {
             }
 
             # Goat is ratelimited to once per day.
-            if ($GOAT) {
+            if ($M::Werewolf::GOAT) {
                 notice($src->{svr}, $src->{nick}, 'Only one goat per day.');
                 return;
             }
@@ -90,7 +90,7 @@ sub cmd_wolfe {
             # Go Go Go!
             my $tu = lc $argv[1];
             privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}'s\2 goat walks by and kicks \2$Core::IRC::Users::users{$src->{svr}}{$tu}\2.");
-            $GOAT = 1;
+            $M::Werewolf::GOAT = 1;
         }
         default { notice($src->{svr}, $src->{nick}, trans('Unknown action', $_).q{.}) }
     }

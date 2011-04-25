@@ -8,7 +8,7 @@ use feature qw(switch);
 use API::Std qw(cmd_add cmd_del trans hook_add hook_del timer_add timer_del trans conf_get has_priv match_user);
 use API::IRC qw(privmsg notice cmode);
 our ($GAME, $PGAME, $GAMECHAN, $GAMETIME, %PLAYERS, %NICKS, @STATIC, $PHASE, $SEEN, $VISIT, $GUARD, %KILL, %WKILL, %LYNCH, %SPOKE, %WARN, $LVOTEN, @SHOT, 
-     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM, $LASTTIME, @TIMES);
+     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM, $LASTTIME, @TIMES, $GOAT);
 my $FCHAR = (conf_get('fantasy_pf'))[0][0];
 
 # Initialization subroutine.
@@ -1112,7 +1112,7 @@ sub _init_night {
     $DETECTED = 0;
     privmsg($gsvr, $gchan, 'It is now nighttime. All players check for PM\'s from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.');
     timer_add('werewolf.goto_daytime', 1, 90, sub { M::Werewolf::_init_day() });
-    if (API::Std::mod_exists('WerewolfExtra')) { $M::WerewolfExtra::GOAT = 0 }
+    $GOAT = 0;
 
     return 1;
 }
