@@ -202,7 +202,7 @@ sub cmd_wolf {
 
                 # Check if we're already waiting a while.
                 if ($WAITED >= 2) {
-                    privmsg($src->{svr}, $src->{chan}, "$src->{nick}: Already waiting 100 seconds.");
+                    privmsg($src->{svr}, $src->{chan}, "$src->{nick}: Join time has already been extended \2$WAITED\2 times.");
                     return;
                 }
 
