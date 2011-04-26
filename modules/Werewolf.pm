@@ -574,12 +574,12 @@ sub cmd_wolf {
                 my $real = $NICKS{lc $argv[1]};
 
                 # Massive randomizing here. 7 = 5-hit, 1-miss, 1-suicide
-                my $myr = int rand 8;
+                my $myr = int rand 7;
                 given ($myr) {
-                    when (4) { # It's a miss.
+                    when (3) { # It's a miss.
                         privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 is a lousy shooter. S/He missed!");
                     }
-                    when (5) { # Gun explodes = suicide.
+                    when (4) { # Gun explodes = suicide.
                         privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 should clean his/her weapons more often. The gun exploded and killed him/her!");
                         if (_getrole(lc $src->{nick}, 2) ne 'villager') { privmsg($src->{svr}, $src->{chan}, "Appears (s)he was a \2"._getrole(lc $src->{nick}, 2)."\2."); }
                         _player_del(lc $src->{nick});
@@ -587,7 +587,7 @@ sub cmd_wolf {
                     }
                     default { # It's a hit.
                         # Or not!
-                        if ($PLAYERS{lc $src->{nick}} =~ m/i/xsm and $_ =~ m/^[1-3]$/xsm) {
+                        if ($PLAYERS{lc $src->{nick}} =~ m/i/xsm and $_ =~ m/^[0-2]$/xsm) {
                             privmsg($src->{svr}, $src->{chan}, "\2$src->{nick}\2 is a lousy shooter. S/He missed!");
                         }
                         else {
@@ -600,16 +600,16 @@ sub cmd_wolf {
                             }
                             else { # Villager.
                                 # So, there's a 1/5 chance of a villager dying.
-                                my $rint = int rand 6;
+                                my $rint = int rand 5;
                                 given ($rint) {
-                                    when (5) { # Killed.
+                                    when (4) { # Killed.
                                         privmsg($src->{svr}, $src->{chan}, "\2$real\2 is a villager, but \2$src->{nick}\2 accidentally shot him/her in the head and (s)he is now dying.");
                                         if (_getrole(lc $real, 2) ne 'villager') { privmsg($src->{svr}, $src->{chan}, "Appears (s)he was a \2"._getrole(lc $real, 2)."\2."); }
                                         # Kill them.
                                         _player_del(lc $real);
                                     }
                                     default { # Only hurt.
-                                        privmsg($src->{svr}, $src->{chan}, "\2$real\2 is a villager, and is hurt but will have a full recovery. S/He will be resting for the day.");
+                                        privmsg($src->{svr}, $src->{chan}, "\2$real\2 is a villager and is injured but will have a full recovery. S/He will be resting for the day.");
                                         push @SHOT, lc $real;
                                         # Delete any votes they might've made today.
                                         foreach my $plyr (keys %LYNCH) {
@@ -1021,10 +1021,11 @@ sub _init_night {
     $PHASE = 'n';
 
     # Clock stuff.
+    my $clockd;
     if ($LASTTIME) {
         my $dur = time - $LASTTIME;
         if ($dur) {
-            privmsg($gsvr, $gchan, "Day lasted \2"._fmttime($dur)."\2.");
+            $clockd = "Day lasted \2"._fmttime($dur)."\2.";
             $TIMES[0] += $dur;
         }
     }
@@ -1110,7 +1111,12 @@ sub _init_night {
     # It is now nighttime.
     %LYNCH = ();
     $DETECTED = 0;
-    privmsg($gsvr, $gchan, 'It is now nighttime. All players check for PM\'s from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.');
+    if (!$clockd) {
+        privmsg($gsvr, $gchan, 'It is now nighttime. All players check for PM\'s from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.');
+    }
+    else {
+        privmsg($gsvr, $gchan, $clockd.' It is now nighttime. All players check for PM\'s from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.');
+    }
     timer_add('werewolf.goto_daytime', 1, 90, sub { M::Werewolf::_init_day() });
     $GOAT = 0;
 
@@ -1122,10 +1128,11 @@ sub _init_day {
     my ($gsvr, $gchan) = split '/', $GAMECHAN;
     
     # Clock stuff.
+    my $clockd;
     if ($LASTTIME) {
         my $dur = time - $LASTTIME;
         if ($dur) {
-            privmsg($gsvr, $gchan, "Night lasted \2"._fmttime($dur)."\2.");
+            $clockd = "Night lasted \2"._fmttime($dur)."\2.";
             $TIMES[1] += $dur;
         }
     }
@@ -1212,7 +1219,13 @@ sub _init_day {
 
     # Cool, all data should be ready for shipment. Lets go!
     my $continue = 1;
-    my $msg = 'It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';
+    my $msg;
+    if (!$clockd) {
+        $msg = $clockd.' It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';
+    }
+    else {
+        $msg = 'It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';
+    }
     if (!$victim) { privmsg($gsvr, $gchan, "$msg ".$NOVICTIM[int rand scalar @NOVICTIM]." All villagers however, have survived.") }
     elsif ($victim eq 1) {
         privmsg($gsvr, $gchan, "$msg \2$NICKS{$GUARD}\2 was attacked by the wolves last night, but luckily, the guardian angel protected him/her.");
