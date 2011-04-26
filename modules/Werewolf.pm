@@ -8,7 +8,7 @@ use feature qw(switch);
 use API::Std qw(cmd_add cmd_del trans hook_add hook_del timer_add timer_del trans conf_get has_priv match_user);
 use API::IRC qw(privmsg notice cmode);
 our ($GAME, $PGAME, $GAMECHAN, $GAMETIME, %PLAYERS, %NICKS, @STATIC, $PHASE, $SEEN, $VISIT, $GUARD, %KILL, %WKILL, %LYNCH, %SPOKE, %WARN, $LVOTEN, @SHOT, 
-     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM, $LASTTIME, @TIMES, $GOAT);
+     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM, $LASTTIME, @TIMES, $GOAT, %COMMANDS);
 my $FCHAR = (conf_get('fantasy_pf'))[0][0];
 
 # Initialization subroutine.
@@ -30,6 +30,27 @@ sub _init {
     hook_add('on_quit', 'werewolf.updatedata.quit', \&M::Werewolf::on_quit) or return;
     # Create the on_rehash hook.
     hook_add('on_rehash', 'werewolf.rehash', \&M::Werewolf::on_rehash) or return;
+
+    # Commands hash.
+    %COMMANDS = (
+        'join'  => 'wolf join',
+        'wait'  => 'wolf wait',
+        'start' => 'wolf start',
+        'see'   => 'wolf see <nick>',
+        'visit' => 'wolf visit <nick>',
+        'guard' => 'wolf guard <nick>',
+        'kill'  => 'wolf kill <nick>',
+        'lynch' => 'wolf lynch <nick>',
+        'shoot' => 'wolf shoot <nick>',
+        'id'    => 'wolf id <nick>',
+    );
+
+    # Populate the commands hash with data from config.
+    foreach (keys %COMMANDS) {
+        if (conf_get("werewolf:cmd_$_")) {
+            $COMMANDS{$_} = (conf_get("werewolf:cmd_$_"))[0][0];
+        }
+    }
 
     # Success.
     return 1;
@@ -62,19 +83,6 @@ sub _void {
     return 1;
 }
 
-# Commands hash.
-my %COMMANDS = (
-    'join'  => 'wolf join',
-    'wait'  => 'wolf wait',
-    'start' => 'wolf start',
-    'see'   => 'wolf see <nick>',
-    'visit' => 'wolf visit <nick>',
-    'guard' => 'wolf guard <nick>',
-    'kill'  => 'wolf kill <nick>',
-    'lynch' => 'wolf lynch <nick>',
-    'shoot' => 'wolf shoot <nick>',
-    'id'    => 'wolf id <nick>',
-);
 
 # No villagers dead messages.
 my @NOVICTIM = (
@@ -1208,7 +1216,7 @@ sub _init_day {
     if ($victim and int rand 3 == 1) { if ($victim ne 1) {
         if ($PLAYERS{$victim} =~ m/b/xsm and $BULLETS) {
             # Select a random wolf to die.
-            my $rwolf;
+            my @rwolf;
             while (my ($wp, $wv) = each %PLAYERS) { if ($wv =~ m/w/xsm) { push @rwolf, $wp } }
             my $rwolf = $rwolf[int rand scalar @rwolf];
             privmsg($gsvr, $gchan, "The wolves made the fortunate mistake of attacking the gunner last night, and \2$NICKS{$rwolf}\2, a wolf, was shot dead.");
@@ -1781,12 +1789,19 @@ sub on_quit {
 sub on_rehash {
     # Reload fantasy prefix into memory.
     $FCHAR = (conf_get('fantasy_pf'))[0][0];
+    
+    # Populate the commands hash with data from config.
+    foreach (keys %COMMANDS) {
+        if (conf_get("werewolf:cmd_$_")) {
+            $COMMANDS{$_} = (conf_get("werewolf:cmd_$_"))[0][0];
+        }
+    }
 
     return 1;
 }
 
 # Start initialization.
-API::Std::mod_init('Werewolf', 'Xelhua', '1.09', '3.0.0a11');
+API::Std::mod_init('Werewolf', 'Xelhua', '1.10', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -1797,7 +1812,7 @@ Werewolf - IRC version of the Werewolf detective/social party game
 
 =head1 VERSION
 
- 1.09
+ 1.10
 
 =head1 SYNOPSIS
 
@@ -2286,10 +2301,25 @@ But, check with your network's administrators to confirm.
 
 ---
 
-Also, for your convenience, we've placed a COMMANDS hash near the top of this
-source file that you /should/ modify if using aliases, to avoid user confusion.
+ cmd_join "wolf join";
+ cmd_wait "wolf wait";
+ cmd_start "wolf start";
+ cmd_see "wolf see <nick>";
+ cmd_visit "wolf visit <nick>";
+ cmd_guard "wolf guard <nick>";
+ cmd_kill "wolf kill <nick>";
+ cmd_lynch "wolf lynch <nick>";
+ cmd_shoot "wolf shoot <nick>";
+ cmd_id "wolf id <nick>";
 
-We think it's pretty clear what you need to modify. Enjoy.
+All these configuration options are optional, and are used for setting what
+commands the bot should tell the users to use.
+
+This is very useful and recommended for those of you using aliases, to avoid
+user confusion.
+
+Also, do not include "!", ".", etc. in the setting, these are added
+automatically.
 
 =head1 SUPPORT, SUGGESTIONS, ETC.
 
