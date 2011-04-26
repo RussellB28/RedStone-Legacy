@@ -256,11 +256,11 @@ sub cmd_wolf {
                 # Only one seer, harlot, guardian angel, traitor and detective.
                 my $cseers = 1;
                 my $charlots = my $cdrunks = my $cangels = my $ctraitors = my $cdetectives = 0;
-                if (keys %PLAYERS >= 6) { $charlots++ unless conf_get('werewolf:rated-g') }
-                if (keys %PLAYERS >= 7) { $cdrunks++ unless conf_get('werewolf:rated-g') }
-                if (keys %PLAYERS >= 9) { $cangels++ unless conf_get('werewolf:no-angels') }
-                if (keys %PLAYERS >= 12 and conf_get('werewolf:traitors')) { $ctraitors++ }
-                if (keys %PLAYERS >= 16 and conf_get('werewolf:detectives')) { $cdetectives++ }
+                if (keys %PLAYERS >= 5) { $cdrunks++ unless conf_get('werewolf:rated-g') }
+                if (keys %PLAYERS >= 7) { $charlots++ unless conf_get('werewolf:rated-g') }
+                if (keys %PLAYERS >= 10) { $cangels++ unless conf_get('werewolf:no-angels') }
+                if (keys %PLAYERS >= 11 and conf_get('werewolf:traitors')) { $ctraitors++ }
+                if (keys %PLAYERS >= 15 and conf_get('werewolf:detectives')) { $cdetectives++ }
 
                 # Give all players a role.
                 foreach my $plyr (keys %PLAYERS) { $PLAYERS{$plyr} = 'v' }
@@ -1221,10 +1221,10 @@ sub _init_day {
     my $continue = 1;
     my $msg;
     if (!$clockd) {
-        $msg = $clockd.' It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';
+        $msg = 'It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';
     }
     else {
-        $msg = 'It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';
+        $msg = $clockd.' It is now daytime. The villagers awake, thankful for surviving the night, and search the village...';
     }
     if (!$victim) { privmsg($gsvr, $gchan, "$msg ".$NOVICTIM[int rand scalar @NOVICTIM]." All villagers however, have survived.") }
     elsif ($victim eq 1) {
@@ -1527,7 +1527,7 @@ sub _gameover {
         privmsg($gsvr, $gchan, 'Game over! All the wolves are dead! The villagers chop them up, BBQ them, and have a hearty meal.');
     }
     elsif ($winner eq 'w') { # The wolves won!
-        privmsg($gsvr, $gchan, 'Game over! There is the same amount of wolves as villagers. The wolves eat everyone, and win.');
+        privmsg($gsvr, $gchan, 'Game over! There are the same number of wolves as villagers. The wolves eat everyone, and win.');
     }
     else { # No players.
         privmsg($gsvr, $gchan, 'No more players remaining. Game ended.');
@@ -1786,7 +1786,7 @@ sub on_rehash {
 }
 
 # Start initialization.
-API::Std::mod_init('Werewolf', 'Xelhua', '1.08', '3.0.0a11');
+API::Std::mod_init('Werewolf', 'Xelhua', '1.09', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -1797,7 +1797,7 @@ Werewolf - IRC version of the Werewolf detective/social party game
 
 =head1 VERSION
 
- 1.08
+ 1.09
 
 =head1 SYNOPSIS
 
@@ -2043,7 +2043,7 @@ ATTENTION: Xelhua does NOT endorse drinking, especially underage, thus the
 village drunk might be considered NSFW and can be disabled with
 werewolf:rated-g. See CONFIGURATION.
 
-If a game has 7+ players, one villager will be made the "drunk". Basically,
+If a game has 5+ players, one villager will be made the "drunk". Basically,
 this is mostly just a name. But, if they also get the gun, there's extras:
 
 * Person's bullet count gets tripled.
@@ -2053,7 +2053,7 @@ this is mostly just a name. But, if they also get the gun, there's extras:
 =item Seer
 
 The seer is like a villager, but gets a special ability, the ability of
-foresight (No, not Foresight Linux).
+foresight.
 
 They get to have a single vision every night, via the "wolf see <nick>" command,
 in the vision, they will be told the exact role of the target.
@@ -2102,7 +2102,7 @@ but was not home in the morning, no nicks are mentioned in this case.
 This is very good protection. Combined with the seer, they can, via creating a
 trust chain, almost completely guarantee a win for the villagers.
 
-A single harlot is assigned to a game if it has six or more players.
+A single harlot is assigned to a game if it has seven or more players.
 
 =item Guardian Angel
 
@@ -2133,7 +2133,7 @@ If they escaped, there are no further messages.
 Of course, with a trust chain, the guardian angel can protect the seer or
 detective from death. Thus, the wolves must kill the angel as soon as possible.
 
-A single guardian angel is assigned to a game if it has nine or more players.
+A single guardian angel is assigned to a game if it has ten or more players.
 
 =item Traitor
 
@@ -2162,7 +2162,7 @@ detect traitors. Hooray!
 But, BEWARE! TRAITORS ARE VERY DANGEROUS. VILLAGERS MUST IDENTIFY AND KILL THEM
 AS SOON AS POSSIBLE.
 
-A single traitor is assigned to a game if it has twelve or more players.
+A single traitor is assigned to a game if it has eleven or more players.
 
 Oh and one more thing, if all wolves die yet the traitor remains, the traitor
 is transformed into a wolf.
@@ -2194,7 +2194,7 @@ they will be revealed to the villains.
 So indeed, detectives have a stressful job, and must be good at it, for the
 sake of all that is good!
 
-A single detective is assigned to a game if it has sixteen or more players.
+A single detective is assigned to a game if it has fifteen or more players.
 
 =back
 
