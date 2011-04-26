@@ -1202,8 +1202,9 @@ sub _init_day {
         if ($PLAYERS{$victim} =~ m/b/xsm and $BULLETS) {
             # Select a random wolf to die.
             my $rwolf;
-            while (my ($wp, $wv) = each %PLAYERS) { if ($wv =~ m/w/xsm) { $rwolf = $wp } }
-            privmsg($gsvr, $gchan, "The wolves made the fortunate mistake of attacking the gunner last night, and \2$NICKS{$rwolf}\2 was shot dead.");
+            while (my ($wp, $wv) = each %PLAYERS) { if ($wv =~ m/w/xsm) { push @rwolf, $wp } }
+            my $rwolf = $rwolf[int rand scalar @rwolf];
+            privmsg($gsvr, $gchan, "The wolves made the fortunate mistake of attacking the gunner last night, and \2$NICKS{$rwolf}\2, a wolf, was shot dead.");
             my $egres = _player_del($rwolf);
             if (!$egres) { return 1 }
         }
