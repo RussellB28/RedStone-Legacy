@@ -1323,7 +1323,7 @@ sub _judgment {
 sub _calclvn {
     my $pc = keys %PLAYERS;
     $pc -= scalar @SHOT;
-    $LVOTEN = POSIX::ceil($pc / 2) + 1;
+    $LVOTEN = POSIX::ceil($pc * 0.51);
 
     return 1;
 }
