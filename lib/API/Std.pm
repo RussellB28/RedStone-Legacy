@@ -421,7 +421,7 @@ sub has_priv {
 
         if (defined $Auto::PRIVILEGES{$cups}) {
             foreach (@{ $Auto::PRIVILEGES{$cups} }) {
-                if ($_ eq $cpriv or $_ eq 'ALL') { return 1 }
+                if ($_) { if ($_ eq $cpriv or $_ eq 'ALL') { return 1 } }
             }
         }
     }
