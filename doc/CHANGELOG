@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Coin: Added a module for random coin tosses.
     * Fixed a privset bug that broke privsets with multiple privileges.
     * Werewolf 1.10: Made commands configurable.
     * Werewolf 1.09: Changed required player counts for roles.
