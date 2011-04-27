@@ -350,11 +350,18 @@ if (conf_get('privset')) {
                 when ('priv') {
                     if (defined $PRIVILEGES{$tckpriv}) {
                         # If this privset exists, push to it.
-                        push @{ $PRIVILEGES{$tckpriv} }, ($mcprivs{$mckpriv})[0][0];
+                        for (0..@{($mcprivs{$mckpriv})[0]}) {
+                            push @{ $PRIVILEGES{$tckpriv} }, ($mcprivs{$mckpriv})[0][$_];
+                        }
                     }
                     else {
                         # Otherwise, create it.
                         @{ $PRIVILEGES{$tckpriv} } = (($mcprivs{$mckpriv})[0][0]);
+                        if (scalar @{($mcprivs{$mckpriv})[0]} > 1) {
+                            for (1..@{($mcprivs{$mckpriv})[0]}) {
+                                push @{ $PRIVILEGES{$tckpriv} }, ($mcprivs{$mckpriv})[0][$_];
+                            }
+                        }
                     }
                 }
                 # If it's 'inherit', inherit the privileges of another privset.

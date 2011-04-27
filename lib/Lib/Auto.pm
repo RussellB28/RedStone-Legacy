@@ -17,8 +17,7 @@ API::Std::event_add('on_shutdown');
 API::Std::event_add('on_rehash');
 
 # Update checker.
-sub checkver
-{
+sub checkver {
     if (!$Auto::NUC and Auto::RSTAGE ne 'd') {
         say '* Connecting to update server...';
         my $uss = IO::Socket::INET->new(
@@ -49,8 +48,7 @@ sub checkver
     }
 }
 
-sub rehash
-{
+sub rehash {
     # Parse configuration file.
     my %newsettings = $Auto::CONF->parse or err(2, 'Failed to parse configuration file!', 0) and return;
 
@@ -88,11 +86,18 @@ sub rehash
                     when ('priv') {
                         if (defined $PRIVILEGES{$tckpriv}) {
                             # If this privset exists, push to it.
-                            push @{ $PRIVILEGES{$tckpriv} }, ($mcprivs{$mckpriv})[0][0];
+                            for (0..@{($mcprivs{$mckpriv})[0]}) {
+                                push @{ $PRIVILEGES{$tckpriv} }, ($mcprivs{$mckpriv})[0][$_];
+                            }
                         }
                         else {
                             # Otherwise, create it.
                             @{ $PRIVILEGES{$tckpriv} } = (($mcprivs{$mckpriv})[0][0]);
+                            if (scalar @{($mcprivs{$mckpriv})[0]} > 1) {
+                                for (1..@{($mcprivs{$mckpriv})[0]}) {
+                                    push @{ $PRIVILEGES{$tckpriv} }, ($mcprivs{$mckpriv})[0][$_];
+                                }
+                            }
                         }
                     }
                     # If it's 'inherit', inherit the privileges of another privset.
@@ -250,8 +255,7 @@ hook_add('on_shutdown', 'shutdown.core_cleanup', sub {
 ###################
 
 # SIGTERM
-sub signal_term
-{
+sub signal_term {
     API::Std::event_run('on_sigterm');
     API::Std::event_run('on_shutdown');
     foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGTERM') }
@@ -262,8 +266,7 @@ sub signal_term
 }
 
 # SIGINT
-sub signal_int
-{
+sub signal_int {
     API::Std::event_run('on_sigint');
     API::Std::event_run('on_shutdown');
     foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGINT') }
@@ -274,8 +277,7 @@ sub signal_int
 }
 
 # SIGHUP
-sub signal_hup
-{
+sub signal_hup {
     dbug '!!! Caught SIGHUP; rehashing';
     alog '!!! Caught SIGHUP; rehashing';
     rehash();
@@ -284,8 +286,7 @@ sub signal_hup
 }
 
 # __WARN__
-sub signal_perlwarn
-{
+sub signal_perlwarn {
     my ($warnmsg) = @_;
     $warnmsg =~ s/(\n|\r)//xsmg;
     alog 'Perl Warning: '.$warnmsg;
@@ -294,8 +295,7 @@ sub signal_perlwarn
 }
 
 # __DIE__
-sub signal_perldie
-{
+sub signal_perldie {
     my ($diemsg) = @_;
     $diemsg =~ s/(\n|\r)//xsmg;
 

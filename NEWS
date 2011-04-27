@@ -20,6 +20,7 @@ Bug fixes:
 
 * Fixed significant state mismatched data bugs.
 * Fixed a bug with var/ being created as 0600 instead of 0644.
+* Fixed a privset bug that broke privsets with multiple privileges.
 
 Incompatibilities:
 
