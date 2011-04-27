@@ -241,7 +241,7 @@ sub match_mask {
     $mh = q{^}.$mh.q{$};
 
     # Let's match the user's mask.
-    if ($mu =~ m/$mh/xsm) {
+    if ($mu =~ m/$mh/xsmi) {
         return 1;
     }
 
