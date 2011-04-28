@@ -6,21 +6,19 @@ use strict;
 use warnings;
 use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(privmsg notice);
-use LWP::UserAgent;
+use Furl;
 
 # Initialization subroutine.
-sub _init 
-{
+sub _init {
     # Create the ISITUP command.
-    cmd_add('ISITUP', 0, 0, \%M::IsItUp::HELP_ISITUP, \&M::IsItUp::check) or return;
+    cmd_add('ISITUP', 0, 0, \%M::IsItUp::HELP_ISITUP, \&M::IsItUp::cmd_isitup) or return;
 
     # Success.
     return 1;
 }
 
 # Void subroutine.
-sub _void 
-{
+sub _void {
     # Delete the ISITUP command.
     cmd_del('ISITUP') or return;
 
@@ -30,19 +28,20 @@ sub _void
 
 # Help hashes.
 our %HELP_ISITUP = (
-    en => "This command will check if a website appears up or down to the bot. \002Syntax:\002 ISITUP <url>",
-    fr => "Cette commande va vérifier si un site Web semble être vers le haut ou vers le bas pour le bot. \002Syntaxe:\002 ISITUP <url>",
+    en => "This command will check if a website appears up or down to the bot. \2Syntax:\2 ISITUP <url>",
+    fr => "Cette commande va vérifier si un site Web semble être vers le haut ou vers le bas pour le bot. \2Syntaxe:\2 ISITUP <url>",
 );
 
 # Callback for ISITUP command.
-sub check
-{
+sub cmd_isitup {
     my ($src, @argv) = @_;
 
-    # Create an instance of LWP::UserAgent.
-    my $ua = LWP::UserAgent->new();
-    $ua->agent('Auto IRC Bot');
-    $ua->timeout(2);
+    # Create an instance of Furl.
+    my $ua = Furl->new(
+        agent => 'Auto IRC Bot',
+        timeout => 5,
+    );
+
     # Do we have enough parameters?
     if (!defined $argv[0]) {
         notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
@@ -59,59 +58,64 @@ sub check
 
     if ($response->is_success) {
         # If successful, it's up.
-        privmsg($src->{svr}, $src->{chan}, $curl.' appears to be up from here.');
+        privmsg($src->{svr}, $src->{chan}, "$curl appears to be up from here.");
     }
     else {
         # Otherwise, it's down.
-        privmsg($src->{svr}, $src->{chan}, $curl.' appears to be down from here.');
+        privmsg($src->{svr}, $src->{chan}, "$curl appears to be down from here.");
     }
 
     return 1;
 }
 
 # Start initialization.
-API::Std::mod_init('IsItUp', 'Xelhua', '1.00', '3.0.0a10');
-# build: cpan=LWP::UserAgent perl=5.010000
+API::Std::mod_init('IsItUp', 'Xelhua', '1.01', '3.0.0a11');
+# build: cpan=Furl perl=5.010000
 
 __END__
 
-=head1 IsItUp
+=head1 NAME
 
-=head2 Description
+IsItUp - Check if a website is online
 
-=over
+=head1 VERSION
 
-This module adds the ISITUP command for checking if a website 
-appears up or down to Auto.
+ 1.01
 
-=back
+=head1 SYNOPSIS
 
-=head2 Examples
+ <starcoder> !isitup google.com
+ <blue> http://google.com appears to be up from here.
 
-=over
+=head1 DESCRIPTION
 
-<JohnSmith> !isitup http://google.com
-<Auto> http://google.com appears to be up from here.
+This module creates the ISITUP command for checking if website appears to be
+online or offline to Auto (or rather, the system he's running on).
 
-=back
+=head1 DEPENDENCIES
 
-=head2 To Do
-
-=over
-
-* Add Spanish, French and German translations for the help hashes.
-
-=back
-
-=head2 Technical
+This module depends on the following CPAN modules:
 
 =over
 
-This module requires LWP::UserAgent. You can get it from
-the CPAN <http://www.cpan.org>.
+=item L<Furl>
 
-This module is compatible with Auto version 3.0.0a10+.
+This is the HTTP agent this module uses.
 
 =back
+
+=head1 AUTHOR
+
+This module was written by Elijah Perrault.
+
+This module is maintained by Xelhua Development Group.
+
+=head1 LICENSE AND COPYRIGHT
+
+This module is Copyright 2010-2011 Xelhua Development Group.
+
+Released under the same licensing terms as Auto itself.
+
+=cut
 
 # vim: set ai et sw=4 ts=4:
