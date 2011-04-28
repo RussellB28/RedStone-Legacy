@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Bitly 1.01: New and improved Bitly. Now uses Furl.
     * FML 1.01: New and improved FML. Now uses Furl.
     * Coin: Added a module for random coin tosses.
     * Fixed a privset bug that broke privsets with multiple privileges.

@@ -6,28 +6,26 @@ use strict;
 use warnings;
 use API::Std qw(cmd_add cmd_del conf_get err trans);
 use API::IRC qw(privmsg notice);
-use LWP::UserAgent;
+use Furl;
 use URI::Escape;
 
 # Initialization subroutine.
-sub _init 
-{
+sub _init {
     # Check for required configuration values.
     if (!conf_get('bitly:user') or !conf_get('bitly:key')) {
         err(2, 'Bitly: Please verify that you have bitly_user and bitly_key defined in your configuration file.', 0);
         return;
     }
     # Create the SHORTEN and REVERSE commands.
-    cmd_add('SHORTEN', 0, 0, \%M::Bitly::HELP_SHORTEN, \&M::Bitly::shorten) or return;
-    cmd_add('REVERSE', 0, 0, \%M::Bitly::HELP_REVERSE, \&M::Bitly::reverse) or return;
+    cmd_add('SHORTEN', 0, 0, \%M::Bitly::HELP_SHORTEN, \&M::Bitly::cmd_shorten) or return;
+    cmd_add('REVERSE', 0, 0, \%M::Bitly::HELP_REVERSE, \&M::Bitly::cmd_reverse) or return;
 
     # Success.
     return 1;
 }
 
 # Void subroutine.
-sub _void 
-{
+sub _void {
     # Delete the SHORTEN and REVERSE commands.
     cmd_del('SHORTEN') or return;
     cmd_del('REVERSE') or return;
@@ -47,32 +45,33 @@ our %HELP_REVERSE = (
 );
 
 # Callback for SHORTEN command.
-sub shorten 
-{
-    my ($src, @args) = @_;
+sub cmd_shorten {
+    my ($src, @argv) = @_;
 
-    # Create an instance of LWP::UserAgent.
-    my $ua = LWP::UserAgent->new();
-    $ua->agent('Auto IRC Bot');
-    $ua->timeout(2);
+    # Create an instance of Furl.
+    my $ua = Furl->new(
+        agent => 'Auto IRC Bot',
+        timeout => 5,
+    );
     
     # Put together the call to the Bit.ly API. 
-    if (!defined $args[0]) {
+    if (!defined $argv[0]) {
         notice($src->{svr}, $src->{nick}, trans('Not enough parameters').".");
         return;
     }
-    my ($surl, $user, $key) = ($args[0], (conf_get('bitly:user'))[0][0], (conf_get('bitly:key'))[0][0]);
+    my ($surl, $user, $key) = ($argv[0], (conf_get('bitly:user'))[0][0], (conf_get('bitly:key'))[0][0]);
     $surl = uri_escape($surl);
-    my $url = "http://api.bit.ly/v3/shorten?version=3.0.1&longUrl=".$surl."&apiKey=".$key."&login=".$user."&format=txt";
+    my $url = "http://api.bit.ly/v3/shorten?version=3.0.1&longUrl=$surl&apiKey=$key&login=$user&format=txt";
+    
     # Get the response via HTTP.
     my $response = $ua->get($url);
 
     if ($response->is_success) {
-        # If successful, decode the content.
-        my $d = $response->decoded_content;
-        chomp $d;
+        # If successful, get the content.
+        my $data = $response->content;
+        chomp $data;
         # And send to channel.
-        privmsg($src->{svr}, $src->{chan}, "URL: ".$d);
+        privmsg($src->{svr}, $src->{chan}, "URL: $data");
     }
     else {
         # Otherwise, send an error message.
@@ -83,36 +82,37 @@ sub shorten
 }
 
 # Callback for REVERSE command.
-sub reverse 
-{
-    my ($src, @args) = @_;
+sub cmd_reverse {
+    my ($src, @argv) = @_;
 
-    # Create an instance of LWP::UserAgent.
-    my $ua = LWP::UserAgent->new();
-    $ua->agent('Auto IRC Bot');
-    $ua->timeout(2);
+    # Create an instance of Furl.
+    my $ua = Furl->new(
+        agent => 'Auto IRC Bot',
+        timeout => 5,
+    );
 
     # Put together the call to the Bit.ly API.
-    if (!defined $args[0]) {
+    if (!defined $argv[0]) {
         notice($src->{svr}, $src->{nick}, trans('Not enough parameters').".");
         return;
     }
-    my ($surl, $user, $key) = ($args[0], (conf_get('bitly:user'))[0][0], (conf_get('bitly:key'))[0][0]);
+    my ($surl, $user, $key) = ($argv[0], (conf_get('bitly:user'))[0][0], (conf_get('bitly:key'))[0][0]);
     $surl = uri_escape($surl);
-    my $url = "http://api.bit.ly/v3/expand?version=3.0.1&shortURL=".$surl."&apiKey=".$key."&login=".$user."&format=txt";
+    my $url = "http://api.bit.ly/v3/expand?version=3.0.1&shortURL=$surl&apiKey=$key&login=$user&format=txt";
+    
     # Get the response via HTTP.
     my $response = $ua->get($url);
 
     if ($response->is_success) {
-        # If successful, decode the content.
-        my $d = $response->decoded_content;
-        chomp $d;
+        # If successful, get the content.
+        my $data = $response->content;
+        chomp $data;
         # And send it to channel.
-        if ($d ne 'NOT_FOUND') {
-            privmsg($src->{svr}, $src->{chan}, "URL: ".$d);
+        if ($data ne 'NOT_FOUND') {
+            privmsg($src->{svr}, $src->{chan}, "URL: $data");
         }
         else {
-            privmsg($src->{svr}, $src->{chan}, "URL not found");
+            privmsg($src->{svr}, $src->{chan}, 'URL not found.');
         }
     }
     else {
@@ -125,25 +125,45 @@ sub reverse
 
 
 # Start initialization.
-API::Std::mod_init('Bitly', 'Xelhua', '1.00', '3.0.0a10');
-# build: cpan=LWP::UserAgent,URI::Escape perl=5.010000
+API::Std::mod_init('Bitly', 'Xelhua', '1.01', '3.0.0a11');
+# build: cpan=Furl,URI::Escape perl=5.010000
 
 __END__
 
-=head1 Bitly
+=head1 NAME
 
-=head2 Description
+Bitly - A module for shortening/expanding URL's using Bit.ly
+
+=head1 VERSION
+
+ 1.01
+
+=head1 SYNOPSIS
+
+
+
+=head1 DESCRIPTION
+
+This module creates the SHORTEN and REVERSE commands for shortening/expanding
+an URL using the Bit.ly shortening service API.
+
+=head1 DEPENDENCIES
+
+This module depends on the following CPAN modules:
 
 =over
 
-This module adds the SHORTEN and REVERSE commands for shortening/expanding an
-URL using the bit.ly shortening service API.
+=item L<Furl>
+
+This is the HTTP agent used by this module.
+
+=item L<URI::Escape>
+
+This is used for escaping special letters from URL's.
 
 =back
 
-=head2 How To Use
-
-=over
+=head1 INSTALL
 
 Add Bitly to module auto-load and the following to your configuration file:
 
@@ -152,41 +172,18 @@ Add Bitly to module auto-load and the following to your configuration file:
     key "<bit.ly API key>";
   }
 
-=back
+=head1 AUTHOR
 
-=head2 Examples
+This module was written by Matthew Barksdale.
 
-=over
+This module is maintained by Xelhua Development Group.
 
-  bitly {
-    user "JohnSmith";
-    key "A_a95929f19402a0s9301041f0f29581089";
-  }
+=head1 LICENSE AND COPYRIGHT
 
-<JohnSmith> !shorten http://www.google.com
-<Auto> URL: http://bit.ly/eFdSkG
-<JohnSmith> !reverse http://bit.ly/eFdSkG
-<Auto> URL: http://www.google.com
+This module is Copyright 2010-2011 Xelhua Development Group.
 
-=back
+Released under the same licensing terms as Auto itself.
 
-=head2 To Do
-
-=over
-
-* Add Spanish and German translations for the help hashes.
-
-=back
-
-=head2 Technical
-
-=over
-
-This module adds extra dependencies: LWP::UserAgent and URI::Escape. You can
-get it from the CPAN <http://www.cpan.org>.
-
-This module is compatible with Auto version 3.0.0a10+.
-
-=back
+=cut
 
 # vim: set ai et sw=4 ts=4:
