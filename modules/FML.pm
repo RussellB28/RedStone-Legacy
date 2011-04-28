@@ -47,12 +47,12 @@ sub cmd_fml {
 
     if ($rp->is_success) {
         # If successful, decode the content.
-        my $d = $rp->content;
-        $d =~ s/(\n|\r)//gxsm;
+        my $data = $rp->content;
+        $data =~ s/(\n|\r)//gxsm;
 
         # Get the FML.
         my $fml = 'Error.';
-        if ($d =~ m/Text: (.*) Agree:/xsm) { $fml = $1; $fml =~ s/^\s//xsm }
+        if ($data =~ m/Text: (.*) Agree:/xsm) { $fml = $1; $fml =~ s/^\s//xsm }
 
         # And send to channel.
         privmsg($src->{svr}, $src->{chan}, "\002Random FML:\002 $fml");
