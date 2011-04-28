@@ -7,6 +7,7 @@ use warnings;
 use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(privmsg notice);
 use Furl;
+use HTML::Tree;
 
 # Initialization subroutine.
 sub _init {
@@ -43,19 +44,21 @@ sub cmd_fml {
     );
 
     # Get the random FML via HTTP.
-    my $rp = $ua->get('http://rscript.org/lookup.php?type=fml');
+    my $rp = $ua->get('http://www.fmylife.com/random');
 
     if ($rp->is_success) {
-        # If successful, decode the content.
-        my $data = $rp->content;
-        $data =~ s/(\n|\r)//gxsm;
+        # If successful, get the content.
+        my $tree = HTML::Tree->new();
+        $tree->parse($rp->content);
+        my $data = $tree->look_down('_tag', 'div', 'id', qr/^[0-9]/);
 
-        # Get the FML.
-        my $fml = 'Error.';
-        if ($data =~ m/Text: (.*) Agree:/xsm) { $fml = $1; $fml =~ s/^\s//xsm }
+        # Parse it.
+        my $fml = $data->as_text;
+        $fml =~ s/\sFML.*//xsm;
 
-        # And send to channel.
-        privmsg($src->{svr}, $src->{chan}, "\002Random FML:\002 $fml");
+        # Return the FML.
+        privmsg($src->{svr}, $src->{chan}, "\2Random FML:\2 $fml FML");
+        $tree->delete;
     }
     else {
         # Otherwise, send an error message.
@@ -66,8 +69,8 @@ sub cmd_fml {
 }
 
 # Start initialization.
-API::Std::mod_init('FML', 'Xelhua', '1.01', '3.0.0a11');
-# build: cpan=Furl perl=5.010000
+API::Std::mod_init('FML', 'Xelhua', '1.02', '3.0.0a11');
+# build: cpan=Furl,HTML::Tree perl=5.010000
 
 __END__
 
@@ -77,7 +80,7 @@ __END__
 
 =head1 VERSION
 
- 1.01
+ 1.02
 
 =head1 SYNOPSIS
 
@@ -98,6 +101,10 @@ This module depends on the following CPAN modules:
 =item L<Furl>
 
 This is the HTTP agent used by this module.
+
+=item L<HTML::Tree>
+
+This is the HTML parser.
 
 =back
 
