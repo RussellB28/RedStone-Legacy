@@ -1117,6 +1117,7 @@ sub _init_night {
     }
 
     # It is now nighttime.
+    @SHOT = ();
     %LYNCH = ();
     $DETECTED = 0;
     if (!$clockd) {
@@ -1278,7 +1279,6 @@ sub _init_day {
     
     # Clear variables.
     $SEEN = $GUARD = $VISIT = 0;
-    @SHOT = ();
     %KILL = ();
     %WKILL = ();
 
