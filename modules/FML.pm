@@ -6,21 +6,19 @@ use strict;
 use warnings;
 use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(privmsg notice);
-use LWP::UserAgent;
+use Furl;
 
 # Initialization subroutine.
-sub _init 
-{
+sub _init {
     # Create the FML command.
-    cmd_add('FML', 0, 0, \%M::FML::HELP_FML, \&M::FML::fml) or return;
+    cmd_add('FML', 0, 0, \%M::FML::HELP_FML, \&M::FML::cmd_fml) or return;
 
     # Success.
     return 1;
 }
 
 # Void subroutine.
-sub _void 
-{
+sub _void {
     # Delete the FML command.
     cmd_del('FML') or return;
 
@@ -35,85 +33,86 @@ our %HELP_FML = (
 );
 
 # Callback for FML command.
-sub fml
-{
+sub cmd_fml {
     my ($src, undef) = @_;
 
     # Create an instance of LWP::UserAgent.
-    my $ua = LWP::UserAgent->new();
-    $ua->agent('Auto IRC Bot');
-    $ua->timeout(2);
+    my $ua = Furl->new(
+        agent => 'Auto IRC Bot',
+        timeout => 5,
+    );
     
     # Get the random FML via HTTP.
     my $rp = $ua->get('http://rscript.org/lookup.php?type=fml');
 
     if ($rp->is_success) {
         # If successful, decode the content.
-        my $d = $rp->decoded_content;
+        my $d = $rp->content;
         $d =~ s/(\n|\r)//g;
 
         # Get the FML.
-        my (undef, $dfa) = split('Text: ', $d);
-        my ($fml, undef) = split('Agree:', $dfa);
+        my $fml = 'Error.';
+        if ($d =~ m/Text: (.*) Agree:/xsm) { $fml = $1; $fml =~ s/^\s//xsm }
 
         # And send to channel.
-        privmsg($src->{svr}, $src->{chan}, "\002Random FML:\002 ".$fml);
+        privmsg($src->{svr}, $src->{chan}, "\002Random FML:\002 $fml");
     }
     else {
         # Otherwise, send an error message.
-        privmsg($src->{svr}, $src->{chan}, "An error occurred while retrieving the FML.");
+        privmsg($src->{svr}, $src->{chan}, 'An error occurred while retrieving the FML.');
     }
 
     return 1;
 }
 
 # Start initialization.
-API::Std::mod_init('FML', 'Xelhua', '1.00', '3.0.0a10');
-# build: cpan=LWP::UserAgent perl=5.010000
+API::Std::mod_init('FML', 'Xelhua', '1.01', '3.0.0a11');
+# build: cpan=Furl perl=5.010000
 
 __END__
 
-=head1 FML
+=head1 NAME
 
-=head2 Description
+ FML - A module for retrieving random FML quotes
 
-=over
+=head1 VERSION
 
-This module adds the FML command for retrieving a random FML quote.
+ 1.01
 
-=back
+=head1 SYNOPSIS
 
-=head2 Examples
+ <starcoder> !fml
+ <blue> Random FML: Today, I told my mom I loved her a lot. Her reply? "Thanks." FML
 
-=over
+=head1 DESCRIPTION
 
-<JohnSmith> !fml
-<Auto> Random FML: Today, the girl I've had a crush on decided she 
-wanted to see a movie with me. I tried to hold her hand during the 
-movie and it was great for about 4 minutes. Then she said "Can I 
-have my hand back?" FML 
+This module creates the FML command, which will retrieve a random FML quote
+and message it to the channel.
 
-=back
+=head1 DEPENDENCIES
 
-=head2 To Do
+This module depends on the following CPAN modules:
 
 =over
 
-* Add Spanish and French translations for the help hash.
+=item L<Furl>
+
+This is the HTTP client used by this module.
 
 =back
 
-=head2 Technical
+=head1 AUTHOR
 
-=over
+This module was written by Elijah Perrault.
 
-This module adds an extra dependency: LWP::UserAgent. You can get it from
-the CPAN <http://www.cpan.org>.
+This module is maintained by Xelhua Development Group.
 
-This module is compatible with Auto version 3.0.0a10+.
+=head1 LICENSE AND COPYRIGHT
 
-Ported from Auto 2.0.
+This module is Copyright 2010-2011 Xelhua Development Group.
 
-=back
+Released under the same licensing terms as Auto itself.
+
+=cut
 
 # vim: set ai et sw=4 ts=4:
