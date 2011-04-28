@@ -41,14 +41,14 @@ sub cmd_fml {
         agent => 'Auto IRC Bot',
         timeout => 5,
     );
-    
+
     # Get the random FML via HTTP.
     my $rp = $ua->get('http://rscript.org/lookup.php?type=fml');
 
     if ($rp->is_success) {
         # If successful, decode the content.
         my $d = $rp->content;
-        $d =~ s/(\n|\r)//g;
+        $d =~ s/(\n|\r)//gxsm;
 
         # Get the FML.
         my $fml = 'Error.';
