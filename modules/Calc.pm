@@ -94,8 +94,8 @@ Calc - Interface to Google Calculator
 
 =head1 SYNOPSIS
 
-
-
+ <starcoder> !calc 1+1
+ <blue> Result: 1 + 1 = 2
 
 =head1 DESCRIPTION
 
