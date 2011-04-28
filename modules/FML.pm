@@ -97,7 +97,7 @@ This module depends on the following CPAN modules:
 
 =item L<Furl>
 
-This is the HTTP client used by this module.
+This is the HTTP agent used by this module.
 
 =back
 
