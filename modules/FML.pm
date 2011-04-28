@@ -36,7 +36,7 @@ our %HELP_FML = (
 sub cmd_fml {
     my ($src, undef) = @_;
 
-    # Create an instance of LWP::UserAgent.
+    # Create an instance of Furl.
     my $ua = Furl->new(
         agent => 'Auto IRC Bot',
         timeout => 5,
