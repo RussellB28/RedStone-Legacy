@@ -114,6 +114,9 @@ sub cmd_wolf {
         return;
     }
 
+    # For garbage data.
+    if ($src->{chan}) { $src->{chan} = lc $src->{chan} }
+
     # Check if this was a private or public message.
     if (exists $src->{chan}) {
         # Iterate the parameter.

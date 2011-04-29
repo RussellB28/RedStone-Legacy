@@ -41,6 +41,9 @@ sub cmd_wolfa {
         return;
     }
 
+    # For garbage data.
+    if ($src->{chan}) { $src->{chan} = lc $src->{chan} }
+
     # Iterate the parameter.
     given (uc $argv[0]) {
         when (/^(JOIN|J)$/) {

@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Werewolf: Manage garbage data better.
     * Werewolf: Fixed a HUGE bug in vote calculating.
     * Google: A temporary Google Web Search module.
     * IsItUp 1.01: New and improved IsItUp. Now uses Furl.
