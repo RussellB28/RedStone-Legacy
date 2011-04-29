@@ -1124,10 +1124,10 @@ sub _init_night {
     %LYNCH = ();
     $DETECTED = 0;
     if (!$clockd) {
-        privmsg($gsvr, $gchan, 'It is now nighttime. All players check for PM\'s from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.');
+        privmsg($gsvr, $gchan, 'It is now nighttime. All players check for PMs from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.');
     }
     else {
-        privmsg($gsvr, $gchan, $clockd.' It is now nighttime. All players check for PM\'s from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.');
+        privmsg($gsvr, $gchan, $clockd.' It is now nighttime. All players check for PMs from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.');
     }
     timer_add('werewolf.goto_daytime', 1, 90, sub { M::Werewolf::_init_day() });
     $GOAT = 0;
