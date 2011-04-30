@@ -269,8 +269,8 @@ sub cmd_wolf {
                 my $charlots = my $cdrunks = my $cangels = my $ctraitors = my $cdetectives = 0;
                 if (keys %PLAYERS >= 5) { $cdrunks++ unless conf_get('werewolf:rated-g') }
                 if (keys %PLAYERS >= 7) { $charlots++ unless conf_get('werewolf:rated-g') }
-                if (keys %PLAYERS >= 10) { $cangels++ unless conf_get('werewolf:no-angels') }
-                if (keys %PLAYERS >= 11 and conf_get('werewolf:traitors')) { $ctraitors++ }
+                if (keys %PLAYERS >= 10 and conf_get('werewolf:traitors')) { $ctraitors++ }
+                if (keys %PLAYERS >= 11) { $cangels++ unless conf_get('werewolf:no-angels') }
                 if (keys %PLAYERS >= 15 and conf_get('werewolf:detectives')) { $cdetectives++ }
 
                 # Give all players a role.
@@ -1804,7 +1804,7 @@ sub on_rehash {
 }
 
 # Start initialization.
-API::Std::mod_init('Werewolf', 'Xelhua', '1.10', '3.0.0a11');
+API::Std::mod_init('Werewolf', 'Xelhua', '1.11', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -1815,7 +1815,7 @@ Werewolf - IRC version of the Werewolf detective/social party game
 
 =head1 VERSION
 
- 1.10
+ 1.11
 
 =head1 SYNOPSIS
 
@@ -2151,7 +2151,7 @@ If they escaped, there are no further messages.
 Of course, with a trust chain, the guardian angel can protect the seer or
 detective from death. Thus, the wolves must kill the angel as soon as possible.
 
-A single guardian angel is assigned to a game if it has ten or more players.
+A single guardian angel is assigned to a game if it has eleven or more players.
 
 =item Traitor
 
@@ -2180,7 +2180,7 @@ detect traitors. Hooray!
 But, BEWARE! TRAITORS ARE VERY DANGEROUS. VILLAGERS MUST IDENTIFY AND KILL THEM
 AS SOON AS POSSIBLE.
 
-A single traitor is assigned to a game if it has eleven or more players.
+A single traitor is assigned to a game if it has ten or more players.
 
 Oh and one more thing, if all wolves die yet the traitor remains, the traitor
 is transformed into a wolf.
