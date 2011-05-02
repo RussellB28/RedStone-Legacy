@@ -45,7 +45,7 @@ sub cmd_ping {
     my ($src, @argv) = @_;
 
     # Check ratelimit (once every five minutes).
-    if ((time - $LAST) < 300) {
+    if ((time - $LAST) < 300 and !has_priv(match_user(%{$src}), 'cmd.ping.admin')) {
         notice($src->{svr}, $src->{nick}, 'This command is ratelimited. Please wait a while before using it again.');
         return;
     }
@@ -106,7 +106,7 @@ __END__
 
 =head1 VERSION
 
- 1.01
+ 1.02
 
 =head1 SYNOPSIS
 
@@ -117,6 +117,9 @@ __END__
 
 This merely creates the PING command, which will highlight everyone in the
 channel, excluding the bot itself and those who are /away.
+
+It requires the cmd.ping privilege, also cmd.ping.admin overrides the
+ratelimit.
 
 =head1 AUTHOR
 
