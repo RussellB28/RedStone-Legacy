@@ -4,7 +4,7 @@
 package M::Ping;
 use strict;
 use warnings;
-use API::Std qw(cmd_add cmd_del hook_add hook_del rchook_add rchook_del);
+use API::Std qw(cmd_add cmd_del hook_add hook_del rchook_add rchook_del has_priv match_user);
 use API::IRC qw(privmsg notice who);
 my (@PING, $STATE);
 my $LAST = 0;
