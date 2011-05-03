@@ -264,11 +264,12 @@ sub cmd_wolf {
 
                 # First, determine how many players to declare a wolf.
                 my $cwolves = POSIX::ceil(keys(%PLAYERS) * .14);
-                # Only one seer, harlot, guardian angel, traitor and detective.
+                # Only one seer, harlot, guardian angel, traitor, detective, drunk, and cursed villager.
                 my $cseers = 1;
-                my $charlots = my $cdrunks = my $cangels = my $ctraitors = my $cdetectives = 0;
+                my $charlots = my $cdrunks = my $cangels = my $ctraitors = my $cdetectives = my $ccursed = 0;
                 if (keys %PLAYERS >= 5) { $cdrunks++ unless conf_get('werewolf:rated-g') }
                 if (keys %PLAYERS >= 7) { $charlots++ unless conf_get('werewolf:rated-g') }
+                if (keys %PLAYERS >= 7 and conf_get('werewolf:curses')) { $ccursed++ }
                 if (keys %PLAYERS >= 10 and conf_get('werewolf:traitors')) { $ctraitors++ }
                 if (keys %PLAYERS >= 11) { $cangels++ unless conf_get('werewolf:no-angels') }
                 if (keys %PLAYERS >= 15 and conf_get('werewolf:detectives')) { $cdetectives++ }
@@ -291,7 +292,7 @@ sub cmd_wolf {
                 # Set seers.
                 while ($cseers > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|g|h|d|t|i)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|g|h|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 's';
                         $cseers--;
                         $STATIC[1] = "\2$NICKS{$rpi}\2";
@@ -300,16 +301,24 @@ sub cmd_wolf {
                 # Set harlots.
                 while ($charlots > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'h';
                         $charlots--;
                         $STATIC[2] = "\2$NICKS{$rpi}\2";
                     }
                 }
+                # Set cursed villagers.
+                while ($ccursed > 0) {
+                    my $rpi = $plyrs[int rand scalar @plyrs];
+                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
+                        $PLAYERS{$rpi} .= 'c';
+                        $ccursed--;
+                    }
+                }
                 # Set drunks.
                 while ($cdrunks > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} =~ m/v/xsm) {
+                    if ($PLAYERS{$rpi} =~ m/v/xsm and $PLAYERS{$rpi} !~ m/c/xsm) {
                         $PLAYERS{$rpi} = 'vi';
                         $cdrunks--;
                     }
@@ -317,7 +326,7 @@ sub cmd_wolf {
                 # Set guardian angels.
                 while ($cangels > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|h|s|d|t|i)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'g';
                         $cangels--;
                         $STATIC[3] = "\2$NICKS{$rpi}\2";
@@ -326,7 +335,7 @@ sub cmd_wolf {
                 # Set traitors.
                 while ($ctraitors > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|h|s|d|g|i)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 't';
                         $ctraitors--;
                         $STATIC[4] = "\2$NICKS{$rpi}\2";
@@ -335,7 +344,7 @@ sub cmd_wolf {
                 # Set detectives.
                 while ($cdetectives > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|h|s|g|t|i)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'd';
                         $cdetectives--;
                         $STATIC[5] = "\2$NICKS{$rpi}\2";
@@ -345,7 +354,7 @@ sub cmd_wolf {
                 # If there's 8 or more players, give one of them a gun.
                 if (keys %PLAYERS >= 8) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    while ($PLAYERS{$rpi} =~ m/w/xsm || $PLAYERS{$rpi} =~ m/t/xsm) { $rpi = $plyrs[int rand scalar @plyrs] }
+                    while ($PLAYERS{$rpi} =~ m/(w|t|c)/xsm) { $rpi = $plyrs[int rand scalar @plyrs] }
                     $PLAYERS{$rpi} .= 'b';
 
                     # And give them PLAYER COUNT * .12 bullets rounded up.
@@ -1400,6 +1409,7 @@ sub _getrole {
             elsif ($PLAYERS{$plyr} =~ m/d/xsm) { $role = 'detective' }
             elsif ($PLAYERS{$plyr} =~ m/i/xsm) { $role = 'village drunk' }
             elsif ($PLAYERS{$plyr} =~ m/(v|t)/xsm) { $role = 'villager' }
+            if ($PLAYERS{$plyr} =~ m/c/xsm) { $role = 'wolf' }
         }
         elsif ($lev == 2) {
             if ($PLAYERS{$plyr} =~ m/w/xsm) { $role = 'wolf' }
@@ -1643,16 +1653,17 @@ sub on_uprivmsg {
                     # If there's more than one wolf, relay this message to the others.
                     if ($cwolves > 1) {
                         while ((my $plyr, my $flags) = each %PLAYERS) { 
-                            if ($plyr ne lc $src->{nick} and $flags =~ m/w/xsm or $flags =~ m/t/xsm) {
+                            if ($plyr ne lc $src->{nick} and $flags =~ m/(w|t)/xsm) {
                                 # Also, lets try to ignore simulations.
                                 if (uc(join(q{ }, @msg)) =~ m/^WOLF\sKILL/xsmi and
                                     $COMMANDS{kill} !~ m/^WOLF\sKILL/xsmi) { return 1 }
                                 
                                 # All good.
                                 if ($msg[0] =~ m/^\001ACTION/xsm) {
-                                    shift @msg;
-                                    $msg[$#msg] =~ s/\001$//xsm;
-                                    privmsg($src->{svr}, $NICKS{$plyr}, "* \2$src->{nick}\2 ".join(q{ }, @msg));
+                                    my @lmsg = @msg;
+                                    shift @lmsg;
+                                    $lmsg[$#lmsg] =~ s/\001$//xsm;
+                                    privmsg($src->{svr}, $NICKS{$plyr}, "* \2$src->{nick}\2 ".join(q{ }, @lmsg));
                                 }
                                 else {
                                     privmsg($src->{svr}, $NICKS{$plyr}, "\2$src->{nick}\2 says: ".join(q{ }, @msg));
@@ -1804,7 +1815,7 @@ sub on_rehash {
 }
 
 # Start initialization.
-API::Std::mod_init('Werewolf', 'Xelhua', '1.11', '3.0.0a11');
+API::Std::mod_init('Werewolf', 'Xelhua', '1.12', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -1815,7 +1826,7 @@ Werewolf - IRC version of the Werewolf detective/social party game
 
 =head1 VERSION
 
- 1.11
+ 1.12
 
 =head1 SYNOPSIS
 
@@ -1831,9 +1842,9 @@ Werewolf - IRC version of the Werewolf detective/social party game
  <starcoder_> !wolf j
  * blue gives voice to starcoder_
  <blue> starcoder_ joined the game.
- <starcoder_> !wolf b
+ <starcoder_> !wolf start
  <blue> starcoder_: Please wait at least 48 more seconds.
- <starcoder_> !wolf b
+ <starcoder_> !wolf start
  <blue> Game is now starting.
  * blue sets mode +m #bot
  <blue> It is now nighttime. All players check for PM's from me for instructions. If you did not receive one, simply sit back, relax, and wait patiently for morning.
@@ -1847,7 +1858,7 @@ Internet Relay Chat.
 It, obviously, is a complete module for Auto, and has absolutely no extra
 dependencies.
 
-It includes a whopping nine player roles, five of which are optional. See the
+It includes a whopping ten player roles, six of which are optional. See the
 ROLES section for more information on them.
 
 If you want the best out of Werewolf, please be sure to read over CONFIGURATION.
@@ -2067,6 +2078,27 @@ this is mostly just a name. But, if they also get the gun, there's extras:
 * Person's bullet count gets tripled.
 
 * Higher chance of missing when shooting.
+
+=item Villager (cursed)
+
+NOTE: Some people feel that the cursed villager makes the game too complicated
+and confusing. It is disabled by default and can be enabled with
+werewolf:curses. See CONFIGURATION.
+
+This one is a mischievous one... allow me to explain.
+
+When a villager is cursed, they are not told anything, but here's the catch...
+
+If seer sees them, they'll appear to be wolf, and you get the idea of what
+kind of chaos and confusion that can cause.
+
+If detective sees them, they'll appear to be a normal villager.
+
+If they die, they'll appear to be a normal villager.
+
+The only time their role is revealed is at the end of the game.
+
+If a game has 7+ players, one villager will be cursed.
 
 =item Seer
 
