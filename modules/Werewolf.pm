@@ -313,6 +313,7 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} .= 'c';
                         $ccursed--;
+                        $STATIC[3] = "\2$NICKS{$rpi}\2";
                     }
                 }
                 # Set drunks.
@@ -329,7 +330,7 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'g';
                         $cangels--;
-                        $STATIC[3] = "\2$NICKS{$rpi}\2";
+                        $STATIC[4] = "\2$NICKS{$rpi}\2";
                     }
                 }
                 # Set traitors.
@@ -338,7 +339,7 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 't';
                         $ctraitors--;
-                        $STATIC[4] = "\2$NICKS{$rpi}\2";
+                        $STATIC[5] = "\2$NICKS{$rpi}\2";
                     }
                 }
                 # Set detectives.
@@ -347,7 +348,7 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'd';
                         $cdetectives--;
-                        $STATIC[5] = "\2$NICKS{$rpi}\2";
+                        $STATIC[6] = "\2$NICKS{$rpi}\2";
                     }
                 }
 
@@ -1561,9 +1562,10 @@ sub _gameover {
         my $smsg = "The wolves were $STATIC[0]. The seer was $STATIC[1].";
         if ($STATIC[0] !~ m/,/xsm) { $smsg =~ s/wolves\swere/wolf was/xsm }
         if ($STATIC[2]) { $smsg .= " The harlot was $STATIC[2]." }
-        if ($STATIC[3]) { $smsg .= " The guardian angel was $STATIC[3]." }
-        if ($STATIC[4]) { $smsg .= " The traitor was $STATIC[4]." }
-        if ($STATIC[5]) { $smsg .= " The detective was $STATIC[5]." }
+        if ($STATIC[3]) { $smsg .= " The cursed villager was $STATIC[3]." }
+        if ($STATIC[4]) { $smsg .= " The guardian angel was $STATIC[4]." }
+        if ($STATIC[5]) { $smsg .= " The traitor was $STATIC[5]." }
+        if ($STATIC[6]) { $smsg .= " The detective was $STATIC[6]." }
         privmsg($gsvr, $gchan, $smsg);
     }
 
