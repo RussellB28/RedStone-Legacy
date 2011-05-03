@@ -2289,14 +2289,21 @@ to disable guardian angels, so see ROLES for those.
  traitors 1;
 
 Same as above. Defining this option enables traitors. See ROLES for reasons why
-and why you shouldn't enable traitors.
+you should(n't) enable traitors.
 
 ---
 
  detectives 1;
 
 Same as above. Defining this option enables detectives. See ROLES for reasons
-why and why you shouldn't enable detectives.
+why you should(n't) enable detectives.
+
+---
+
+ curses 1;
+
+Same as above. Defining this option enables curses. See ROLES for reasons why
+you should(n't) enable curses.
 
 ---
 
