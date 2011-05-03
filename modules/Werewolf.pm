@@ -282,7 +282,7 @@ sub cmd_wolf {
                 # Set wolves.
                 while ($cwolves > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|s|g|h|d|t|i)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|s|g|h|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'w';
                         $cwolves--;
                         $STATIC[0] .= ", \2$NICKS{$rpi}\2";
@@ -292,7 +292,7 @@ sub cmd_wolf {
                 # Set seers.
                 while ($cseers > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|g|h|d|t|i|c)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|h|g|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 's';
                         $cseers--;
                         $STATIC[1] = "\2$NICKS{$rpi}\2";
@@ -301,7 +301,7 @@ sub cmd_wolf {
                 # Set harlots.
                 while ($charlots > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|s|g|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'h';
                         $charlots--;
                         $STATIC[2] = "\2$NICKS{$rpi}\2";
@@ -310,7 +310,7 @@ sub cmd_wolf {
                 # Set cursed villagers.
                 while ($ccursed > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|h|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} .= 'c';
                         $ccursed--;
                         $STATIC[3] = "\2$NICKS{$rpi}\2";
@@ -327,7 +327,7 @@ sub cmd_wolf {
                 # Set guardian angels.
                 while ($cangels > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|h|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'g';
                         $cangels--;
                         $STATIC[4] = "\2$NICKS{$rpi}\2";
@@ -336,7 +336,7 @@ sub cmd_wolf {
                 # Set traitors.
                 while ($ctraitors > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|h|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 't';
                         $ctraitors--;
                         $STATIC[5] = "\2$NICKS{$rpi}\2";
@@ -345,7 +345,7 @@ sub cmd_wolf {
                 # Set detectives.
                 while ($cdetectives > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|t|i|c)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|g|s|h|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'd';
                         $cdetectives--;
                         $STATIC[6] = "\2$NICKS{$rpi}\2";
