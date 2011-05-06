@@ -624,7 +624,7 @@ sub cmd_uno {
                 my $str;
                 my $i = 0;
                 foreach (sort {$data->{$b}->{score} <=> $data->{$a}->{score}} keys %$data) {
-                    if ($i > 10) { last }
+                    if ($i >= 10) { last }
                     $str .= ", \2$_:".$data->{$_}->{score}."\2";
                     $i++;
                 }
