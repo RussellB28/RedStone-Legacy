@@ -376,7 +376,7 @@ sub cmd_wolf {
 
                 # All players have their role, so lets begin the game!
                 my ($gsvr, $gchan) = split '/', $GAMECHAN;
-                privmsg($gsvr, $gchan, join(', ', keys(%NICKS)).': Welcome to Werewolf, the popular detective/social party game (a theme of Mafia).');
+                privmsg($gsvr, $gchan, join(', ', values(%NICKS)).': Welcome to Werewolf, the popular detective/social party game (a theme of Mafia).');
                 cmode($gsvr, $gchan, '+m');
                 # Delete waiting timer.
                 timer_del('werewolf.joinwait');
