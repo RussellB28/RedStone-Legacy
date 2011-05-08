@@ -285,10 +285,10 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|s|g|h|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'w';
                         $cwolves--;
-                        $STATIC{h} .= ", \2$NICKS{$rpi}\2";
+                        $STATIC{w} .= ", \2$NICKS{$rpi}\2";
                     }
                 }
-                $STATIC{h} = substr $STATIC[0], 2;
+                $STATIC{w} = substr $STATIC{w}, 2;
                 # Set seers.
                 while ($cseers > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
@@ -1560,12 +1560,12 @@ sub _gameover {
 
     if ($GAME) {
         my $smsg = "The wolves were $STATIC{w}. The seer was $STATIC{s}.";
-        if ($STATIC[0] !~ m/,/xsm) { $smsg =~ s/wolves\swere/wolf was/xsm }
-        if ($STATIC[2]) { $smsg .= " The harlot was $STATIC{h}." }
-        if ($STATIC[3]) { $smsg .= " The cursed villager was $STATIC{c}." }
-        if ($STATIC[4]) { $smsg .= " The traitor was $STATIC{t}." }
-        if ($STATIC[5]) { $smsg .= " The guardian angel was $STATIC{g}." }
-        if ($STATIC[6]) { $smsg .= " The detective was $STATIC{d}." }
+        if ($STATIC{w} !~ m/,/xsm) { $smsg =~ s/wolves\swere/wolf was/xsm }
+        if ($STATIC{h}]) { $smsg .= " The harlot was $STATIC{h}." }
+        if ($STATIC{c}) { $smsg .= " The cursed villager was $STATIC{c}." }
+        if ($STATIC{t}) { $smsg .= " The traitor was $STATIC{t}." }
+        if ($STATIC{g}) { $smsg .= " The guardian angel was $STATIC{g}." }
+        if ($STATIC{d}) { $smsg .= " The detective was $STATIC{d}." }
         privmsg($gsvr, $gchan, $smsg);
     }
 
