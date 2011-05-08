@@ -7,7 +7,7 @@ use warnings;
 use feature qw(switch);
 use API::Std qw(cmd_add cmd_del trans hook_add hook_del timer_add timer_del trans conf_get has_priv match_user);
 use API::IRC qw(privmsg notice cmode);
-our ($GAME, $PGAME, $GAMECHAN, $GAMETIME, %PLAYERS, %NICKS, @STATIC, $PHASE, $SEEN, $VISIT, $GUARD, %KILL, %WKILL, %LYNCH, %SPOKE, %WARN, $LVOTEN, @SHOT, 
+our ($GAME, $PGAME, $GAMECHAN, $GAMETIME, %PLAYERS, %NICKS, %STATIC, $PHASE, $SEEN, $VISIT, $GUARD, %KILL, %WKILL, %LYNCH, %SPOKE, %WARN, $LVOTEN, @SHOT, 
      $BULLETS, $DETECTED, $WAIT, $WAITED, $FM, $LASTTIME, @TIMES, $GOAT, %COMMANDS);
 my $FCHAR = (conf_get('fantasy_pf'))[0][0];
 
@@ -285,17 +285,17 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|s|g|h|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'w';
                         $cwolves--;
-                        $STATIC[0] .= ", \2$NICKS{$rpi}\2";
+                        $STATIC{h} .= ", \2$NICKS{$rpi}\2";
                     }
                 }
-                $STATIC[0] = substr $STATIC[0], 2;
+                $STATIC{h} = substr $STATIC[0], 2;
                 # Set seers.
                 while ($cseers > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
                     if ($PLAYERS{$rpi} !~ m/^(w|h|g|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 's';
                         $cseers--;
-                        $STATIC[1] = "\2$NICKS{$rpi}\2";
+                        $STATIC{s} = "\2$NICKS{$rpi}\2";
                     }
                 }
                 # Set harlots.
@@ -304,7 +304,7 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|s|g|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'h';
                         $charlots--;
-                        $STATIC[2] = "\2$NICKS{$rpi}\2";
+                        $STATIC{h} = "\2$NICKS{$rpi}\2";
                     }
                 }
                 # Set cursed villagers.
@@ -313,7 +313,7 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|h|g|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} .= 'c';
                         $ccursed--;
-                        $STATIC[3] = "\2$NICKS{$rpi}\2";
+                        $STATIC{c} = "\2$NICKS{$rpi}\2";
                     }
                 }
                 # Set drunks.
@@ -330,7 +330,7 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|h|s|d|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'g';
                         $cangels--;
-                        $STATIC[4] = "\2$NICKS{$rpi}\2";
+                        $STATIC{g} = "\2$NICKS{$rpi}\2";
                     }
                 }
                 # Set traitors.
@@ -339,7 +339,7 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|g|s|d|h|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 't';
                         $ctraitors--;
-                        $STATIC[5] = "\2$NICKS{$rpi}\2";
+                        $STATIC{t} = "\2$NICKS{$rpi}\2";
                     }
                 }
                 # Set detectives.
@@ -348,7 +348,7 @@ sub cmd_wolf {
                     if ($PLAYERS{$rpi} !~ m/^(w|g|s|h|t|i|c)$/xsm) {
                         $PLAYERS{$rpi} = 'd';
                         $cdetectives--;
-                        $STATIC[6] = "\2$NICKS{$rpi}\2";
+                        $STATIC{d} = "\2$NICKS{$rpi}\2";
                     }
                 }
 
@@ -1559,13 +1559,13 @@ sub _gameover {
     }
 
     if ($GAME) {
-        my $smsg = "The wolves were $STATIC[0]. The seer was $STATIC[1].";
+        my $smsg = "The wolves were $STATIC{w}. The seer was $STATIC{s}.";
         if ($STATIC[0] !~ m/,/xsm) { $smsg =~ s/wolves\swere/wolf was/xsm }
-        if ($STATIC[2]) { $smsg .= " The harlot was $STATIC[2]." }
-        if ($STATIC[3]) { $smsg .= " The cursed villager was $STATIC[3]." }
-        if ($STATIC[4]) { $smsg .= " The guardian angel was $STATIC[4]." }
-        if ($STATIC[5]) { $smsg .= " The traitor was $STATIC[5]." }
-        if ($STATIC[6]) { $smsg .= " The detective was $STATIC[6]." }
+        if ($STATIC[2]) { $smsg .= " The harlot was $STATIC{h}." }
+        if ($STATIC[3]) { $smsg .= " The cursed villager was $STATIC{c}." }
+        if ($STATIC[4]) { $smsg .= " The traitor was $STATIC{t}." }
+        if ($STATIC[5]) { $smsg .= " The guardian angel was $STATIC{g}." }
+        if ($STATIC[6]) { $smsg .= " The detective was $STATIC{d}." }
         privmsg($gsvr, $gchan, $smsg);
     }
 
@@ -1594,7 +1594,7 @@ sub _gameover {
     %LYNCH = ();
     %SPOKE = ();
     %WARN = ();
-    @STATIC = ();
+    %STATIC = ();
     @SHOT = ();
     @TIMES = ();
 
