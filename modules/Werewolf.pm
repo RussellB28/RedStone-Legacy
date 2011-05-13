@@ -8,7 +8,7 @@ use feature qw(switch);
 use API::Std qw(cmd_add cmd_del trans hook_add hook_del timer_add timer_del trans conf_get has_priv match_user);
 use API::IRC qw(privmsg notice cmode);
 our ($GAME, $PGAME, $GAMECHAN, $GAMETIME, %PLAYERS, %NICKS, %STATIC, $PHASE, $SEEN, $VISIT, $GUARD, %KILL, %WKILL, %LYNCH, %SPOKE, %WARN, $LVOTEN, @SHOT, 
-     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM, $LASTTIME, @TIMES, $GOAT, %COMMANDS);
+     $BULLETS, $DETECTED, $WAIT, $WAITED, $FM, $LASTTIME, @TIMES, $GOAT, %COMMANDS, @GRAVEYARD);
 my $FCHAR = (conf_get('fantasy_pf'))[0][0];
 
 # Initialization subroutine.
@@ -267,9 +267,9 @@ sub cmd_wolf {
                 # Only one seer, harlot, guardian angel, traitor, detective, drunk, and cursed villager.
                 my $cseers = 1;
                 my $charlots = my $cdrunks = my $cangels = my $ctraitors = my $cdetectives = my $ccursed = 0;
-                if (keys %PLAYERS >= 5) { $cdrunks++ unless conf_get('werewolf:rated-g') }
-                if (keys %PLAYERS >= 7) { $charlots++ unless conf_get('werewolf:rated-g') }
-                if (keys %PLAYERS >= 7 and conf_get('werewolf:curses')) { $ccursed++ }
+                if (keys %PLAYERS >= 6) { $cdrunks++ unless conf_get('werewolf:rated-g') }
+                if (keys %PLAYERS >= 6 and conf_get('werewolf:curses')) { $ccursed++ }
+                if (keys %PLAYERS >= 8) { $charlots++ unless conf_get('werewolf:rated-g') }
                 if (keys %PLAYERS >= 10 and conf_get('werewolf:traitors')) { $ctraitors++ }
                 if (keys %PLAYERS >= 11) { $cangels++ unless conf_get('werewolf:no-angels') }
                 if (keys %PLAYERS >= 15 and conf_get('werewolf:detectives')) { $cdetectives++ }
@@ -310,7 +310,7 @@ sub cmd_wolf {
                 # Set cursed villagers.
                 while ($ccursed > 0) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
-                    if ($PLAYERS{$rpi} !~ m/^(w|h|g|s|d|t|i|c)$/xsm) {
+                    if ($PLAYERS{$rpi} !~ m/^(w|s|t)$/xsm) {
                         $PLAYERS{$rpi} .= 'c';
                         $ccursed--;
                         $STATIC{c} = "\2$NICKS{$rpi}\2";
@@ -352,8 +352,8 @@ sub cmd_wolf {
                     }
                 }
 
-                # If there's 8 or more players, give one of them a gun.
-                if (keys %PLAYERS >= 8) {
+                # If there's 10 or more players, give one of them a gun.
+                if (keys %PLAYERS >= 10) {
                     my $rpi = $plyrs[int rand scalar @plyrs];
                     while ($PLAYERS{$rpi} =~ m/(w|t|c)/xsm) { $rpi = $plyrs[int rand scalar @plyrs] }
                     $PLAYERS{$rpi} .= 'b';
@@ -1433,8 +1433,9 @@ sub _player_del {
     my ($player, $judgment) = @_;
     my ($gsvr, $gchan) = split '/', $GAMECHAN;
 
-    # Devoice them.
+    # Devoice them (and quiet if werewolf:quietdead is set).
     cmode($gsvr, $gchan, "-v $NICKS{$player}");
+    if (conf_get('werewolf:quietdead') and $GAME) { cmode($gsvr, $gchan, "+q $NICKS{$player}!*@*"); push @GRAVEYARD, $NICKS{$player} }
 
     # Delete variables.
     delete $PLAYERS{$player};
@@ -1581,6 +1582,18 @@ sub _gameover {
         if ($gn > 3) { $gn = 0; $gc++ }
     }
     foreach (@gu) { cmode($gsvr, $gchan, "-vvvv$_") }
+    # Clear quiets.
+    if (conf_get('werewolf:quietdead')) {
+        $gc = $gn = 0;
+        @gu = ();
+        foreach my $nick (@GRAVEYARD) {
+            $gu[$gc] .= " $nick!*@*";
+            $gn++;
+            if ($gn > 3) { $gn = 0; $gc++ }
+        }
+        foreach (@gu) { cmode($gsvr, $gchan, "-qqqq$_") }
+    }
+
 
     # Clear all variables.
     if ($PHASE) { if ($PHASE eq 'n') { timer_del('werewolf.goto_daytime') } }
@@ -1597,6 +1610,7 @@ sub _gameover {
     %STATIC = ();
     @SHOT = ();
     @TIMES = ();
+    @GRAVEYARD = ();
 
     return 1;
 }
@@ -1817,7 +1831,7 @@ sub on_rehash {
 }
 
 # Start initialization.
-API::Std::mod_init('Werewolf', 'Xelhua', '1.12', '3.0.0a11');
+API::Std::mod_init('Werewolf', 'Xelhua', '1.13', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -1828,7 +1842,7 @@ Werewolf - IRC version of the Werewolf detective/social party game
 
 =head1 VERSION
 
- 1.12
+ 1.13
 
 =head1 SYNOPSIS
 
@@ -2046,7 +2060,7 @@ off UP, not normal mathematical rounding.
 
 =item Villager (gun holder)
 
-If a game has 8+ players, one villager (can also be seer/harlot/etc., but not
+If a game has 10+ players, one villager (can also be seer/harlot/etc., but not
 wolves or traitors.), will be given a gun with a certain amount special silver
 bullets. To be exact, <PLAYER COUNT> * .12 rounded off UP.
 
@@ -2074,7 +2088,7 @@ ATTENTION: Xelhua does NOT endorse drinking, especially underage, thus the
 village drunk might be considered NSFW and can be disabled with
 werewolf:rated-g. See CONFIGURATION.
 
-If a game has 5+ players, one villager will be made the "drunk". Basically,
+If a game has 6+ players, one villager will be made the "drunk". Basically,
 this is mostly just a name. But, if they also get the gun, there's extras:
 
 * Person's bullet count gets tripled.
@@ -2100,7 +2114,8 @@ If they die, they'll appear to be a normal villager.
 
 The only time their role is revealed is at the end of the game.
 
-If a game has 7+ players, one villager will be cursed.
+If a game has 6+ players, one villager will be cursed. (It can also be the
+harlot, etc., but not wolf/seer/traitor)
 
 =item Seer
 
@@ -2154,7 +2169,7 @@ but was not home in the morning, no nicks are mentioned in this case.
 This is very good protection. Combined with the seer, they can, via creating a
 trust chain, almost completely guarantee a win for the villagers.
 
-A single harlot is assigned to a game if it has seven or more players.
+A single harlot is assigned to a game if it has eight or more players.
 
 =item Guardian Angel
 

@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Werewolf 1.13: Changed minimum player counts for several roles. See docs.
     * Werewolf: Redesigned STATIC data structure to be less breakable.
     * UNO: Fixed a small bug in TOPTEN.
     * Werewolf 1.12: Added curses.
