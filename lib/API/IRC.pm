@@ -8,7 +8,7 @@ use feature qw(switch);
 use Exporter;
 use base qw(Exporter);
 
-our @EXPORT_OK = qw(ban cjoin cpart cmode umode kick privmsg notice quit nick names
+our @EXPORT_OK = qw(act ban cjoin cpart cmode umode kick privmsg notice quit nick names
                     topic who whois usrc match_mask ison);
 
 # Create the on_disconnect event.
