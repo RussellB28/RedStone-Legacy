@@ -10,8 +10,7 @@ use API::Std qw(hook_add hook_del);
 use API::IRC qw(privmsg);
 
 # Initialization subroutine.
-sub _init
-{
+sub _init {
     # Create the on_cprivmsg hook.
     hook_add('on_cprivmsg', 'privmsg.html.returntitle', \&M::LinkTitle::gettitle) or return;
 
@@ -20,8 +19,7 @@ sub _init
 }
 
 # Void subroutine.
-sub _void
-{
+sub _void {
     # Delete the hook we created.
     hook_del('on_cprivmsg', 'privmsg.html.returntitle') or return;
 
@@ -30,8 +28,7 @@ sub _void
 }
 
 # Hook callback.
-sub gettitle
-{
+sub gettitle {
     my ($src, $chan, @msg) = @_;
 
     # Check if the message contains a URL.
@@ -39,17 +36,20 @@ sub gettitle
         if ($smw =~ m{(http|https)://}xsm) {
             # We've got a match, connect to the server.
             my $srv = $1;
-            # Create an instance of LWP::UserAgent.
-            my $ua = LWP::UserAgent->new();
-            $ua->agent('Auto IRC Bot');
-            $ua->timeout(3);
+    
+            # Create an instance of Furl.
+            my $ua = Furl->new(
+                agent => 'Auto IRC Bot',
+                timeout => 5,
+            );
+
             # Get data.
             my $res = $ua->get($smw);
             
             # Check if we're successful.
             if ($res->is_success) {
                 # We were, decode the data.
-                my $data = $res->decoded_content;
+                my $data = $res->content;
 
                 # Strip newlines.
                 $data =~ s/(\n|\r)//gxsm;
@@ -69,8 +69,8 @@ sub gettitle
 }
 
 # Start initialization.
-API::Std::mod_init('LinkTitle', 'Xelhua', '1.01', '3.0.0a10');
-# build: cpan=LWP::UserAgent,HTML::Entities perl=5.010000
+API::Std::mod_init('LinkTitle', 'Xelhua', '2.00', '3.0.0a11');
+# build: cpan=Furl,HTML::Entities perl=5.010000
 
 __END__
 
@@ -80,7 +80,7 @@ LinkTitle - A module for returning the page title of links.
 
 =head1 VERSION
 
- 1.01
+ 2.00
 
 =head1 SYNOPSIS
 
@@ -99,11 +99,11 @@ This module is dependent on two modules from the CPAN.
 
 =over
 
-=item L<LWP::UserAgent|LWP::UserAgent>
+=item L<Furl>
 
 This module is used for connecting to the target web server via HTTP(S).
 
-=item L<HTML::Entities|HTML::Entities>
+=item L<HTML::Entities>
 
 This module is used for decoding HTML entities in the response we receive from
 the server.
