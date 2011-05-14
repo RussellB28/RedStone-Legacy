@@ -33,28 +33,39 @@ our %HELP_GOMINI = (
 
 # Callback for GOMINI command.
 sub cmd_gomini {
-    my ($src, @args) = @_;
-    notice($src->{svr}, $src->{nick}, "Invalid parameters. Syntax: GOMINI <url>") if !$args[0];
+    my ($src, @argv) = @_;
+   
+    # One parameter is required.
+    if (!defined $argv[0]) {
+        notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
+        return;
+    }
+    
     # Create an instance of Furl.
     my $ua = Furl->new(
         agent => 'Auto IRC Bot',
         timeout => 5,
     );
 
-    # Get the GoMini shortend URL.
-    my $rp = $ua->post("http://gomini.me/api/shorten", [], [ url => $args[0], ]);
+    # Get the GoMini shortened URL.
+    my $rp = $ua->post('http://gomini.me/api/shorten', [], [ url => $argv[0], ]);
 
     if ($rp->is_success) {
         # If successful, get the content.
-
         my $url = $rp->content;
         
-        # If there's an error return that.
-        privmsg($src->{svr}, $src->{chan}, "\2gomini.me:\2 Format Error: Check to make sure you include a valid http prefix (eg. http://).") and return if $url eq 'FMT_ERROR';
-        privmsg($src->{svr}, $src->{chan}, "\2gomini.me:\2 Database Error: GoMini encountered a database error.") and return if $url eq 'DB_ERROR';
-        # Return the shortend URL.
-        privmsg($src->{svr}, $src->{chan}, "\2gomini.me:\2 $args[0] -> $url");
+        # If there's an error, return it.
+        if ($url eq 'FMT_ERROR') {
+            privmsg($src->{svr}, $src->{chan}, "\2gomini.me:\2 Format Error: Check to make sure you include a valid HTTP prefix (e.g. http://).");
+            return;
+        }
+        if ($url eq 'DB_ERROR') {
+            privmsg($src->{svr}, $src->{chan}, "\2gomini.me:\2 Database Error: GoMini encountered a database error.");
+            return;
+        }
 
+        # Return the shortend URL.
+        privmsg($src->{svr}, $src->{chan}, "\2gomini.me:\2 $argv[0] -> $url");
     }
     else {
         # Otherwise, send an error message.
@@ -72,7 +83,7 @@ __END__
 
 =head1 NAME
 
- GoMini - A module for making a gomini.me URL.
+GoMini - A module for making a gomini.me URL.
 
 =head1 VERSION
 
@@ -85,8 +96,8 @@ __END__
 
 =head1 DESCRIPTION
 
-This module creates the GOMINI command, which will make a shortened URL
-of a specified long URL using gomini.me
+This module creates the GOMINI command, which will make a shortened URL of a
+specified long URL using gomini.me.
 
 =head1 DEPENDENCIES
 
