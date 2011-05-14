@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * GoMini: Added a module for shortening URLs via gomini.me.
     * LinkTitle 2.00: New and improved LinkTitle. Now uses Furl.
     * Werewolf 1.13: Changed minimum player counts for several roles. See docs.
     * Werewolf: Redesigned STATIC data structure to be less breakable.
