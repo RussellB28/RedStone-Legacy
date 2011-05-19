@@ -3,6 +3,8 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * API::IRC::ban: New optional argument, IntBool $return. If a true value is
+      passed, it will return an array of (ban mode, ban mask) rather than 1/0.
     * Massively improved State::IRC and fixed nasty bugs in chanusers.
     * GoMini: Added a module for shortening URLs via gomini.me.
     * LinkTitle 2.00: New and improved LinkTitle. Now uses Furl.

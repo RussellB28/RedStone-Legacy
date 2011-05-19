@@ -16,7 +16,7 @@ API::Std::event_add('on_disconnect');
 
 # Set a ban, based on config bantype value.
 sub ban {
-    my ($svr, $chan, $type, $user) = @_;
+    my ($svr, $chan, $type, $user, $return) = @_;
     my $cbt = (API::Std::conf_get('bantype'))[0][0];
 
     # Prepare the mask we're going to ban.
@@ -37,10 +37,12 @@ sub ban {
     if (lc $type eq 'b') {
         # We were requested to set a regular ban.
         cmode($svr, $chan, "+b $mask");
+        if ($return) { return ('b', $mask) }
     }
     elsif (lc $type eq 'q') {
         # We were requested to set a ratbox-style quiet.
         cmode($svr, $chan, "+q $mask");
+        if ($return) { return ('q', $mask) }
     }
 
     return 1;
