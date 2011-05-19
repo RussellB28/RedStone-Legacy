@@ -78,7 +78,7 @@ sub deoper {
 # Kills a user.
 sub kill {
     my ($svr, $user, $reason) = @_;
-    return if !is_opered();
+    return if !is_opered($svr);
     if (defined $reason) {
         Auto::socksnd($svr, "KILL $user :$reason");
     }
