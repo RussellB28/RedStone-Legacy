@@ -24,16 +24,6 @@ hook_add('on_rcjoin', 'ircusers.onjoin', sub {
     return 1;
 });
 
-# Create the on_namesreply hook.
-hook_add('on_namesreply', 'ircusers.names', sub {
-    my ($svr, $chan, undef) = @_;
-
-    # WHO the channel.
-    API::IRC::who($svr, $chan);
-
-    return 1;
-});
-
 # Create the on_whoreply hook.
 hook_add('on_whoreply', 'ircusers.who', sub {
     my ($svr, $nick, undef) = @_;
