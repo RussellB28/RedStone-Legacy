@@ -24,6 +24,7 @@ Bug fixes:
 * Fixed a bug with var/ being created as 0600 instead of 0644.
 * Fixed a privset bug that broke privsets with multiple privileges.
 * UNO: Fixed a small bug in TOPTEN.
+* Fixed nasty state data bugs in chanusers.
 
 Incompatibilities:
 

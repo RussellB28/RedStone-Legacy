@@ -4,47 +4,67 @@
 package State::IRC;
 use strict;
 use warnings;
-use API::Std qw(hook_add);
-our (%chanusers, %botinfo);
+use API::Std qw(hook_add rchook_add);
+our (%chanusers, %botinfo, @whox_wait);
 
 # Create on_namesreply hook.
 hook_add('on_namesreply', 'state.irc.names', sub {
-    my ($svr, $chan, @data) = @_;
-    $chan = lc $chan;
+    my ($svr, $chan, undef) = @_;
 
-    # Delete the old chanusers hash if it exists.
-    if (defined $chanusers{$svr}{$chan}) { delete $chanusers{$svr}{$chan} }
-    # Iterate through each user.
-    for (1..$#data) {
-        my $fi = 0;
-        PFITER: foreach my $spfx (keys %{ $Proto::IRC::csprefix{$svr} }) {
-            # Check if the user has status in the channel.
-            if (substr($data[$_], 0, 1) eq $Proto::IRC::csprefix{$svr}{$spfx}) {
-                # He/she does. Lets set that.
-                if (defined $chanusers{$svr}{$chan}{lc $data[$_]}) {
-                    # If the user has multiple statuses.
-                    $chanusers{$svr}{$chan}{lc substr $data[$_], 1} = $chanusers{$svr}{$chan}{lc $data[$_]}.$spfx;
-                    delete $chanusers{$svr}{$chan}{lc $data[$_]};
+    # Ship off a WHOX and wait for data.
+    Auto::socksnd($svr, "WHO $chan %cnf");
+    push @whox_wait, lc $chan;
+
+    return 1;
+});
+
+# Create a WHOX reply hook.
+rchook_add('354', 'state.irc.whox', sub {
+    my ($svr, @data) = @_;
+
+    # Are we expecting WHOX data for this channel?
+    if (lc $data[3] ~~ @whox_wait) {
+        # Grab the server's prefixes.
+        my @prefixes = values %{$Proto::IRC::csprefix{$svr}};
+        # And this user's modes.
+        my @umodes = split //, $data[5];
+
+        # Iterate through their modes, saving channel status modes to memory.
+        $chanusers{$svr}{lc $data[3]}{lc $data[4]} = q{};
+        foreach my $mode (@umodes) {
+            if ($mode ~~ @prefixes) {
+                # Okay, so we've got some channel status, figure out the actual mode.
+                my $amode;
+                while (my ($pmod, $pfx) = each %{$Proto::IRC::csprefix{$svr}}) {
+                    if ($pfx eq $mode) { $amode = $pmod }
                 }
-                else {
-                    # Or not.
-                    $chanusers{$svr}{$chan}{lc substr $data[$_], 1} = $spfx;
-                }
-                $fi = 1;
-                $data[$_] = substr $data[$_], 1;
+
+                # Great, now add it to their modes in memory.
+                $chanusers{$svr}{lc $data[3]}{lc $data[4]} .= $amode;
             }
         }
-        # Check if there's still a prefix.
-        foreach my $spfx (keys %{$Proto::IRC::csprefix{$svr}}) {
-            if (substr($data[$_], 0, 1) eq $Proto::IRC::csprefix{$svr}{$spfx}) { goto 'PFITER' }
-        }
-        # They had status, so go to the next user.
-        next if $fi;
-        # They didn't, set them as a normal user.
-        if (!defined $chanusers{$svr}{$chan}{lc $data[$_]}) {
-            $chanusers{$svr}{$chan}{lc $data[$_]} = 1;
+
+        # If their modes are still empty, mark them as a normal user.
+        if ($chanusers{$svr}{lc $data[3]}{lc $data[4]} eq q{}) {
+            $chanusers{$svr}{lc $data[3]}{lc $data[4]} = 1;
         }
     }
 
     return 1;
 });
+
+# Create end of WHO hook.
+rchook_add('315', 'state.irc.eow', sub {
+    my ($svr, (undef, undef, undef, $chan, undef)) = @_;
+
+    # If we're expecting WHOX data for this channel, stop expecting, provided we've gotten data at all.
+    if (lc $chan ~~ @whox_wait and keys %{$chanusers{$svr}{lc $chan}} > 0) {
+        for my $loc (0..$#whox_wait) {
+            if ($whox_wait[$loc] eq lc $chan) { splice @whox_wait, $loc, 1; last }
+        }
+    }
+
+    return 1;
+});
+
+1;
