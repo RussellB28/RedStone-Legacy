@@ -391,15 +391,15 @@ sub match_user {
                 my $svr = $ulhp{net}[0];
                 if (defined $Auto::SOCKET{$svr}) {
                     if ($ccnm eq 'CURRENT' and defined $user{chan}) {
-                        if (defined $State::IRC::chanusers{$svr}{$user{chan}}{$user{nick}}) {
-                            if ($State::IRC::chanusers{$svr}{$user{chan}}{$user{nick}} =~ m/($ccst)/sm) { return $userkey } ## no critic qw(RegularExpressions::RequireExtendedFormatting)
+                        if (defined $State::IRC::chanusers{$svr}{$user{chan}}{lc $user{nick}}) {
+                            if ($State::IRC::chanusers{$svr}{$user{chan}}{lc $user{nick}} =~ m/($ccst)/sm) { return $userkey } ## no critic qw(RegularExpressions::RequireExtendedFormatting)
                         }
                     }
                     else {
                         foreach my $bcj (keys %{ $Proto::IRC::botchans{$svr} }) {
                             if (API::IRC::match_mask($bcj, $ccnm)) {
-                                if (defined $State::IRC::chanusers{$svr}{$bcj}{$user{nick}}) {
-                                    if ($State::IRC::chanusers{$svr}{$bcj}{$user{nick}} =~ m/($ccst)/sm) { return $userkey } ## no critic qw(RegularExpressions::RequireExtendedFormatting)
+                                if (defined $State::IRC::chanusers{$svr}{$bcj}{lc $user{nick}}) {
+                                    if ($State::IRC::chanusers{$svr}{$bcj}{lc $user{nick}} =~ m/($ccst)/sm) { return $userkey } ## no critic qw(RegularExpressions::RequireExtendedFormatting)
                                 }
                             }
                         }
