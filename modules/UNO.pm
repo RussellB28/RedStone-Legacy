@@ -851,7 +851,7 @@ sub _runcard {
     given ($ccol) {
         when (/(R|B|G|Y)/) {
             given ($cval) {
-                when (/^[1-9]$/) {
+                when (/^[0-9]$/) {
                     if ($spec) { return }
                     _nextturn(0);
                 }
