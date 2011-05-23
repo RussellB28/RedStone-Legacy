@@ -4,7 +4,6 @@
 package M::UNO;
 use strict;
 use warnings;
-use Data::Dumper;
 use feature qw(switch);
 use List::Util qw(shuffle);
 use API::Std qw(cmd_add cmd_del hook_add hook_del trans conf_get err has_priv match_user awarn);
@@ -218,7 +217,6 @@ sub cmd_uno {
 
             # Deal the cards.
             @DECK = _newdeck();
-            print Dumper(@DECK);
             foreach (keys %PLAYERS) {
                 for (my $i = 1; $i <= 7; $i++) { _givecard($_) }
                 my $cards;
@@ -230,7 +228,6 @@ sub cmd_uno {
                 $ORDER .= " $_";
             }
             $ORDER = substr $ORDER, 1;
-            print Dumper(@DECK);
 
             $UNO = 1;
             $UNOW = 0;
