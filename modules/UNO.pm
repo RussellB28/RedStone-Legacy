@@ -517,7 +517,7 @@ sub cmd_uno {
             
             # Check if the player is in the game.
             if (!defined $PLAYERS{lc $argv[1]}) {
-                sendmsg($src->{svr}, $src->{nick}, "No such user \2$argv[1]\ is playing.");
+                sendmsg($src->{svr}, $src->{nick}, "No such user \2$argv[1]\2 is playing.");
                 return;
             }
 
@@ -761,7 +761,7 @@ sub _givecard {
     # If the deck is empty, create a new one and announce it.
     if (!scalar @DECK) {
         @DECK = _newdeck();
-        my ($gsvr, $gchan) = split $UNOCHAN, '/', 2;
+        my ($gsvr, $gchan) = split '/', $UNOCHAN, 2;
         privmsg($gsvr, $gchan, "\2The deck ran out of cards! Refilled.\2");
     }
 
