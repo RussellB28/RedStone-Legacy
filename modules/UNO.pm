@@ -4,16 +4,15 @@
 package M::UNO;
 use strict;
 use warnings;
+use Data::Dumper;
 use feature qw(switch);
+use List::Util qw(shuffle);
 use API::Std qw(cmd_add cmd_del hook_add hook_del trans conf_get err has_priv match_user awarn);
 use API::IRC qw(notice privmsg);
 
 # Set various variables we'll need throughout runtime.
-my $UNO = 0;
-my $UNOW = 0;
-my ($UNOCHAN, $UNOTIME, $UNOGCC, $EDITION, $ORDER, $DEALER, $CURRTURN, $TOPCARD, %PLAYERS, %NICKS);
-my $DRAWN = 0;
-my $ANYEDITION = 0;
+my $UNO = my $UNOW = my $DRAWN = my $ANYEDITION = 0;
+my ($UNOCHAN, $UNOTIME, $UNOGCC, $EDITION, $ORDER, $DEALER, @DECK, $CURRTURN, $TOPCARD, %PLAYERS, %NICKS);
 
 # Initialization subroutine.
 sub _init {
@@ -218,6 +217,8 @@ sub cmd_uno {
             }
 
             # Deal the cards.
+            @DECK = _newdeck();
+            print Dumper(@DECK);
             foreach (keys %PLAYERS) {
                 for (my $i = 1; $i <= 7; $i++) { _givecard($_) }
                 my $cards;
@@ -229,6 +230,7 @@ sub cmd_uno {
                 $ORDER .= " $_";
             }
             $ORDER = substr $ORDER, 1;
+            print Dumper(@DECK);
 
             $UNO = 1;
             $UNOW = 0;
@@ -722,6 +724,31 @@ sub cmd_uno {
     return 1;
 }
 
+# Build a deck.
+sub _newdeck {
+    my @deck = qw/R:1 R:2 R:3 R:4 R:5 R:6 R:7 R:8 R:9 R:1 R:2 R:3 R:4 R:5 R:6 R:7 R:8 R:9
+                  B:1 B:2 B:3 B:4 B:5 B:6 B:7 B:8 B:9 B:1 B:2 B:3 B:4 B:5 B:6 B:7 B:8 B:9
+                  Y:1 Y:2 Y:3 Y:4 Y:5 Y:6 Y:7 Y:8 Y:9 Y:1 Y:2 Y:3 Y:4 Y:5 Y:6 Y:7 Y:8 Y:9
+                  G:1 G:2 G:3 G:4 G:5 G:6 G:7 G:8 G:9 G:1 G:2 G:3 G:4 G:5 G:6 G:7 G:8 G:9
+                  R:S R:S B:S B:S Y:S Y:S G:S G:S R:R R:R B:R B:R Y:R Y:R G:R G:R
+                  R:D2 R:D2 B:D2 B:D2 Y:D2 Y:D2 G:D2 G:D2 W:* W:* W:* W:*/;
+
+    if ($EDITION eq 'Original') {
+        push @deck, qw/R:0 B:0 Y:0 G:0 WD4:* WD4:* WD4:* WD4:*/;
+    }
+    if ($EDITION =~ m/Super|Advanced/xsm) {
+        push @deck, qw/R:T B:T Y:T G:T R:X B:X Y:X G:X WHF:* WHF:* WAH:* WAH:*/;
+    }
+    if ($EDITION eq 'Advanced') {
+        push @deck, qw/R:W B:W Y:W G:W R:B B:B Y:B G:B/;
+        for (0..4) { push @deck, @deck }
+    }
+
+    for (0..2) { @deck = shuffle(@deck) }
+
+    return @deck;
+}
+
 # Subroutine for giving a player a card.
 sub _givecard {
     my ($player) = @_;
@@ -730,97 +757,15 @@ sub _givecard {
     if (defined $player) {
         if (!defined $PLAYERS{$player}) { return }
     }
-    
-    # Get a random number for the appropriate edition.
-    my $rci;
-    given ($EDITION) {
-        when ('Original') { $rci = int rand 53 }
-        when ('Super') { $rci = int rand 64 }
-        when ('Advanced') { $rci = int rand 72 }
-    }
 
-    # Now figure out what card we have here.
-    my $card;
-    given ($rci) {
-        when (0) { $card = 'R:1' }
-        when (1) { $card = 'R:2' }
-        when (2) { $card = 'R:3' }
-        when (3) { $card = 'R:4' }
-        when (4) { $card = 'R:5' }
-        when (5) { $card = 'R:6' }
-        when (6) { $card = 'R:7' }
-        when (7) { $card = 'R:8' }
-        when (8) { $card = 'R:9' }
-        when (9) { $card = 'B:1' }
-        when (10) { $card = 'B:2' }
-        when (11) { $card = 'B:3' }
-        when (12) { $card = 'B:4' }
-        when (13) { $card = 'B:5' }
-        when (14) { $card = 'B:6' }
-        when (15) { $card = 'B:7' }
-        when (16) { $card = 'B:8' }
-        when (17) { $card = 'B:9' }
-        when (18) { $card = 'Y:1' }
-        when (19) { $card = 'Y:2' }
-        when (20) { $card = 'Y:3' }
-        when (21) { $card = 'Y:4' }
-        when (22) { $card = 'Y:5' }
-        when (23) { $card = 'Y:6' }
-        when (24) { $card = 'Y:7' }
-        when (25) { $card = 'Y:8' }
-        when (26) { $card = 'Y:9' }
-        when (27) { $card = 'G:1' }
-        when (28) { $card = 'G:2' }
-        when (29) { $card = 'G:3' }
-        when (30) { $card = 'G:4' }
-        when (31) { $card = 'G:5' }
-        when (32) { $card = 'G:6' }
-        when (33) { $card = 'G:7' }
-        when (34) { $card = 'G:8' }
-        when (35) { $card = 'G:9' }
-        when (36) { $card = 'W:0' }
-        when (37) { $card = 'W:0' }
-        when (38) { $card = 'W:0' }
-        when (39) {
-            if ($EDITION eq 'Original') { $card = 'WD4:0' }
-            else { $card = 'WHF:0' }
-        }
-        when (40) {
-            if ($EDITION eq 'Original') { $card = 'WD4:0' }
-            else { $card = 'WHF:0' }
-        }
-        when (41) { $card = 'R:R' }
-        when (42) { $card = 'B:R' }
-        when (43) { $card = 'Y:R' }
-        when (44) { $card = 'G:R' }
-        when (45) { $card = 'R:S' }
-        when (46) { $card = 'B:S' }
-        when (47) { $card = 'Y:S' }
-        when (48) { $card = 'G:S' }
-        when (49) { $card = 'R:D2' }
-        when (50) { $card = 'B:D2' }
-        when (51) { $card = 'Y:D2' }
-        when (52) { $card = 'G:D2' }
-        when (53) { $card = 'WAH:0' }
-        when (54) { $card = 'WAH:0' }
-        when (55) { $card = 'WAH:0' }
-        when (56) { $card = 'R:T' }
-        when (57) { $card = 'B:T' }
-        when (58) { $card = 'G:T' }
-        when (59) { $card = 'Y:T' }
-        when (60) { $card = 'R:X' }
-        when (61) { $card = 'B:X' }
-        when (62) { $card = 'G:X' }
-        when (63) { $card = 'Y:X' }
-        when (64) { $card = 'R:W' }
-        when (65) { $card = 'B:W' }
-        when (66) { $card = 'G:W' }
-        when (67) { $card = 'Y:W' }
-        when (68) { $card = 'R:B' }
-        when (69) { $card = 'B:B' }
-        when (70) { $card = 'G:B' }
-        when (71) { $card = 'Y:B' }
-        default { $card = 'W:0' }
+    # Get a card from the deck.
+    my $card = pop @DECK;
+
+    # If the deck is empty, create a new one and announce it.
+    if (!scalar @DECK) {
+        @DECK = _newdeck();
+        my ($gsvr, $gchan) = split $UNOCHAN, '/', 2;
+        privmsg($gsvr, $gchan, "\2The deck ran out of cards! Refilled.\2");
     }
 
     # Add the card to the player's arrayref.
@@ -900,7 +845,7 @@ sub _runcard {
     if (!defined $spec) { $spec = 0 }
     my ($net, $chan) = split '/', $UNOCHAN;
     if ($ccol ne 'R' && $ccol ne 'B' && $ccol ne 'G' && $ccol ne 'Y') {
-        $TOPCARD = $cval.':0';
+        $TOPCARD = $cval.':*';
     }
     else {
         $TOPCARD = uc $card;
@@ -1300,6 +1245,7 @@ sub _gameover {
     $UNO = $UNOW = $UNOCHAN = $ORDER = $DEALER = $CURRTURN = $TOPCARD = $DRAWN = $UNOTIME = $UNOGCC = 0;
     %PLAYERS = ();
     %NICKS = ();
+    @DECK = ();
 
     return 1;
 }
@@ -1444,7 +1390,7 @@ sub sendmsg {
 }
 
 # Start initialization.
-API::Std::mod_init('UNO', 'Xelhua', '1.10', '3.0.0a10');
+API::Std::mod_init('UNO', 'Xelhua', '2.00', '3.0.0a10');
 # build: perl=5.010000
 
 __END__
@@ -1455,7 +1401,7 @@ UNO - Three editions of the UNO card game
 
 =head1 VERSION
 
- 1.10
+ 2.00
 
 =head1 SYNOPSIS
 
@@ -1546,8 +1492,7 @@ This is a list of differences between the three editions.
 
 =item Original
 
-This is the original UNO card game, unmodified except that the 0 card is
-disabled as it is reserved for after a wildcard is used.
+This is the original UNO card game, unmodified.
 
 =item Super
 
@@ -1575,6 +1520,8 @@ gives the next player 1-10 cards (0 is disabled here), as well as skips them.
 =item Advanced
 
 This is Xelhua's own edition, based on Super with two new cards.
+
+Also, the deck has 5x the cards when in Advanced.
 
 Differences from Super:
 

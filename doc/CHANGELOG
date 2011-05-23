@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * UNO 2.00: Now uses a real deck and has 0 cards!
     * API::IRC::ban: New optional argument, IntBool $return. If a true value is
       passed, it will return an array of (ban mode, ban mask) rather than 1/0.
     * Massively improved State::IRC and fixed nasty bugs in chanusers.
