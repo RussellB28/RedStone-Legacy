@@ -6,15 +6,18 @@ use strict;
 use warnings;
 use API::Std qw(cmd_add cmd_del hook_add hook_del rchook_add rchook_del has_priv match_user);
 use API::IRC qw(privmsg notice who);
-my (@PING, $STATE);
+my (@PING, $STATE, %AWAY);
 my $LAST = 0;
 
 # Initialization subroutine.
 sub _init {
     # Create the PING command.
     cmd_add('PING', 0, 'cmd.ping', \%M::Ping::HELP_PING, \&M::Ping::cmd_ping) or return;
+    # Create the AWAY command.
+    cmd_add('AWAY', 1, 0, \%M::Ping::HELP_AWAY, \&M::Ping::cmd_away) or return;
     # Create the on_whoreply hook.
     hook_add('on_whoreply', 'ping.who', \&M::Ping::on_whoreply) or return;
+
     # Hook onto numeric 315.
     rchook_add('315', 'ping.eow', \&M::Ping::ping) or return;
 
@@ -26,6 +29,8 @@ sub _init {
 sub _void {
     # Delete the PING command.
     cmd_del('PING') or return;
+    # Delete the AWAY command.
+    cmd_del('AWAY') or return;
     # Delete the on_whoreply hook.
     hook_del('on_whoreply', 'ping.who') or return;
     # Delete 315 hook.
@@ -38,6 +43,11 @@ sub _void {
 # Help for PING.
 our %HELP_PING = (
     en => "This command will ping all non-/away users in the channel. \2Syntax:\2 PING",
+);
+
+# Help for AWAY.
+our %HELP_AWAY = (
+    en => "This command will toggle your away status for the PING command. \2Syntax:\2 AWAY",
 );
 
 # Callback for PING command.
@@ -61,6 +71,23 @@ sub cmd_ping {
     return 1;
 }
 
+# Callback for AWAY command.
+sub cmd_away {
+    my ($src, @argv) = @_;
+
+    # Toggle their away status.
+    if (exists $AWAY{lc $src->{nick}}) {
+        if ($AWAY{lc $src->{nick}} eq 'G') { delete $AWAY{lc $src->{nick}} }
+    }
+    else {
+        $AWAY{lc $src->{nick}} = 'G';
+    }
+
+    privmsg($src->{svr}, $src->{nick}, 'You are now '.((exists $AWAY{lc $src->{nick}}) ? 'away' : 'back').q{.});
+
+    return 1;
+}
+
 # Callback for WHO reply.
 sub on_whoreply {
     my ($svr, $nick, $target, undef, undef, undef, $status, undef, undef) = @_;
@@ -73,7 +100,7 @@ sub on_whoreply {
         # Check if this is the target channel.
         if ($STATE eq $svr.'::'.$target) {
             # If their status is not away, push to ping array.
-            if ($status !~ m/G/xsm) {
+            if ($status !~ m/G/xsm and !exists $AWAY{lc $nick}) {
                 push @PING, $nick;
             }
         }
@@ -95,7 +122,7 @@ sub ping {
 }
 
 # Start initialization.
-API::Std::mod_init('Ping', 'Xelhua', '1.02', '3.0.0a11');
+API::Std::mod_init('Ping', 'Xelhua', '1.03', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -106,7 +133,7 @@ __END__
 
 =head1 VERSION
 
- 1.02
+ 1.03
 
 =head1 SYNOPSIS
 
@@ -115,8 +142,12 @@ __END__
 
 =head1 DESCRIPTION
 
-This merely creates the PING command, which will highlight everyone in the
-channel, excluding the bot itself and those who are /away.
+This creates the PING command, which will highlight everyone in the channel,
+excluding the bot itself and those who are /away.
+
+This also creates the AWAY command, which will make the bot see people who
+use it as /away, regardless of their actual status. When used again, they
+reappear.
 
 It requires the cmd.ping privilege, also cmd.ping.admin overrides the
 ratelimit.
@@ -124,6 +155,8 @@ ratelimit.
 =head1 AUTHOR
 
 This module was written by Elijah Perrault.
+
+This module was patched by Douglas Freed <dwfreed@mtu.edu>.
 
 This module is maintained by Xelhua Development Group.
 

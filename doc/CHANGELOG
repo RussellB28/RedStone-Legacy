@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Ping 1.03: Added a private AWAY command. - dwfreed
     * UNO 2.00: Now uses a real deck and has 0 cards!
     * API::IRC::ban: New optional argument, IntBool $return. If a true value is
       passed, it will return an array of (ban mode, ban mask) rather than 1/0.

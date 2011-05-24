@@ -16,8 +16,8 @@ In this alpha11 release, we have added:
 * An advanced IRC version of the popular party game Werewolf (AKA Mafia).
 * Commands with prefixes now work in PM's too.
 * A Coin module for random coin tosses.
-* A Ping module for highlighting everyone in the channel who is not /away.
-* UNO 2.00, which now uses a real deck and has 0 cards.
+* A Ping module for highlighting everyone in the channel who is not /away (and not AWAY).
+* UNO 2.00, which now uses a real deck and has 0 cards..
 
 Bug fixes:
 
