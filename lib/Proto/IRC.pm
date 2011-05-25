@@ -530,8 +530,9 @@ sub nick {
         # It isn't. Update chanusers and trigger on_nick.
         foreach my $chk (keys %{ $State::IRC::chanusers{$svr} }) {
             if (defined $State::IRC::chanusers{$svr}{$chk}{lc $src{nick}}) {
-                $State::IRC::chanusers{$svr}{$chk}{lc $nex} = $State::IRC::chanusers{$svr}{$chk}{lc $src{nick}};
+                my $temp = $State::IRC::chanusers{$svr}{$chk}{lc $src{nick}};
                 delete $State::IRC::chanusers{$svr}{$chk}{lc $src{nick}};
+                $State::IRC::chanusers{$svr}{$chk}{lc $nex} = $temp;
             }
         }
         API::Std::event_run("on_nick", (\%src, $nex));

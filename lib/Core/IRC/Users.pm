@@ -46,8 +46,8 @@ hook_add('on_nick', 'ircusers.onnick', sub {
 
     # Modify the user's entry in the users hash.
     if ($users{$src->{svr}}{lc $src->{nick}}) {
-        $users{$src->{svr}}{lc $newnick} = $newnick;
         delete $users{$src->{svr}}{lc $src->{nick}};
+        $users{$src->{svr}}{lc $newnick} = $newnick;
     }
 
     return 1;
