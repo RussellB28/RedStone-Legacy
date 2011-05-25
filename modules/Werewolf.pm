@@ -1704,6 +1704,11 @@ sub on_nick {
     if ($GAME or $PGAME) {
         # Check if they're playing.
         if (exists $PLAYERS{lc $src->{nick}}) {
+            # Just a change in case?
+            if (lc $new eq lc $src->{nick}) {
+                $NICKS{lc $src->{nick}} = $newnick;
+                return 1;
+            }
             # Time to update their data.
             # Hopefully this will work right, but if it doesn't, someone please make a bug report.
             $PLAYERS{$new} = $PLAYERS{lc $src->{nick}};
