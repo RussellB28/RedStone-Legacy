@@ -1705,7 +1705,7 @@ sub on_nick {
         # Check if they're playing.
         if (exists $PLAYERS{lc $src->{nick}}) {
             # Just a change in case?
-            if (lc $new eq lc $src->{nick}) {
+            if ($new eq lc $src->{nick}) {
                 $NICKS{lc $src->{nick}} = $newnick;
                 return 1;
             }
