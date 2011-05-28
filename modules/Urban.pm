@@ -102,13 +102,20 @@ sub grab {
                 
                 my $href = $tree->look_down('_tag', 'a', 'href', qr/$id/);
                 if (defined $href) {
+                    $tree->delete;
                     return (-1, $id);
                 }
             }
 
-            return (1, $def->as_text, ((defined $ex) ? $ex->as_text : 'None.'));
+            my $dtxt = $def->as_text;
+            my $dex = 'None';
+            if (defined $ex) { $dex = $ex->as_text }
+            $tree->delete;
+            return (1, $dtxt, $dex);
         }
         else {
+            # No results.
+            $tree->delete;
             return (2);
         }
         $tree->delete;
