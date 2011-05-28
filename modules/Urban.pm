@@ -100,7 +100,7 @@ sub grab {
                 $id = $id->attr('id');
                 $id =~ s/[^0-9]//gxsm;
                 
-                my $href = $tree->look_down('_tag', 'a', 'href', qr/$id/);
+                my $href = $tree->look_down('_tag', 'a', 'href', qr/\/define\.php\?term=(.+)&defid=$id/);
                 if (defined $href) {
                     $tree->delete;
                     return (-1, $id);
