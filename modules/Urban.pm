@@ -42,6 +42,35 @@ sub cmd_ud {
         notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
         return;
     }
+    
+    # Get the definition.
+    my @def = grab(join(q{ }, @argv));
+    
+    if ($def[0] == -1) {
+        # Needs to be reran with the ID.
+        @def = grab(join(q{ }, @argv), $def[1]);
+    }
+
+    if ($def[0] == 2) {
+        # No results.
+        privmsg($src->{svr}, $src->{chan}, "No results for \2".join(q{ }, @argv)."\2.");
+    }
+    elsif ($def[0] == 0) {
+        # Something went wrong...
+        privmsg($src->{svr}, $src->{chan}, 'An error occurred while retrieving the definition.');
+    }
+    else {
+        # All good, return data.
+        privmsg($src->{svr}, $src->{chan}, "\2Definition:\2 ".$def[1]);
+        privmsg($src->{svr}, $src->{chan}, "\2Example:\2 ".$def[2]);
+    }
+
+    return 1;
+}
+
+# Grab a term from Urban Dictionary. (this is made separate for special occasions)
+sub grab {
+    my ($term, $id) = @_;
 
     # Create an instance of Furl.
     my $ua = Furl->new(
@@ -50,7 +79,9 @@ sub cmd_ud {
     );
 
     # Grab the data from Urban Dictionary.
-    my $res = $ua->get('http://www.urbandictionary.com/define.php?term='.uri_escape(join(q{ }, @argv)));
+    my $url = 'http://www.urbandictionary.com/define.php?term='.uri_escape($term);
+    if (defined $id) { $url .= "&defid=$id" }
+    my $res = $ua->get($url);
     
     if ($res->is_success) {
         # Success! Get the content.
@@ -63,24 +94,35 @@ sub cmd_ud {
 
         # Return them, if they exist.
         if (defined $def) {
-            privmsg($src->{svr}, $src->{chan}, "\2Definition:\2 ".$def->as_text);
-            privmsg($src->{svr}, $src->{chan}, "\2Example:\2 ".((defined $ex) ? $ex->as_text : 'None.'));
+            # Almost there, make sure we're getting the whole thing.
+            if ($def->as_text =~ m/\.\.\.$/xsm) {
+                my $id = $tree->look_down('_tag', 'td', 'id', qr/entry_[0-9]+/);
+                $id = $id->attr('id');
+                $id =~ s/[^0-9]//gxsm;
+                
+                my $href = $tree->look_down('_tag', 'a', 'href', qr/$id/);
+                if (defined $href) {
+                    return (-1, $id);
+                }
+            }
+
+            return (1, $def->as_text, ((defined $ex) ? $ex->as_text : 'None.'));
         }
         else {
-            privmsg($src->{svr}, $src->{chan}, "No results for \2".join(q{ }, @argv)."\2.");
+            return (2);
         }
         $tree->delete;
     }
     else {
-        # Aww, something went wrong.
-        privmsg($src->{svr}, $src->{chan}, 'An error occurred while retrieving the definition.');
+        # An error occurred.
+        return (0);
     }
 
-    return 1;
+    return (0);
 }
 
 # Start initialization.
-API::Std::mod_init('Urban', 'Xelhua', '1.01', '3.0.0a11');
+API::Std::mod_init('Urban', 'Xelhua', '1.02', '3.0.0a11');
 # build: perl=5.010000 cpan=Furl,HTML::Tree,URI::Escape
 
 __END__
@@ -91,7 +133,7 @@ Urban - IRC interface to Urban Dictionary.
 
 =head1 VERSION
 
- 1.01
+ 1.02
 
 =head1 SYNOPSIS
 
