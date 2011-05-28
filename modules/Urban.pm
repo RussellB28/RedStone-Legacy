@@ -7,8 +7,9 @@ use warnings;
 use Furl;
 use HTML::Tree;
 use URI::Escape;
-use API::Std qw(cmd_add cmd_del);
+use API::Std qw(cmd_add cmd_del conf_get);
 use API::IRC qw(privmsg notice);
+my $LASTUSE = 0;
 
 # Initialization subroutine.
 sub _init {
@@ -42,6 +43,14 @@ sub cmd_ud {
         notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
         return;
     }
+
+    # Ratelimit?
+    if (conf_get('urban_ratelimit')) {
+        if (time - $LASTUSE <= (conf_get('urban_ratelimit'))[0][0]) {
+            notice($src->{svr}, $src->{nick}, 'This command has been used recently. Please wait a moment before using it again.');
+            return;
+        }
+    }
     
     # Get the definition.
     my @def = grab(join(q{ }, @argv));
@@ -61,8 +70,11 @@ sub cmd_ud {
     }
     else {
         # All good, return data.
+        if (length $def[1] > 1536) { $def[1] = substr $def[1], 0, 1536; $def[1] .= '.....' }
+        if (length $def[2] > 1536) { $def[2] = substr $def[2], 0, 1536; $def[2] .= '.....' }
         privmsg($src->{svr}, $src->{chan}, "\2Definition:\2 ".$def[1]);
         privmsg($src->{svr}, $src->{chan}, "\2Example:\2 ".$def[2]);
+        $LASTUSE = time;
     }
 
     return 1;
@@ -129,7 +141,7 @@ sub grab {
 }
 
 # Start initialization.
-API::Std::mod_init('Urban', 'Xelhua', '1.02', '3.0.0a11');
+API::Std::mod_init('Urban', 'Xelhua', '1.03', '3.0.0a11');
 # build: perl=5.010000 cpan=Furl,HTML::Tree,URI::Escape
 
 __END__
@@ -140,7 +152,7 @@ Urban - IRC interface to Urban Dictionary.
 
 =head1 VERSION
 
- 1.02
+ 1.03
 
 =head1 SYNOPSIS
 
@@ -152,6 +164,19 @@ Urban - IRC interface to Urban Dictionary.
 
 This creates the UD command which looks up the given term on
 urbandictionary.com and returns the first definition+example.
+
+=head1 CONFIGURATION
+
+Simply add the following to your configuration file:
+
+ urban_ratelimit <time in seconds>;
+
+Where <time in seconds> is how often the UD command may be used. Like so:
+
+ urban_ratelimit 3;
+
+Not including this will make it use no ratelimit. (discouraged, unless you use
+a good value for the bot-wide ratelimit)
 
 =head1 DEPENDENCIES
 
