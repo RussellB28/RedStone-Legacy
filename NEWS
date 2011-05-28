@@ -18,6 +18,7 @@ In this alpha11 release, we have added:
 * A Coin module for random coin tosses.
 * A Ping module for highlighting everyone in the channel who is not /away (and not AWAY).
 * UNO 2.00, which now uses a real deck and has 0 cards..
+* An Urban module for looking up terms on Urban Dictionary.
 
 Bug fixes:
 
