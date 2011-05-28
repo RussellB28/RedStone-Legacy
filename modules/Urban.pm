@@ -61,9 +61,14 @@ sub cmd_ud {
         my $def = $tree->look_down('_tag', 'div', 'class', 'definition');
         my $ex = $tree->look_down('_tag', 'div', 'class', 'example');
 
-        # Return them.
-        privmsg($src->{svr}, $src->{chan}, "\2Definition:\2 ".$def->as_text);
-        privmsg($src->{svr}, $src->{chan}, "\2Example:\2 ".$ex->as_text);
+        # Return them, if they exist.
+        if (defined $def) {
+            privmsg($src->{svr}, $src->{chan}, "\2Definition:\2 ".$def->as_text);
+            privmsg($src->{svr}, $src->{chan}, "\2Example:\2 ".((defined $ex) ? $ex->as_text : 'None.'));
+        }
+        else {
+            privmsg($src->{svr}, $src->{chan}, "No results for \2".join(q{ }, @argv)."\2.");
+        }
         $tree->delete;
     }
     else {
@@ -75,7 +80,7 @@ sub cmd_ud {
 }
 
 # Start initialization.
-API::Std::mod_init('Urban', 'Xelhua', '1.00', '3.0.0a11');
+API::Std::mod_init('Urban', 'Xelhua', '1.01', '3.0.0a11');
 # build: perl=5.010000 cpan=Furl,HTML::Tree,URI::Escape
 
 __END__
@@ -86,7 +91,7 @@ Urban - IRC interface to Urban Dictionary.
 
 =head1 VERSION
 
- 1.00
+ 1.01
 
 =head1 SYNOPSIS
 
