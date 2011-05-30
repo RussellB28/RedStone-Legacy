@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Fixed formatting on clients such as Irssi with format_identify.pl.
     * Added an Urban module for looking up terms on Urban Dictionary.
     * Fixed a bug in state data caused by NICK'ing to your current nick, just
       with different cases.

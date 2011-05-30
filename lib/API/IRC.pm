@@ -94,7 +94,7 @@ sub privmsg {
     my ($svr, $target, $message) = @_;
 
     # Get maximum length.
-    my $maxlen = 510 - length q{:}.$State::IRC::botinfo{$svr}{nick}.q{!}.$State::IRC::botinfo{$svr}{user}.q{@}.$State::IRC::botinfo{$svr}{mask}." PRIVMSG $target :";
+    my $maxlen = 510 - length q{:}.$State::IRC::botinfo{$svr}{nick}.q{!}.$State::IRC::botinfo{$svr}{user}.q{@}.$State::IRC::botinfo{$svr}{mask}." PRIVMSG $target :+";
 
     # Divide message if it surpasses the maximum length.
     while (length $message >= $maxlen) {

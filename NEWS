@@ -27,6 +27,7 @@ Bug fixes:
 * Fixed a privset bug that broke privsets with multiple privileges.
 * UNO: Fixed a small bug in TOPTEN.
 * Fixed nasty state data bugs in chanusers.
+* Fixed formatting on clients such as Irssi with format_identify.pl.
 
 Incompatibilities:
 
