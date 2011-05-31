@@ -1,0 +1,74 @@
+diff --git a/modules/Ping.pm b/modules/Ping.pm
+index 856bae0..63fe3d1 100644
+--- a/modules/Ping.pm
++++ b/modules/Ping.pm
+@@ -6,15 +6,18 @@ use strict;
+ use warnings;
+ use API::Std qw(cmd_add cmd_del hook_add hook_del rchook_add rchook_del has_priv match_user);
+ use API::IRC qw(privmsg notice who);
+-my (@PING, $STATE);
++my (@PING, $STATE, %AWAY);
+ my $LAST = 0;
+ 
+ # Initialization subroutine.
+ sub _init {
+     # Create the PING command.
+     cmd_add('PING', 0, 'cmd.ping', \%M::Ping::HELP_PING, \&M::Ping::cmd_ping) or return;
++    # Create the AWAY command.
++    cmd_add('AWAY', 1, 0, \%M::Ping::HELP_AWAY, \&M::Ping::cmd_away) or return;
+     # Create the on_whoreply hook.
+     hook_add('on_whoreply', 'ping.who', \&M::Ping::on_whoreply) or return;
++
+     # Hook onto numeric 315.
+     rchook_add('315', 'ping.eow', \&M::Ping::ping) or return;
+ 
+@@ -26,6 +29,8 @@ sub _init {
+ sub _void {
+     # Delete the PING command.
+     cmd_del('PING') or return;
++    # Delete the AWAY command.
++    cmd_del('AWAY') or return;
+     # Delete the on_whoreply hook.
+     hook_del('on_whoreply', 'ping.who') or return;
+     # Delete 315 hook.
+@@ -40,6 +45,11 @@ our %HELP_PING = (
+     en => "This command will ping all non-/away users in the channel. \2Syntax:\2 PING",
+ );
+ 
++# Help for AWAY.
++our %HELP_AWAY = (
++    en => "This command will toggle your away status for the purpose of the PING command. \2Syntax:\2 AWAY",
++);
++
+ # Callback for PING command.
+ sub cmd_ping {
+     my ($src, @argv) = @_;
+@@ -61,6 +71,19 @@ sub cmd_ping {
+     return 1;
+ }
+ 
++# Callback for AWAY command.
++sub cmd_away {
++    my ($src, @argv) = @_;
++
++    # Toggle their away status
++    if ($AWAY{$src->{nick}} eq "away"){
++        $AWAY{$src->{nick}} = "here";
++    } else {
++        $AWAY{$src->{nick}} = "away";
++    }
++    privmsg($src->{svr}, $src->{nick}, "You are now $AWAY{$src->{nick}}.");
++}
++
+ # Callback for WHO reply.
+ sub on_whoreply {
+     my ($svr, $nick, $target, undef, undef, undef, $status, undef, undef) = @_;
+@@ -73,7 +96,7 @@ sub on_whoreply {
+         # Check if this is the target channel.
+         if ($STATE eq $svr.'::'.$target) {
+             # If their status is not away, push to ping array.
+-            if ($status !~ m/G/xsm) {
++            if ($status !~ m/G/xsm and $AWAY{$nick} ne "away") {
+                 push @PING, $nick;
+             }
+         }
