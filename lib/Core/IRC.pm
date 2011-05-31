@@ -11,16 +11,27 @@ use API::IRC qw(notice usrc);
 our (%usercmd);
 
 # CTCP VERSION reply.
-hook_add("on_uprivmsg", "ctcp_version_reply", sub {
-    my (($src, @msg)) = @_;
+hook_add('on_uprivmsg', 'ctcp_replies.version', sub {
+    my ($src, @msg) = @_;
 
     if ($msg[0] eq "\001VERSION\001") {
         if (Auto::RSTAGE ne 'd') {
-            notice($src->{svr}, $src->{nick}, "\001VERSION ".Auto::NAME." ".Auto::VER.".".Auto::SVER.".".Auto::REV.Auto::RSTAGE." ".$OSNAME."\001");
+            notice($src->{svr}, $src->{nick}, "\001VERSION ".Auto::NAME." ".Auto::VER.".".Auto::SVER.".".Auto::REV.Auto::RSTAGE." $OSNAME\001");
         }
         else {
-            notice($src->{svr}, $src->{nick}, "\001VERSION ".Auto::NAME." ".Auto::VER.".".Auto::SVER.".".Auto::REV.Auto::RSTAGE."-$Auto::VERGITREV ".$OSNAME."\001");
+            notice($src->{svr}, $src->{nick}, "\001VERSION ".Auto::NAME." ".Auto::VER.".".Auto::SVER.".".Auto::REV.Auto::RSTAGE."-$Auto::VERGITREV $OSNAME\001");
         }
+    }
+
+    return 1;
+});
+
+# CTCP TIME reply.
+hook_add('on_uprivmsg', 'ctcp_replies.time', sub {
+    my ($src, @msg) = @_;
+
+    if ($msg[0] eq "\001TIME\001") {
+        notice($src->{svr}, $src->{nick}, "\001TIME ".POSIX::strftime('%a %b %d %H:%M:%S %Y', localtime)."\001");
     }
 
     return 1;
@@ -28,7 +39,7 @@ hook_add("on_uprivmsg", "ctcp_version_reply", sub {
 
 # Command alias parsing for channel messages.
 hook_add('on_cprivmsg', 'irc.commands.aliases', sub {
-    my (($src, $chan, ($cmd, @args))) = @_;
+    my ($src, $chan, $cmd, @args) = @_;
 
     # Check for valid length.
     if (length $cmd >= 2) {
@@ -63,7 +74,7 @@ hook_add('on_cprivmsg', 'irc.commands.aliases', sub {
                         
 # Command alias parsing for private messages.
 hook_add('on_uprivmsg', 'irc.commands.aliases', sub {
-    my (($src, ($cmd, @args))) = @_;
+    my ($src, $cmd, @args) = @_;
     my $cprefix = (conf_get('fantasy_pf'))[0][0];
     if (substr($cmd, 0, 1) eq $cprefix) { $cmd = substr $cmd, 1 }
 
@@ -91,8 +102,8 @@ hook_add('on_uprivmsg', 'irc.commands.aliases', sub {
 });
                         
 # QUIT hook; delete user from chanusers.
-hook_add("on_quit", "quit_update_chanusers", sub {
-    my (($src, undef)) = @_;
+hook_add('on_quit', 'state.chanusers_update.quit', sub {
+    my ($src, undef) = @_;
     my %src = %{ $src };
 
     # Delete the user from all channels.
@@ -104,7 +115,7 @@ hook_add("on_quit", "quit_update_chanusers", sub {
 });
 
 # Modes on connect.
-hook_add("on_connect", "on_connect_modes", sub {
+hook_add('on_connect', 'connect.set_umodes', sub {
     my ($svr) = @_;
 
     if (conf_get("server:$svr:modes")) {
@@ -116,7 +127,7 @@ hook_add("on_connect", "on_connect_modes", sub {
 });
 
 # Self-WHO on connect.
-hook_add('on_connect', 'on_connect_selfwho', sub {
+hook_add('on_connect', 'connect.self_who', sub {
     my ($svr) = @_;
 
     API::IRC::who($svr, $State::IRC::botinfo{$svr}{nick});
@@ -125,7 +136,7 @@ hook_add('on_connect', 'on_connect_selfwho', sub {
 });
 
 # Plaintext auth.
-hook_add("on_connect", "plaintext_auth", sub {
+hook_add('on_connect', 'connect.auth.plaintext', sub {
     my ($svr) = @_;
     
     if (conf_get("server:$svr:idstr")) {
@@ -137,7 +148,7 @@ hook_add("on_connect", "plaintext_auth", sub {
 });
 
 # Auto join.
-hook_add("on_connect", "autojoin", sub {
+hook_add('on_connect', 'connect.autojoin', sub {
     my ($svr) = @_;
 
     # Get the auto-join from the config.
@@ -188,8 +199,8 @@ hook_add("on_connect", "autojoin", sub {
 });
 
 # WHO reply.
-hook_add('on_whoreply', 'selfwho.getdata', sub {
-    my (($svr, $nick, undef, $user, $mask, undef, undef, undef, undef)) = @_;
+hook_add('on_whoreply', 'state.self_who.parse', sub {
+    my ($svr, $nick, undef, $user, $mask, undef, undef, undef, undef) = @_;
 
     # Check if it's for us.
     if ($nick eq $State::IRC::botinfo{$svr}{nick}) {
@@ -202,7 +213,7 @@ hook_add('on_whoreply', 'selfwho.getdata', sub {
 });
 
 # ISUPPORT - Set prefixes and channel modes.
-hook_add('on_isupport', 'core.prefixchanmode.getdata', sub {
+hook_add('on_isupport', 'state.svrmodes.parse', sub {
     my (($svr, @ex)) = @_;
 
     # Find PREFIX and CHANMODES.
@@ -252,7 +263,7 @@ sub clear_usercmd_timer {
 }
 
 # Server data deletion on disconnect.
-hook_add('on_disconnect', 'core.irc.deldata', sub {
+hook_add('on_disconnect', 'state.svrlist.del', sub {
     my ($svr) = @_;
 
     # Delete all data related to the server.
@@ -268,7 +279,7 @@ hook_add('on_disconnect', 'core.irc.deldata', sub {
 });
 
 # Track our usermodes.
-hook_add('on_umode', 'core.irc.state.umode', sub {
+hook_add('on_umode', 'state.self_umodes', sub {
     my (($svr, $modes)) = @_;
 
     # Remove anything after a space.
