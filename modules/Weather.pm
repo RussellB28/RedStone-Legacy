@@ -10,8 +10,7 @@ use LWP::UserAgent;
 use XML::Simple;
 
 # Initialization subroutine.
-sub _init 
-{
+sub _init  {
     # Create the Weather command.
     cmd_add('WEATHER', 0, 0, \%M::Weather::HELP_WEATHER, \&M::Weather::weather) or return;
 
@@ -20,8 +19,7 @@ sub _init
 }
 
 # Void subroutine.
-sub _void 
-{
+sub _void  {
     # Delete the Weather command.
     cmd_del('WEATHER') or return;
 
@@ -36,8 +34,7 @@ our %HELP_WEATHER = (
 );
 
 # Callback for Weather command.
-sub weather
-{
+sub weather {
     my ($src, @args) = @_;
 
     # Create an instance of LWP::UserAgent.

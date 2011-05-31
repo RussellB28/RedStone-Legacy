@@ -11,8 +11,7 @@ use API::IRC qw(privmsg);
 
 
 # Initialization subroutine.
-sub _init
-{
+sub _init {
     # Check if this Auto was built with SASL support.
     if ($Auto::ENFEAT !~ m/sasl/xsm) { err(2, 'Auto was not built with SASL support. Aborting SASLAuth.', 0) and return }
     # Add sasl to supported CAP for servers configured with SASL.
@@ -32,8 +31,7 @@ sub _init
 }
 
 # Void subroutine.
-sub _void
-{
+sub _void {
     # Delete the hooks.
     hook_del('on_capack') or return;
     rchook_del('903', 'sasl.903') or return;
@@ -54,8 +52,7 @@ sub handle_capack {
 }
 
 # Parse: AUTHENTICATE
-sub handle_authenticate 
-{
+sub handle_authenticate  {
     my ($srv, @parv) = @_;
     my $u = (conf_get("server:$srv:sasl_username"))[0][0];
     my $p = (conf_get("server:$srv:sasl_password"))[0][0];
@@ -83,8 +80,7 @@ sub handle_authenticate
 
 # Parse: Numeric:903
 # SASL authentication successful.
-sub handle_903 
-{ 
+sub handle_903  { 
     my ($srv, undef) = @_; 
     timer_add('cap_end_'.$srv, 1, 2, sub { Auto::socksnd($srv, 'CAP END') });
     timer_del('auth_timeout_'.$srv);
@@ -92,8 +88,7 @@ sub handle_903
 
 # Parse: Numeric:904
 # SASL authentication failed.
-sub handle_904 
-{ 
+sub handle_904  { 
     my ($srv, undef) = @_; 
     timer_add('cap_end_'.$srv, 1, 2, sub { Auto::socksnd($srv, 'CAP END') });
     timer_del('auth_timeout_'.$srv);
@@ -102,8 +97,7 @@ sub handle_904
 
 # Parse: Numeric:906
 # SASL authentication aborted.
-sub handle_906 
-{
+sub handle_906  {
     my ($svr, undef) = @_;
     timer_add('cap_end_'.$svr, 1, 2, sub { Auto::socksnd($svr, 'CAP END') });
     timer_del('auth_timeout_'.$svr);
