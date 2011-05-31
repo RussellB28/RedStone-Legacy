@@ -218,7 +218,7 @@ sub cmd_qdb
 }
 
 
-API::Std::mod_init('QDB', 'Xelhua', '1.04', '3.0.0a10');
+API::Std::mod_init('QDB', 'Xelhua', '1.05', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -229,7 +229,7 @@ QDB - Quote database module.
 
 =head1 VERSION
 
- 1.04
+ 1.05
 
 =head1 SYNOPSIS
 
