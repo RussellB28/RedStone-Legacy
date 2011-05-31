@@ -135,6 +135,12 @@ sub cmd_qdb
             $rexpr =~ s{\.}{\\\.}g;
             $rexpr =~ s{\$}{\\\$}g;
             $rexpr =~ s{\^}{\\\^}g;
+            $rexpr =~ s{\|}{\\\|}g;
+            $rexpr =~ s{\+}{\\\+}g;
+            $rexpr =~ s{\\}{\\\\}g;
+            $rexpr =~ s{\?}{\\\?}g;
+            $rexpr =~ s{\{}{\\\{}g;
+            $rexpr =~ s{\}}{\\\}}g;
 
             # Clear the buffer.
             @BUFFER = ();
