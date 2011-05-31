@@ -8,8 +8,8 @@ use API::Log qw(dbug alog);
 
 
 # Parser.
-sub parse {
-
+sub parse
+{
     my ($lang) = @_;
     
     # Check that the language file exists.

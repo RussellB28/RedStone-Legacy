@@ -16,8 +16,8 @@ our @EXPORT_OK = qw(println dbug alog slog);
 
 
 # Print with the system newline appended.
-sub println {
-
+sub println
+{
     my ($out) = @_;
 
     if (!defined $out) {
@@ -31,8 +31,8 @@ sub println {
 }
 
 # Print only if in debug mode.
-sub dbug {
-
+sub dbug
+{
     my ($out) = @_;
 
     if ($Auto::DEBUG) {
@@ -44,8 +44,8 @@ sub dbug {
 }
 
 # Log to file.
-sub alog {
-
+sub alog
+{
     my ($lmsg) = @_;
 
     # Expire old logs first.
@@ -69,8 +69,8 @@ sub alog {
 }
 
 # Expire old logs.
-sub expire_logs {
-
+sub expire_logs
+{
     # Get configuration value.
     my $celog = (conf_get('expire_logs'))[0][0] or return;
 
@@ -105,8 +105,8 @@ sub expire_logs {
 }
 
 # Subroutine for logging to an IRC logchan.
-sub slog {
-
+sub slog
+{
     my ($msg) = @_;
 
     # Check if logging to channel is enabled.

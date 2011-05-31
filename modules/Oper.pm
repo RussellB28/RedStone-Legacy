@@ -8,8 +8,8 @@ use API::Std qw(hook_add hook_del rchook_add rchook_del conf_get);
 use API::Log qw(alog);
 
 # Initialization subroutine.
-sub _init {
-
+sub _init
+{
     # Add a hook for when we join a channel.
     hook_add('on_connect', 'Oper.onconnect', \&M::Oper::on_connect) or return;
     # Add a hook for when we get numeric 491 (ERR_NOOPERHOST)
@@ -18,8 +18,8 @@ sub _init {
 }
 
 # Void subroutine.
-sub _void {
-
+sub _void
+{
     # Delete the hooks.
     hook_del('on_connect', 'Oper.onconnect') or return;
     rchook_del('491', 'Oper.on491') or return;
@@ -27,8 +27,8 @@ sub _void {
 }
 
 # On connect subroutine.
-sub on_connect {
-
+sub on_connect
+{
     my ($svr) = @_;
     # Get the configuration values.
     my $u = (conf_get("server:$svr:oper_username"))[0][0] if conf_get("server:$svr:oper_username");

@@ -11,8 +11,8 @@ our $VERSION = 1.00;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(println modfind build checkver checkcore installmods);
 
-sub println {
-
+sub println
+{
     my ($out) = @_;
 
     if (defined $out) {
@@ -25,8 +25,8 @@ sub println {
     return 1;
 }
 
-sub modfind {
-
+sub modfind
+{
     my ($mod) = @_;
 
     print "    $mod: ";
@@ -35,8 +35,8 @@ sub modfind {
     return 1;
 }
 
-sub build {
-
+sub build
+{
     my ($features, $Bin, $syswide) = @_;
     if (!defined $syswide) { $syswide = 0 }
 
@@ -67,8 +67,8 @@ sub build {
     return 1;
 }
 
-sub checkver {
-
+sub checkver
+{
     my ($ver) = @_;
 
     println "* Connecting to update server...";
@@ -103,8 +103,8 @@ sub checkver {
     return 1;
 }
 
-sub checkcore {
-
+sub checkcore
+{
     println "\0";
     modfind('Carp');
     modfind('FindBin');
@@ -115,8 +115,8 @@ sub checkcore {
     modfind('Time::Local');
 }
 
-sub installmods {
-
+sub installmods
+{
     my ($prefix) = @_;
     print 'Would you like to install any official modules? [y/n] ';
     my $response = <STDIN>;

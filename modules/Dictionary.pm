@@ -9,8 +9,8 @@ use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(notice privmsg);
 
 # Initialization subroutine.
-sub _init {
-
+sub _init
+{
     # Create the DICT command.
     cmd_add('DICT', 0, 0, \%M::Dictionary::HELP_DICT, \&M::Dictionary::cmd_dict) or return;
 
@@ -19,8 +19,8 @@ sub _init {
 }
 
 # Void subroutine.
-sub _void {
-
+sub _void
+{
     # Delete the DICT command.
     cmd_del('DICT') or return;
 
@@ -36,8 +36,8 @@ our %HELP_DICT = (
 );
 
 # Callback for DICT command.
-sub cmd_dict {
-
+sub cmd_dict
+{
     my ($src, ($word)) = @_;
 
     # Check for needed parameters.

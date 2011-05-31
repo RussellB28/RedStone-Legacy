@@ -8,8 +8,8 @@ use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(notice topic);
 
 # Initialization subroutine.
-sub _init {
-
+sub _init
+{
     # PostgreSQL is not supported.
     if ($Auto::ENFEAT =~ /pgsql/) { err(3, 'Unable to load ChanTopics: PostgreSQL is not supported.', 0); return }
     
@@ -37,8 +37,8 @@ sub _init {
 }
 
 # Void subroutine.
-sub _void {
-
+sub _void
+{
     # Delete all the commands.
     cmd_del('TOPIC') or return;
     cmd_del('DIVIDER') or return;
@@ -79,8 +79,8 @@ our %HELP_TSYNC = (
 );
 
 # Callback for TOPIC command.
-sub cmd_topic {
-
+sub cmd_topic
+{
     my ($src, @argv) = @_;
 
     # Check for required parameters.
@@ -103,8 +103,8 @@ sub cmd_topic {
 }
 
 # Callback for DIVIDER command.
-sub cmd_divider {
-
+sub cmd_divider
+{
     my ($src, @argv) = @_;
 
     # Check for required parameters.
@@ -127,8 +127,8 @@ sub cmd_divider {
 }
 
 # Callback for OWNER command.
-sub cmd_owner {
-
+sub cmd_owner
+{
     my ($src, @argv) = @_;
 
     # Check for required parameters.
@@ -151,8 +151,8 @@ sub cmd_owner {
 }
 
 # Callback for VERB command.
-sub cmd_verb {
-
+sub cmd_verb
+{
     my ($src, @argv) = @_;
 
     # Check for required parameters.
@@ -175,8 +175,8 @@ sub cmd_verb {
 }
 
 # Callback for STATUS command.
-sub cmd_status {
-
+sub cmd_status
+{
     my ($src, @argv) = @_;
 
     # Check for required parameters.
@@ -199,8 +199,8 @@ sub cmd_status {
 }
 
 # Callback for OTHER command.
-sub cmd_other {
-
+sub cmd_other
+{
     my ($src, @argv) = @_;
 
     # Check for required parameters.
@@ -223,8 +223,8 @@ sub cmd_other {
 }
 
 # Callback for STATIC command.
-sub cmd_static {
-
+sub cmd_static
+{
     my ($src, @argv) = @_;
 
     # Check for required parameters.
@@ -247,8 +247,8 @@ sub cmd_static {
 }
 
 # Callback for TSYNC command.
-sub cmd_tsync {
-
+sub cmd_tsync
+{
     my ($src, @argv) = @_;
 
     # Get the topic data.
@@ -261,8 +261,8 @@ sub cmd_tsync {
 }
 
 # Subroutine for getting topic data.
-sub _getdata {
-
+sub _getdata
+{
     my ($net, $chan) = @_;
 
     # Check if there is a database entry for this channel.

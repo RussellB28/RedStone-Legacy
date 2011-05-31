@@ -9,8 +9,8 @@ use API::Std qw(cmd_add cmd_del hook_add hook_del trans);
 use API::IRC qw(privmsg notice);
 
 # Initialization subroutine.
-sub _init {
-
+sub _init
+{
     # Not compatible with PostgreSQL.
     if ($Auto::ENFEAT =~ /pgsql/) { err(2, 'Unable to load Greet: PostgreSQL is not supported.', 0); return }
 
@@ -26,8 +26,8 @@ sub _init {
 }
 
 # Void subroutine.
-sub _void {
-
+sub _void
+{
     # Delete the GREET command.
     cmd_del('GREET') or return;
     # Delete the greet_onjoin hook.
@@ -44,8 +44,8 @@ our %HELP_GREET = (
 );
 
 # Callback for GREET.
-sub cmd_greet {
-
+sub cmd_greet
+{
     my ($src, @argv) = @_;
 
     # Check for required parameters.
@@ -109,8 +109,8 @@ sub cmd_greet {
 }
 
 # Call back for on_rcjoin hook.
-sub hook_rcjoin {
-
+sub hook_rcjoin
+{
     my (($src, $chan)) = @_;
     my $nick = lc $src->{nick};
 

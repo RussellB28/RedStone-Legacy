@@ -9,8 +9,8 @@ use API::Std qw(cmd_add cmd_del trans has_priv conf_get match_user);
 use API::IRC qw(privmsg notice);
 our @BUFFER;
 
-sub _init {
-
+sub _init
+{
     # Create the QDB command.
     cmd_add('QDB', 0, 0, \%M::QDB::HELP_QDB, \&M::QDB::cmd_qdb) or return;
     
@@ -24,8 +24,8 @@ sub _init {
     return 1;
 }
 
-sub _void {
-
+sub _void
+{
     # Delete the QDB command.
     cmd_del('QDB') or return;
 
@@ -38,8 +38,8 @@ our %HELP_QDB = (
     en => "This command allows you to add, read, and delete quotes. \002Syntax:\002 QDB (ADD|VIEW|COUNT|RAND|SEARCH|MORE|DEL) [quote|expression]",
 );
 
-sub cmd_qdb {
-
+sub cmd_qdb
+{
     my ($src, @argv) = @_;
 
     # Check for needed parameter.
