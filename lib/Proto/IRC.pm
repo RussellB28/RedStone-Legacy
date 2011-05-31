@@ -63,8 +63,8 @@ API::Std::event_add('on_topic');
 API::Std::event_add('on_whoreply');
 
 # Parse raw data.
-sub ircparse
-{
+sub ircparse {
+
     my ($svr, $data) = @_;
 
     # Split spaces into @ex.

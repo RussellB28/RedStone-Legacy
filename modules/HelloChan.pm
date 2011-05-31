@@ -8,24 +8,24 @@ use API::Std qw(hook_add hook_del);
 use API::IRC qw(privmsg);
 
 # Initialization subroutine.
-sub _init
-{
+sub _init {
+
     # Add a hook for when we join a channel.
     hook_add('on_ucjoin', 'HelloChan', \&M::HelloChan::hello) or return;
     return 1;
 }
 
 # Void subroutine.
-sub _void
-{
+sub _void {
+
     # Delete the hook.
     hook_del('on_ucjoin', 'HelloChan') or return;
     return 1;
 }
 
 # Main subroutine.
-sub hello
-{
+sub hello {
+
     my (($svr, $chan)) = @_;
     
     # Send a PRIVMSG.

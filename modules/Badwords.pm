@@ -9,8 +9,8 @@ use API::Std qw(hook_add hook_del conf_get err);
 use API::IRC qw(privmsg notice kick ban);
 
 # Initialization subroutine.
-sub _init 
-{
+sub _init  {
+
     # Check for required configuration values.
     if (!conf_get('badwords')) {
         err(2, 'Please verify that you have a badwords block with word entries defined in your configuration file.', 0);
@@ -24,8 +24,8 @@ sub _init
 }
 
 # Void subroutine.
-sub _void 
-{
+sub _void  {
+
     # Delete the act_on_badword hook.
     hook_del('act_on_badword') or return;
 
@@ -34,8 +34,8 @@ sub _void
 }
 
 # Callback for act_on_badword hook.
-sub actonbadword
-{
+sub actonbadword {
+
     my (($src, $chan, @msg)) = @_;
 
     my $msg = join ' ', @msg;

@@ -14,8 +14,8 @@ our %HELP_MODLOAD = (
     'en' => 'Loads a module into the running Auto live.',
 );
 # MODLOAD callback.
-sub cmd_modload
-{
+sub cmd_modload {
+
     my ($src, @argv) = @_;
     
     # Check for the needed parameters.
@@ -52,8 +52,8 @@ our %HELP_MODUNLOAD = (
     'en' => 'Unloads a module from the running Auto live.',
 );
 # MODUNLOAD callback.
-sub cmd_modunload
-{
+sub cmd_modunload {
+
     my ($src, @argv) = @_;
     
     # Check for the needed parameters.
@@ -90,8 +90,8 @@ our %HELP_MODRELOAD = (
     'en' => 'Unloads then loads a module into the running Auto live.',
 );
 # MODRELOAD callback.
-sub cmd_modreload
-{
+sub cmd_modreload {
+
     my ($src, @argv) = @_;
     
     # Check for the needed parameters.
@@ -130,8 +130,8 @@ our %HELP_MODLIST = (
     'en' => "This will return a list of all currently loaded modules. \2Syntax:\2 MODLIST",
 );
 # MODLIST callback.
-sub cmd_modlist
-{
+sub cmd_modlist {
+
     my ($src, undef) = @_;
 
     # Iterate through all loaded modules.
@@ -152,8 +152,8 @@ our %HELP_SHUTDOWN = (
     'en' => "This will send out shutdown notifications, quit all networks, flush the database then exit the program. \2Syntax:\2 SHUTDOWN",
 );
 # SHUTDOWN callback.
-sub cmd_shutdown
-{
+sub cmd_shutdown {
+
     my ($src, undef) = @_;
     
     # Goodbye world!
@@ -173,8 +173,8 @@ our %HELP_RESTART = (
     'en' => 'This will send out restart notifications, quit all networks, flush the database, start a new Auto process, then exit the program.',
 );
 # RESTART callback.
-sub cmd_restart
-{
+sub cmd_restart {
+
     my ($src, undef) = @_;
     
     # Goodbye world!
@@ -202,8 +202,8 @@ our %HELP_REHASH = (
     'en' => 'This will reload the configuration file, update logs, load new modules and connect to new servers.',
 );
 # REHASH callback.
-sub cmd_rehash
-{
+sub cmd_rehash {
+
     my ($src, undef) = @_;
     
     # Send out notifications.
@@ -223,8 +223,8 @@ our %HELP_HELP = (
     'en' => 'Displays help for commands.',
 );
 # HELP callback.
-sub cmd_help
-{
+sub cmd_help {
+
     my ($src, @argv) = @_;
 
     # Check for arguments and reply accordingly.
