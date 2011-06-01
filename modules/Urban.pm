@@ -7,7 +7,7 @@ use warnings;
 use Furl;
 use HTML::Tree;
 use URI::Escape;
-use API::Std qw(cmd_add cmd_del conf_get);
+use API::Std qw(cmd_add cmd_del conf_get trans);
 use API::IRC qw(privmsg notice);
 my $LASTUSE = 0;
 
