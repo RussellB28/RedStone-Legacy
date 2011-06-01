@@ -147,8 +147,22 @@ hook_add('on_connect', 'connect.auth.plaintext', sub {
     return 1;
 });
 
+# WHO reply.
+hook_add('on_whoreply', 'state.self_who.parse', sub {
+    my ($svr, $nick, undef, $user, $mask, undef, undef, undef, undef) = @_;
+
+    # Check if it's for us.
+    if ($nick eq $State::IRC::botinfo{$svr}{nick}) {
+        # It is. Set data.
+        $State::IRC::botinfo{$svr}{user} = $user;
+        $State::IRC::botinfo{$svr}{mask} = $mask;
+    }
+
+    return 1;
+});
+
 # Auto join.
-hook_add('on_connect', 'connect.autojoin', sub {
+hook_add('on_connect', 'autojoin', sub {
     my ($svr) = @_;
 
     # Get the auto-join from the config.
@@ -193,20 +207,6 @@ hook_add('on_connect', 'connect.autojoin', sub {
         if ($lcn eq $svr) {
             API::IRC::cjoin($svr, $lcc);
         }
-    }
-
-    return 1;
-});
-
-# WHO reply.
-hook_add('on_whoreply', 'state.self_who.parse', sub {
-    my ($svr, $nick, undef, $user, $mask, undef, undef, undef, undef) = @_;
-
-    # Check if it's for us.
-    if ($nick eq $State::IRC::botinfo{$svr}{nick}) {
-        # It is. Set data.
-        $State::IRC::botinfo{$svr}{user} = $user;
-        $State::IRC::botinfo{$svr}{mask} = $mask;
     }
 
     return 1;
