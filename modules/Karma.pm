@@ -89,9 +89,9 @@ sub on_cprivmsg {
                 $score = $Auto::DB->selectrow_array('SELECT score FROM karma WHERE user = "'.lc $1.'"') or err(3, "Unable to update Karma score for $1!", 0);
             }
             $Auto::DB->do('UPDATE karma SET score = '.++$score.' WHERE user = "'.lc $1.'"') or err(3, "Unable to update Karma score for $1!", 0);
+            $LASTUSE{$src->{svr}}{lc $src->{nick}} = time;
+            _chkmem();
         }
-        $LASTUSE{$src->{svr}}{lc $src->{nick}} = time;
-        _chkmem();
     }
     elsif ($msg[0] =~ m/^(.+)--;?$/xsm) {
         # Potential decrement, check if the rest of the word is a user in the channel AND they're not trying to change their own score.
@@ -105,9 +105,9 @@ sub on_cprivmsg {
                 $score = $Auto::DB->selectrow_array('SELECT score FROM karma WHERE user = "'.lc $1.'"') or err(3, "Unable to update Karma score for $1!", 0);
             }
             $Auto::DB->do('UPDATE karma SET score = "'.--$score.'" WHERE user = "'.lc $1.'"') or err(3, "Unable to update Karma score for $1!", 0);
+            $LASTUSE{$src->{svr}}{lc $src->{nick}} = time;
+            _chkmem();
         }
-        $LASTUSE{$src->{svr}}{lc $src->{nick}} = time;
-        _chkmem();
     }
 
     return 1;
