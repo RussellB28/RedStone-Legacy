@@ -3,6 +3,8 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Added a Karma module for tracking the karma of users.
+    * Added support for CTCP TIME.
     * QDB 1.05: Improved safety and functionality in SEARCH.
     * Fixed formatting on clients such as Irssi with format_identify.pl.
     * Added an Urban module for looking up terms on Urban Dictionary.
