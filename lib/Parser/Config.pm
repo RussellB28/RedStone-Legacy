@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 # Create a new instance.
-sub new  {
+sub new {
     my $class = shift;
     my ($file) = @_;
     my $self = bless {}, $class;
@@ -28,7 +28,7 @@ sub new  {
 }
 
 # Parse the configuration file.
-sub parse  {
+sub parse {
     # Get the path to the file.
     my $self = shift;
     my $file = $self->{'config'}->{'path'};
