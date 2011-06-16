@@ -7,10 +7,12 @@ Legend:
     O = Cancelled.
     ? = Being questioned.
     + = Planned for Auto v3.1.
+    % = Done, but needs significant improvement.
 
  [ ] Cleanup
-     [ ] Replace println with Perl 5.10's say.
-     [ ] Fix inconsistencies in official modules
+     [X] Replace println with Perl 5.10's say.
+     [!] Fix inconsistencies in official modules.
+     [!] Fix inconsistencies in hook naming.
 
  [X] Language
      [X] Create method of translation.
@@ -20,6 +22,7 @@ Legend:
      [X] Add Spanish strings
      [X] Add French strings
      [ ] Add Spanish, French and German translations to all official command help hashes.
+     [ ] Swap out as many IRC message strings as possible for trans() strings.
 
  [!] API
      [X] Create basic modular functions
@@ -33,7 +36,7 @@ Legend:
      [O] Create Auto-Flatfile database format
      [O] Implement Auto-Flatfile as the main format
      [X] Add SQLite support as default
-     [x] Add MySQL support
+     [X] Add MySQL support
      [X] Add PostgreSQL support
      [O] Add Oracle DB support
 
@@ -43,9 +46,9 @@ Legend:
 
  [!] Features
      [X] Weather module
-     [ ] Urban Dictionary module
+     [X] Urban Dictionary module
      [X] UNO module
-     [ ] Google Search module
+     [%] Google Search module
      [ ] IRC Relay module
      [ ] (Google?) News module
      [X] QDB module
@@ -54,7 +57,7 @@ Legend:
      [ ] YouTube Search module
      [ ] Twitter module
      [X] Advanced Topics module
-     [!] Custom Triggers module
+     [X] Custom Triggers (Factoids) module
      [X] Shorten URL (bit.ly?) module
      [?] Bot Talk module
      [O] Minecraft<->IRC module
