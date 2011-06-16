@@ -21,6 +21,7 @@ In this alpha11 release, we have added:
 * An Urban module for looking up terms on Urban Dictionary.
 * Support for CTCP TIME.
 * A Karma module for tracking the karma of users.
+* A Factoids module for advanced factoid functionality.
 
 Bug fixes:
 

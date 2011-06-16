@@ -3,6 +3,7 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Added a Factoids module for advanced factoid functionality.
     * Added a Karma module for tracking the karma of users.
     * Added support for CTCP TIME.
     * QDB 1.05: Improved safety and functionality in SEARCH.
