@@ -9,7 +9,7 @@ use API::Log qw(alog);
 
 # Initialization subroutine.
 sub _init {
-    # Add a hook for when we join a channel.
+    # Add a hook for when we connect to a network.
     hook_add('on_connect', 'Oper.onconnect', \&M::Oper::on_connect) or return;
     # Add a hook for when we get numeric 491 (ERR_NOOPERHOST)
     rchook_add('491', 'Oper.on491', \&M::Oper::on_num491) or return;
