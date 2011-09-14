@@ -37,7 +37,7 @@ maintenance of Auto, and other projects.
 Contributors - Non-developers who contribute to the project
 greatly.
 
-+ Chazz "Alexandria" Wolcott &lt;alyx@woomoo.org&gt;
++ Alexandria "alyx" Wolcott &lt;alyx@woomoo.org&gt;
 
 
 ## 3. HOW TO INSTALL
