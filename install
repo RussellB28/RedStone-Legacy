@@ -137,7 +137,6 @@ else {
 println "\0";
 println 'Checking for required CPAN modules......';
 println "\0";
-#modfind("Mouse");
 modfind('DBI');
 modfind('DBD::SQLite') if $features =~ /sqlite/;
 modfind('DBD::mysql') if $features =~ /mysql/;
