@@ -65,4 +65,5 @@ Legend:
      [O] Minecraft<->IRC module
      [X] 8-Ball module
      [ ] Auto upgrade script
-         
+     [ ] Channel Stats
+     [ ] Logger - HTML         
