@@ -4,12 +4,21 @@
 package M::Logger;
 use strict;
 use warnings;
-use API::Std qw(hook_add hook_del conf_get err);
+use feature qw(switch);
+use API::Std qw(hook_add hook_del cmd_add cmd_del conf_get err trans);
+use API::IRC qw(notice privmsg);
+use API::Log qw(slog);
 our $LPATH;
 our $CURPATH;
 
 # Initialization subroutine.
 sub _init {
+    # PostgreSQL is not supported, yet.
+    if ($Auto::ENFEAT =~ /pgsql/) { err(3, 'Unable to load Logger: PostgreSQL is not supported.', 0); return }
+
+    # Create `logger` table.
+    $Auto::DB->do('CREATE TABLE IF NOT EXISTS logger (net TEXT, chan TEXT)') or return;
+
     # Create our logging hooks.
     hook_add('on_cprivmsg', 'logger.msg', \&M::Logger::on_cprivmsg) or return;
     hook_add('on_kick', 'logger.kick', \&M::Logger::on_kick) or return;
@@ -19,6 +28,11 @@ sub _init {
     hook_add('on_notice', 'logger.notice', \&M::Logger::on_notice) or return;
     hook_add('on_topic', 'logger.topic', \&M::Logger::on_topic) or return;
     hook_add('on_cmode', 'logger.cmode', \&M::Logger::on_cmode) or return;
+
+    # Create our command.
+    cmd_add('LOGGER', 2, 'logger.admin', \%M::Logger::HELP_LOGGER, \&M::Logger::cmd_logger) or return;
+
+    # Do some checks.
     if (!conf_get('logger:path')) {
         err(2, 'Logger: Please verify that you have path defined in the logger configuration block.', 0);
         return;
@@ -52,11 +66,17 @@ sub _void {
     hook_del('on_notice', 'logger.notice') or return;
     hook_del('on_topic', 'logger.topic') or return;
     hook_del('on_cmode', 'logger.cmode') or return;
-
+    # Delete the command.
+    cmd_del('LOGGER') or return;
 
     # Success.
     return 1;
 }
+
+# Help for LOGGER.
+our %HELP_LOGGER = (
+    en => "This command controls the Logger module. (You only need [<#channel>] in PM or for another channel) \2Syntax:\2 LOGGER <ENABLE|DISABLE|INFO> [<#channel>]",
+);
 
 # Subroutine to parse time for logging purposes.
 sub timechk {
@@ -192,6 +212,7 @@ sub on_kick {
 # Callback for our on_nick hook.
 sub on_nick {
     my ($svr, $src, $nnick) = @_;
+
     pathchk($svr);
 
     return 1;
@@ -263,6 +284,10 @@ sub cc2html {
 # Subroutine to log to file.
 sub log2file {
     my ($chan, $svr, $msg) = @_;
+
+    # Don't log if it's not wanted.
+    return if !check_log($svr, $chan);
+
     my $path = $CURPATH . "/" . $chan . ".html";
     if (!-e $path) {
         open(my $LOGF, q{>}, "$path");
@@ -276,7 +301,102 @@ sub log2file {
     return 1;
 }
 
+# Subroutine to check if logging for a channel is enabled.
+sub check_log {
+    my ($net, $chan) = @_;
+    my $q = $Auto::DB->prepare('SELECT net FROM logger WHERE net = ? AND chan = ?') or return 0;
+    $q->execute(lc $net, lc $chan) or return 0;
+    if ($q->fetchrow_array) {
+        return 1;
+    }
+    return 0;
+}
+
+# Callback for the LOGGER command.
+sub cmd_logger {
+    my ($src, @argv) = @_;
+
+    if (!defined $argv[0]) {
+        notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
+        return;
+    }
+
+    my $resp = 'Something went wrong.';
+
+    given(uc $argv[0]) {
+        when ('ENABLE') {
+            my $chan;
+            if (!defined $argv[1] and !defined $src->{chan}) {
+                notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
+                return;
+            }
+            $chan = $src->{chan};
+            $chan = $argv[1] if defined $argv[1];
+            notice($src->{svr}, $src->{nick}, "Logging is already enabled for $chan\@$src->{svr}.") and return if check_log($src->{svr}, $chan);
+            my $dbq = $Auto::DB->prepare('INSERT INTO logger (net, chan) VALUES (?, ?)');
+            if ($dbq->execute(lc $src->{svr}, lc $chan)) {
+                $resp = "Logging enabled for $chan\@$src->{svr}.";
+                slog("[\2Logger\2] $src->{nick} enabled logging for $chan\@$src->{svr}.");
+            }
+            else {
+                $resp = 'Failed to enable logging.';
+            }
+
+        }
+        when ('DISABLE') {
+            my $chan;
+            if (!defined $argv[1] and !defined $src->{chan}) {
+                notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
+                return;
+            }
+            $chan = $src->{chan};
+            $chan = $argv[1] if defined $argv[1];
+            notice($src->{svr}, $src->{nick}, "Logging is already disabled for $chan\@$src->{svr}.") and return if !check_log($src->{svr}, $chan);
+            my $dbq = $Auto::DB->prepare('DELETE FROM logger WHERE net = ? AND chan = ?');
+            if ($dbq->execute(lc $src->{svr}, lc $chan)) {
+                $resp = "Logging disabled for $chan\@$src->{svr}.";
+                slog("[\2Logger\2] $src->{nick} disabled logging for $chan\@$src->{svr}.");
+            }
+            else {
+                $resp = 'Failed to disable logging.';
+            }
+        }
+        when ('INFO') {
+            my $chan;
+            if (!defined $argv[1] and !defined $src->{chan}) {
+                notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
+                return;
+            }
+            $chan = $src->{chan};
+            $chan = $argv[1] if defined $argv[1];
+            my (undef, undef, undef, $d, $m, $y) = timechk;
+            my $path = $LPATH . "/" . lc($src->{svr}) . "/" . $m . $d . $y . "/" . $chan . ".html";
+            if (check_log($src->{svr}, $chan)) {
+                $resp = "Logging for \2$chan\@$src->{svr}\2 is \2ENABLED\2. Logs will be stored in $path.";
+            }
+            else {
+                $resp = "Logging for \2$chan\@$src->{svr}\2 is \2DISABLED\2.";
+            }
+        }
+        default {
+            # We don't know this command.
+            notice($src->{svr}, $src->{nick}, trans('Unknown action', $_).q{.});
+            return;
+        }
+    }
+
+    if (!defined $src->{chan}) {
+        notice($src->{svr}, $src->{nick}, $resp);
+    }
+    else {
+        privmsg($src->{svr}, $src->{chan}, $resp);
+    }
+
+   return 1;
+}
+
+
 # Start initialization.
-API::Std::mod_init('Logger', 'Xelhua', '1.01', '3.0.0a11');
+API::Std::mod_init('Logger', 'Xelhua', '1.02', '3.0.0a11');
 # build: perl=5.010000
 
