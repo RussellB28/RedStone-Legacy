@@ -23,6 +23,7 @@ In this alpha11 release, we have added:
 * A Karma module for tracking the karma of users.
 * A Factoids module for advanced factoid functionality.
 * A BTC module for checking the BTC conversion rate from BTCex.
+* A Logger module for HTML logging.
 
 Bug fixes:
 

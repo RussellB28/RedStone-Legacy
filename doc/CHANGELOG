@@ -3,6 +3,9 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Hooks: make on_cmode return a src hash instead of server name.
+    * Hooks: added on_iquit which also returns common channels with Auto.
+    * Added a BTC module for checking the current BTC conversion rates.
     * Added a Factoids module for advanced factoid functionality.
     * Added a Karma module for tracking the karma of users.
     * Added support for CTCP TIME.
