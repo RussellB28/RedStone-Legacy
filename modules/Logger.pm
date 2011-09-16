@@ -211,9 +211,17 @@ sub on_kick {
 
 # Callback for our on_nick hook.
 sub on_nick {
-    my ($svr, $src, $nnick) = @_;
+    my ($src, $nnick) = @_;
 
-    pathchk($svr);
+    pathchk($src->{svr});
+
+    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+
+    foreach my $ccu (keys %{ $State::IRC::chanusers{$src->{svr}}}) {
+        if (defined $State::IRC::chanusers{$src->{svr}}{$ccu}{lc $nnick}) {
+            log2file($ccu, $src->{svr}, "[$hour:$minute:$second] * <span style='color:lawngreen;'> $src->{nick} changed their nickname to $nnick. </span> </br>");
+        }
+    }
 
     return 1;
 }
@@ -250,9 +258,16 @@ sub on_part {
 # Callback for our on_notice hook.
 sub on_notice {
     my ($src, $target, @msg) = @_;
+
     # Check if our target is a channel. If it's not, bail.
     return if $target !~ m/#/xsm;
+
     pathchk($src->{svr});
+
+    my $msg = join ' ', @msg;
+    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+
+    log2file($target, $src->{svr}, "[$hour:$minute:$second] <span style='color:grey;'> -$src->{nick}\- $msg </span> </br>"); 
 
     return 1;
 }
