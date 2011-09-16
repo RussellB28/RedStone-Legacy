@@ -91,7 +91,7 @@ sub pathchk {
 sub statuschk {
     my ($svr, $chan, $user) = @_;
 
-    my $smodes = $State::IRC::chanusers{$svr}{$chan}{$user};
+    my $smodes = $State::IRC::chanusers{$svr}{$chan}{lc($user)};
     my %prefixes = %{$Proto::IRC::csprefix{$svr}};
     my $status;
     my $prefix = '';
