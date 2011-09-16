@@ -418,6 +418,8 @@ sub mode {
     my ($svr, @ex) = @_;
 
     if ($ex[2] ne $State::IRC::botinfo{$svr}{nick}) {
+        my %src = API::IRC::usrc(substr($ex[0], 1));
+        $src{svr} = $svr;
         # Set data we'll need later.
         my $chan = lc $ex[2];
         $ex[3] =~ s/^://xsm;
@@ -501,7 +503,7 @@ sub mode {
             }   
         }
         # Trigger on_cmode.
-        API::Std::event_run('on_cmode', ($svr, $chan, $fmodes));
+        API::Std::event_run('on_cmode', (\%src, $chan, $fmodes));
     }
     else {
         # User mode change; trigger on_umode.
