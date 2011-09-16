@@ -18,6 +18,7 @@ sub _init {
     hook_add('on_part', 'logger.part', \&M::Logger::on_part) or return;
     hook_add('on_notice', 'logger.notice', \&M::Logger::on_notice) or return;
     hook_add('on_topic', 'logger.topic', \&M::Logger::on_topic) or return;
+    hook_add('on_cmode', 'logger.cmode', \&M::Logger::on_cmode) or return;
     if (!conf_get('logger:path')) {
         err(2, 'Logger: Please verify that you have path defined in the logger configuration block.', 0);
         return;
@@ -50,6 +51,7 @@ sub _void {
     hook_del('on_part', 'logger.part') or return;
     hook_del('on_notice', 'logger.notice') or return;
     hook_del('on_topic', 'logger.topic') or return;
+    hook_del('on_cmode', 'logger.cmode') or return;
 
 
     # Success.
@@ -99,8 +101,8 @@ sub statuschk {
     elsif ($smodes =~ m/a/) { $status = "grey"; $prefix = $prefixes{a}; }
     elsif ($smodes =~ m/o/) { $status = "red"; $prefix = $prefixes{o}; }
     elsif ($smodes =~ m/h/) { $status = "orange"; $prefix = $prefixes{h}; }
-    elsif ($smodes =~ m/v/) { $status = "blue"; $prefix = $prefixes{v}; }
-    else { $status = "chartreuse"; }
+    elsif ($smodes =~ m/v/) { $status = "cyan"; $prefix = $prefixes{v}; }
+    else { $status = "lawngreen"; }
 
     return ($prefix, $status);
 }
@@ -112,10 +114,62 @@ sub on_cprivmsg {
     pathchk($src->{svr});
 
     my $msg = join ' ', @msg;
+
+    # Filter out CTCPs
+    if (($msg =~ /^\001(.*)\001/) || ($msg =~ /^\001(.*) /)) {
+        my $request = $1;
+        $request =~ s/ (.*)//;
+        my $txt = $1;
+        if ($request eq 'ACTION') {
+            $txt =~ s/ACTION//;
+            on_action($src, $chan, $txt);
+        }
+        else {
+            undef $txt;
+            on_ctcp($src, $chan);
+        }
+        return 1;
+    }
+                   
     my ($second, $minute, $hour, $dom, $month, $year) = timechk;
     my ($prefix, $color) = statuschk($src->{svr}, $chan, $src->{nick});
 
     log2file($chan, $src->{svr}, "[$hour:$minute:$second] <<span style='color:$color;'>$prefix$src->{nick}</span>> $msg <br />");
+
+    return 1;
+}
+
+# Callback for our on_action routine.
+sub on_action {
+    my ($src, $chan, $msg) = @_;
+
+    pathchk($src->{svr});
+
+    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($prefix, $color) = statuschk($src->{svr}, $chan, $src->{nick});
+
+    log2file($chan, $src->{svr}, "[$hour:$minute:$second] <span style='color:purple;'> * $prefix$src->{nick} $msg </span> <br />");
+
+    return 1;
+}
+
+# Callback for our on_ctcp hook.
+sub on_ctcp {
+    my ($src, $chan) = @_;
+
+    return 1;
+}
+
+# Callback for our on_cmode hook.
+sub on_cmode {
+    my ($src, $chan, $mstring) = @_;
+
+    pathchk($src->{svr});
+
+    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($prefix, undef) = statuschk($src->{svr}, $chan, $src->{nick});
+
+    log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:lawngreen'> $prefix$src->{nick} set mode(s) $mstring </span> <br />");
 
     return 1;
 }
@@ -150,9 +204,9 @@ sub on_join {
     pathchk($src->{svr});
 
     my ($second, $minute, $hour, $dom, $month, $year) = timechk;
-    my ($prefix, $color) = statuschk($src->{svr}, $chan, $src->{nick});
+    my ($prefix, undef) = statuschk($src->{svr}, $chan, $src->{nick});
 
-    log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:green;'> <span style='color:$color;'>$prefix$src->{nick}</span> joined the channel. </span> </br>");
+    log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:lawngreen;'> $prefix$src->{nick} joined the channel. </span> </br>");
 
     return 1;
 }
@@ -165,9 +219,9 @@ sub on_part {
 
     my $r = ($msg ? $msg : 'No reason.');
     my ($second, $minute, $hour, $dom, $month, $year) = timechk;
-    my ($prefix, $color) = statuschk($src->{svr}, $chan, $src->{nick});
+    my ($prefix, undef) = statuschk($src->{svr}, $chan, $src->{nick});
 
-    log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:red;'> <span style='color:$color;'>$prefix$src->{nick}</span> parted the channel ($r). </span> </br>");
+    log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:red;'> $prefix$src->{nick} parted the channel ($r). </span> </br>");
 
     return 1;
 }
@@ -185,9 +239,25 @@ sub on_notice {
 # Callback for our on_topic hook.
 sub on_topic {
     my ($src, @ntopic) = @_;
+    
+    my $topic = join ' ', @ntopic;
+    my $chan = $src->{chan};
+
     pathchk($src->{svr});
 
+    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($prefix, undef) = statuschk($src->{svr}, $chan, $src->{nick});
+
+    log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:lawngreen;'> $prefix$src->{nick} changed the channel topic to: </span> $topic </br>");
+
     return 1;
+}
+
+# Subroutine to convert irc color codes into html.
+sub cc2html {
+    my ($line) = @_;
+ 
+    return $line;
 }
 
 # Subroutine to log to file.
@@ -207,6 +277,6 @@ sub log2file {
 }
 
 # Start initialization.
-API::Std::mod_init('Logger', 'Xelhua', '1.00', '3.0.0a11');
+API::Std::mod_init('Logger', 'Xelhua', '1.01', '3.0.0a11');
 # build: perl=5.010000
 
