@@ -242,9 +242,7 @@ sub on_quit {
 
     foreach my $ccu (keys %{ $chans }) {
         my $smodes = $chans->{$ccu};
-        slog("$ccu - common channel with $src->{nick}. They have $smodes there.");
-            #my $prefix
-            #log2file($ccu, $src->{svr}, "[$hour:$minute:$second] * <span style='color:red;'> $prefix$src->{nick} left the network ($r).</span> </br>");
+        #log2file($ccu, $src->{svr}, "[$hour:$minute:$second] * <span style='color:red;'> $prefix$src->{nick} left the network ($r).</span> </br>");
     }
 
     return 1;
