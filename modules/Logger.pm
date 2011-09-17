@@ -28,6 +28,7 @@ sub _init {
     hook_add('on_notice', 'logger.notice', \&M::Logger::on_notice) or return;
     hook_add('on_topic', 'logger.topic', \&M::Logger::on_topic) or return;
     hook_add('on_cmode', 'logger.cmode', \&M::Logger::on_cmode) or return;
+    hook_add('on_iquit', 'logger.quit', \&M::Logger::on_quit) or return;
 
     # Create our command.
     cmd_add('LOGGER', 2, 'logger.admin', \%M::Logger::HELP_LOGGER, \&M::Logger::cmd_logger) or return;
@@ -66,6 +67,8 @@ sub _void {
     hook_del('on_notice', 'logger.notice') or return;
     hook_del('on_topic', 'logger.topic') or return;
     hook_del('on_cmode', 'logger.cmode') or return;
+    hook_del('on_iquit', 'logger.quit') or return;
+
     # Delete the command.
     cmd_del('LOGGER') or return;
 
@@ -112,8 +115,11 @@ sub pathchk {
 # Subrotuine to return a users highest status.
 sub statuschk {
     my ($svr, $chan, $user) = @_;
+    
+    my $smodes;
 
-    my $smodes = $State::IRC::chanusers{$svr}{$chan}{lc($user)};
+    $smodes = $State::IRC::chanusers{$svr}{$chan}{lc($user)};
+
     my %prefixes = %{$Proto::IRC::csprefix{$svr}};
     my $status;
     my $prefix = '';
@@ -187,9 +193,8 @@ sub on_cmode {
     pathchk($src->{svr});
 
     my ($second, $minute, $hour, $dom, $month, $year) = timechk;
-    my ($prefix, undef) = statuschk($src->{svr}, $chan, $src->{nick});
 
-    log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:lawngreen'> $prefix$src->{nick} set mode(s) $mstring </span> <br />");
+    log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:lawngreen'> $src->{nick} set mode(s) $mstring </span> <br />");
 
     return 1;
 }
@@ -224,6 +229,26 @@ sub on_nick {
     }
 
     return 1;
+}
+
+# Callback for our on_quit hook.
+sub on_quit {
+    my ($src, $chans, $reason) = @_;
+
+    pathchk($src->{svr});
+
+    my $r = ($reason ? $reason : 'No reason.');
+    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+
+    foreach my $ccu (keys %{ $chans }) {
+        my $smodes = $chans->{$ccu};
+        slog("$ccu - common channel with $src->{nick}. They have $smodes there.");
+            #my $prefix
+            #log2file($ccu, $src->{svr}, "[$hour:$minute:$second] * <span style='color:red;'> $prefix$src->{nick} left the network ($r).</span> </br>");
+    }
+
+    return 1;
+
 }
 
 # Callback for our on_rcjoin hook.
