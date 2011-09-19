@@ -59,6 +59,7 @@ API::Std::event_add('on_upart');
 API::Std::event_add('on_cprivmsg');
 API::Std::event_add('on_uprivmsg');
 API::Std::event_add('on_quit');
+API::Std::event_add('on_iquit');
 API::Std::event_add('on_topic');
 API::Std::event_add('on_whoreply');
 
@@ -754,9 +755,18 @@ sub quit {
         }
     }
 
+    my %cchans;
+    foreach my $ccu (keys %{ $State::IRC::chanusers{$src{svr}}}) {
+        if (defined $State::IRC::chanusers{$svr}{$ccu}{lc $src{nick}}) {
+            $cchans{$ccu} = $State::IRC::chanusers{$svr}{$ccu}{lc $src{nick}};
+        }
+    }
+
     # Trigger on_quit.
     API::Std::event_run("on_quit", (\%src, $msg));
-    
+    # Trigger on_iquit
+    API::Std::event_run("on_iquit", (\%src, \%cchans, $msg));
+
     return 1;
 }
 
