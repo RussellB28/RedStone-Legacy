@@ -240,9 +240,9 @@ sub on_quit {
     my $r = ($reason ? $reason : 'No reason.');
     my ($second, $minute, $hour, $dom, $month, $year) = timechk;
 
+    # TODO: Add prefix to QUIT.
     foreach my $ccu (keys %{ $chans }) {
-        my $smodes = $chans->{$ccu};
-        #log2file($ccu, $src->{svr}, "[$hour:$minute:$second] * <span style='color:red;'> $prefix$src->{nick} left the network ($r).</span> </br>");
+       log2file($ccu, $src->{svr}, "[$hour:$minute:$second] * <span style='color:red;'> $src->{nick} left the network ($r).</span> </br>");
     }
 
     return 1;
