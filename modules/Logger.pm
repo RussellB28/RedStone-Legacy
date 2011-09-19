@@ -435,6 +435,48 @@ sub cmd_logger {
 
 
 # Start initialization.
-API::Std::mod_init('Logger', 'Xelhua', '1.02', '3.0.0a11');
+API::Std::mod_init('Logger', 'Xelhua', '1.03', '3.0.0a11');
 # build: perl=5.010000
+
+__END__
+
+=head1 NAME
+
+Logger - HTML Logger.
+
+=head1 VERSION
+
+ 1.03
+
+=head1 SYNOPSIS
+
+ <starcoder> !logger enable #xelhua
+ <blue> Logging enabled for #xelhua.
+
+ <starcoder> !logger disable #xelhua
+ <blue> Logging disabled for #xelhua.
+
+ <starcoder> !logger info
+ <blue> Logging for #xelhua is DISABLED.
+
+=head1 DESCRIPTION
+
+This module keeps logs of channels and writes them in a HTML format.
+
+=head1 AUTHOR
+
+This module was written by Matthew Barksdale.
+
+This module is maintained by Xelhua Development Group.
+
+=head1 LICENSE AND COPYRIGHT
+
+This module is Copyright 2010-2011 Xelhua Development Group. All rights
+reserved.
+
+This module is released under the same licensing terms as Auto itself.
+
+=cut
+
+# vim: set ai et ts=4 sw=4:
 
