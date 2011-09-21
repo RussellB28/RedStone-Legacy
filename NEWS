@@ -33,6 +33,7 @@ Bug fixes:
 * UNO: Fixed a small bug in TOPTEN.
 * Fixed nasty state data bugs in chanusers.
 * Fixed formatting on clients such as Irssi with format_identify.pl.
+* Fixed nasty bug introduced by Elijah in chanstatus.
 
 Incompatibilities:
 

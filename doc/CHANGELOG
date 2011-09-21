@@ -3,6 +3,8 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Fixed: chanstatus bug introduced by everyones favorite starcoder.
+    * Added a Logger module for HTML logging.
     * Hooks: make on_cmode return a src hash instead of server name.
     * Hooks: added on_iquit which also returns common channels with Auto.
     * Added a BTC module for checking the current BTC conversion rates.
