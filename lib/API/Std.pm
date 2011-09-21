@@ -397,7 +397,7 @@ sub match_user {
                     }
                     else {
                         foreach my $bcj (keys %{ $Proto::IRC::botchans{$svr} }) {
-                            if (API::IRC::match_mask($bcj, $ccnm)) {
+                            if (lc($bcj) eq lc($ccnm)) {
                                 if (defined $State::IRC::chanusers{$svr}{$bcj}{lc $user{nick}}) {
                                     if ($State::IRC::chanusers{$svr}{$bcj}{lc $user{nick}} =~ m/($ccst)/sm) { return $userkey } ## no critic qw(RegularExpressions::RequireExtendedFormatting)
                                 }
