@@ -10,30 +10,13 @@
 The future of IRC bots is here! Xelhua gives to you, Auto 3.0, a new version of
 the popular Auto IRC bot.
 
-In this alpha11 release, we have added:
+In this alpha12 release, we have added:
 
-* Ping: Speed improvements.
-* An advanced IRC version of the popular party game Werewolf (AKA Mafia).
-* Commands with prefixes now work in PM's too.
-* A Coin module for random coin tosses.
-* A Ping module for highlighting everyone in the channel who is not /away (and not AWAY).
-* UNO 2.00, which now uses a real deck and has 0 cards..
-* An Urban module for looking up terms on Urban Dictionary.
-* Support for CTCP TIME.
-* A Karma module for tracking the karma of users.
-* A Factoids module for advanced factoid functionality.
-* A BTC module for checking the BTC conversion rate from BTCex.
-* A Logger module for HTML logging.
+Nothing yet.
 
 Bug fixes:
 
-* Fixed significant state mismatched data bugs.
-* Fixed a bug with var/ being created as 0600 instead of 0644.
-* Fixed a privset bug that broke privsets with multiple privileges.
-* UNO: Fixed a small bug in TOPTEN.
-* Fixed nasty state data bugs in chanusers.
-* Fixed formatting on clients such as Irssi with format_identify.pl.
-* Fixed nasty bug introduced by Elijah in chanstatus.
+None yet.
 
 Incompatibilities:
 
@@ -47,4 +30,4 @@ created by anyone and uploaded there for everyone to use.
 Auto's goal is to create an efficient, stable and highly customizable IRC bot
 in Perl. To offer an alternative to other platforms.
 
-Enjoy Auto 3.0.0 Alpha 11!
+Enjoy Auto 3.0.0 Alpha 12!
