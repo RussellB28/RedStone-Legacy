@@ -40,14 +40,17 @@ sub _init {
     }
     ($LPATH) = (conf_get('logger:path'))[0][0];
     if (!-r $LPATH) {
+        slog('Logger: Your logging path is not readable by the user Auto is running as.');
         err(2, 'Logger: Your logging path is not readable by the user Auto is running as.', 0);
         return;
     }
     elsif (!-w $LPATH) {
+        slog('Logger: Your logging path is not writeable by the user Auto is running as.');
         err(2, 'Logger: Your logging path is not writeable by the user Auto is running as.', 0);
         return;
     }
     elsif (!-d $LPATH) {
+        slog('Logger: Your logging path does not appear to be a directory');
         err(2, 'Logger: Your logging path does not appear to be a directory.', 0);
         return;
     }
@@ -90,6 +93,7 @@ sub timechk {
      $mon = $mon+1;
      $mon = "0$mon" if length($mon) != 2;
      $year = 1900+$year;
+     if (length($mday) == 1) { $mday = "0$mday"; }
      # Return what we need.
      return ($sec, $min, $hour, $mday, $mon, $year);
 }
