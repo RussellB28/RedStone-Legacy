@@ -3,6 +3,11 @@ Auto IRC Bot 3.0: Change Log
 
 3.0 Indev
 ===============================================================================
+    * Fixed: bug in creating var/ making it unwritable and unreadable.
+    * Logger: Added more logging to logchan and made all days be two digits (eg. November 1st -> November 01st)
+
+3.0 Alpha 11
+===============================================================================
     * Fixed: chanstatus bug introduced by everyones favorite starcoder.
     * Added a Logger module for HTML logging.
     * Hooks: make on_cmode return a src hash instead of server name.
