@@ -76,7 +76,7 @@ sub weather {
 }
 
 # Start initialization.
-API::Std::mod_init('Weather', 'Xelhua', '1.00', '3.0.0a10');
+API::Std::mod_init('Weather', 'Xelhua', '1.00', '3.0.0a11');
 # build: cpan=LWP::UserAgent,XML::Simple perl=5.010000
 
 __END__

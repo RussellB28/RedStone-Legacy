@@ -72,7 +72,7 @@ sub stats {
 }
 
 
-API::Std::mod_init('BotStats', 'Xelhua', '1.00', '3.0.0a10');
+API::Std::mod_init('BotStats', 'Xelhua', '1.00', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -89,7 +89,7 @@ BotStats - General information about the bot
 
  <starcoder> !stats
  <blue> I have been running for 0 days, 0 hours, 1 minutes, and 5 seconds.
- <blue> I am running Auto IRC Bot (version 3.0.0a10) for Perl v5.12.3 on linux.
+ <blue> I am running Auto IRC Bot (version 3.0.0a11) for Perl v5.12.3 on linux.
  <blue> I am on 2 channels, across 1 networks.
 
 =head1 DESCRIPTION

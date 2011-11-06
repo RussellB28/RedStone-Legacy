@@ -88,7 +88,7 @@ sub kill {
 # End of the API
 
 # Start initialization.
-API::Std::mod_init('Oper', 'Xelhua', '1.01', '3.0.0a10');
+API::Std::mod_init('Oper', 'Xelhua', '1.01', '3.0.0a11');
 # build: perl=5.010000
 
 __END__

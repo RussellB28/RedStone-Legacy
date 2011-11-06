@@ -65,7 +65,7 @@ sub cmd_aur {
 }
 
 # Start initialization.
-API::Std::mod_init('AUR', 'Xelhua', '1.00', '3.0.0a10');
+API::Std::mod_init('AUR', 'Xelhua', '1.00', '3.0.0a11');
 # build: cpan=WWW::AUR perl=5.010000
 
 __END__

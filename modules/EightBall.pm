@@ -100,7 +100,7 @@ sub rigball {
 
 
 # Start initialization.
-API::Std::mod_init('EightBall', 'Xelhua', '2.00', '3.0.0a10');
+API::Std::mod_init('EightBall', 'Xelhua', '2.00', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
