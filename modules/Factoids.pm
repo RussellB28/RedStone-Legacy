@@ -38,7 +38,7 @@ sub _void {
 
 # Help hash for the FACTOID command.
 our %HELP_FACTOID = (
-    en => "This command allows you to add/delete factoids. [#channel] is only needed in PM. \2Syntax:\2 FACTOID (ADD|DEL) [#channel] <trigger> [response]",
+    en => "This command allows you to add/delete factoids. [#channel] is only needed in PM. \2Syntax:\2 FACTOID (ADD|DEL|EDIT) [#channel] <trigger> [response]",
 );
 
 # Callback for FACTOID command.
@@ -78,6 +78,21 @@ sub cmd_factoid {
 
             notice($src->{svr}, $src->{nick}, "Factoid \2".lc $argv[1]."\2 for \2$src->{chan}\2 on \2$src->{svr}\2 successfully created.");
         }
+        when ('EDIT') {
+            # Ensure it exists.
+            my $cdbq = $Auto::DB->prepare('SELECT * FROM factoids WHERE net = ? AND chan = ? AND trigger = ?');
+            $cdbq->execute(lc $src->{svr}, lc $src->{chan}, lc $argv[1]);
+            if (!$cdbq->fetchrow_array) {
+                notice($src->{svr}, $src->{nick}, 'That factoid doesn\'t exist.');
+                return;
+            }
+
+            # Now update it.
+            my $dbq = $Auto::DB->prepare('UPDATE factoids SET response = ? WHERE net = ? AND chan = ? AND trigger = ?');
+            $dbq->execute(join(q{ }, @argv[2..$#argv]), lc $src->{svr}, lc $src->{chan}, lc $argv[1]) or notice($src->{svr}, $src->{nick}, trans('An error occurred')) and return;
+
+            notice($src->{svr}, $src->{nick}, "Factoid \2".lc $argv[1]."\2 for \2$src->{chan}\2 on \2$src->{svr}\2 successfully edited.");
+       }
         when ('DEL') {
             # Ensure it exists.
             my $cdbq = $Auto::DB->prepare('SELECT * FROM factoids WHERE net = ? AND chan = ? AND trigger = ?');
@@ -157,13 +172,17 @@ Factoids - Provides per-channel-per-network factoids.
  -blue- Factoid $!$foo for #bot on testnet successfully created.
  <starcoder> .foo
  <blue> Foo, bar, baz, etc.
+ <starcoder> .factoid edit $!$foo Bar, foo, baz, etc.
+ -blue- Factoid $!$foo for #bot on testnet successfully created.
+ <starcoder> .foo
+ <blue> Bar, foo, baz, etc.
 
 =head1 DESCRIPTION
 
 This module provides per-channel-per-network factoid (trigger/response)
 functionality with various extra useful abilities.
 
-This is done with: FACTOID (ADD|DEL) [#channel] <trigger> <response>
+This is done with: FACTOID (ADD|DEL|EDIT) [#channel] <trigger> <response>
 
 [#channel] is used if you send the command in PM to the bot.
 
