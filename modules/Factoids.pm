@@ -38,7 +38,7 @@ sub _void {
 
 # Help hash for the FACTOID command.
 our %HELP_FACTOID = (
-    en => "This command allows you to add/delete factoids. [#channel] is only needed in PM. \2Syntax:\2 FACTOID (ADD|DEL|EDIT) [#channel] <trigger> [response]",
+    en => "This command allows you to add/delete/edit factoids. [#channel] is only needed in PM. \2Syntax:\2 FACTOID (ADD|DEL|EDIT) [#channel] <trigger> [response]",
 );
 
 # Callback for FACTOID command.
