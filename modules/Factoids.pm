@@ -63,6 +63,13 @@ sub cmd_factoid {
                 return;
             }
 
+            my $fchar = (conf_get('fantasy_pf'))[0][0];
+            if (substr($argv[1], 0, 1) eq $fchar) {
+                notice($src->{svr}, $src->{nick}, "Due to the design of this module, adding a factoid starting with $fchar isn't possible. Sorry.");
+                return;
+            }
+
+
             # Ensure it doesn't already exist.
             my $cdbq = $Auto::DB->prepare('SELECT * FROM factoids WHERE net = ? AND chan = ? AND trigger = ?');
             $cdbq->execute(lc $src->{svr}, lc $src->{chan}, lc $argv[1]);
