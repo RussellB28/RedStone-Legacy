@@ -63,41 +63,37 @@ API::Std::mod_init('IPLookup', 'Xelhua', '1.00', '3.0.0a11');
 
 __END__
 
-=head1 IP Lookup
+=head1 Name
+IP Lookup  - Lookup information on an IP address
 
-=head2 Description
+=head1 VERSION
+1.00
 
-=over
-
-This module adds the IP LOOKUP command for retrieving ASN
-info for an IP.
-
-=back
-
-=head2 Examples
-
-=over
-
+=head1 SYNOPSIS
 <JohnSmith> !iplookup 8.8.8.8
 <Auto> IP: 8.8.8.8 | ASN: 15169 | Carrier: Google inc. | Organization: Google incorporated | Location: Mountain view, United states
 
-=back
+=head1 DESCRIPTION
+This module adds the IP LOOKUP command for retrieving ASN info for an IP.
 
-=head2 To Do
+=head1 INSTALL
+This module requires IP::Info and Readonly::XS. Both are obtainable from CPAN <http://www.cpan.org>.
 
-=over
+Before using IPLookup,add the following block in your configuration file:
+ipinfo {
+    api_key "API Key";
+    api_secret "API Secret";
+}
 
-=back
+You can get API credentials by registering at http://developer.quova.com/
 
-=head2 Technical
+=head1 AUTHOR
+This module was written by Liam Smith <me@liam.co>.
+This module is maintained by Liam Smith <me@liam.co>.
 
-=over
-
-This module requires IP::Info and Readonly::XS. Both are 
-obtainable from CPAN <http://www.cpan.org>.
-
-This module is compatible with Auto version 3.0.0a10+.
-
-=back
+=head1 LICENSE AND COPYRIGHT
+This module is Copyright 2010-2011 Xelhua Development Group, et al.
+This module is released under the same licensing terms as Auto itself.
+=cut
 
 # vim: set ai et sw=4 ts=4:
