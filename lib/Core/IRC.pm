@@ -166,6 +166,7 @@ hook_add('on_connect', 'autojoin', sub {
     my ($svr) = @_;
 
     # Get the auto-join from the config.
+    return if !conf_get("server:$svr:ajoin");
     my @cajoin = @{ (conf_get("server:$svr:ajoin"))[0] };
     
     # Join the channels.
