@@ -116,9 +116,21 @@ sub pathchk {
     return 1;
 }
 
+# Subroutine to validate a user.
+sub is_user {
+    my ($svr, $chan, $user) = @_;
+    
+    return 0 if !defined $State::IRC::chanusers{$svr}{$chan}{lc($user)};
+    
+    return 1;
+}
+
+
 # Subrotuine to return a users highest status.
 sub statuschk {
     my ($svr, $chan, $user) = @_;
+
+    return('', 'lawngreen') if !is_user($svr, $chan, $user);
     
     my $smodes;
 
@@ -161,7 +173,7 @@ sub on_cprivmsg {
         return 1;
     }
                    
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
     my ($prefix, $color) = statuschk($src->{svr}, $chan, $src->{nick});
 
     log2file($chan, $src->{svr}, "[$hour:$minute:$second] <<span style='color:$color;'>$prefix$src->{nick}</span>> $msg <br />");
@@ -175,7 +187,7 @@ sub on_action {
 
     pathchk($src->{svr});
 
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
     my ($prefix, $color) = statuschk($src->{svr}, $chan, $src->{nick});
 
     log2file($chan, $src->{svr}, "[$hour:$minute:$second] <span style='color:purple;'> * $prefix$src->{nick} $msg </span> <br />");
@@ -196,7 +208,7 @@ sub on_cmode {
 
     pathchk($src->{svr});
 
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
 
     log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:lawngreen'> $src->{nick} set mode(s) $mstring </span> <br />");
 
@@ -210,7 +222,7 @@ sub on_kick {
     pathchk($src->{svr});
 
     my $r = ($reason ? $reason : 'No reason.');
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
     my ($prefix, $color) = statuschk($src->{svr}, $chan, $src->{nick});
 
     log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:red;'> <span style='color:$color;'>$prefix$src->{nick}</span> kicked $user from $chan ($r). </span> </br>");
@@ -224,7 +236,7 @@ sub on_nick {
 
     pathchk($src->{svr});
 
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
 
     foreach my $ccu (keys %{ $State::IRC::chanusers{$src->{svr}}}) {
         if (defined $State::IRC::chanusers{$src->{svr}}{$ccu}{lc $nnick}) {
@@ -242,7 +254,7 @@ sub on_quit {
     pathchk($src->{svr});
 
     my $r = ($reason ? $reason : 'No reason.');
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
 
     # TODO: Add prefix to QUIT.
     foreach my $ccu (keys %{ $chans }) {
@@ -259,7 +271,7 @@ sub on_join {
 
     pathchk($src->{svr});
 
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
     my ($prefix, undef) = statuschk($src->{svr}, $chan, $src->{nick});
 
     log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:lawngreen;'> $prefix$src->{nick} joined the channel. </span> </br>");
@@ -274,7 +286,7 @@ sub on_part {
     pathchk($src->{svr});
 
     my $r = ($msg ? $msg : 'No reason.');
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
     my ($prefix, undef) = statuschk($src->{svr}, $chan, $src->{nick});
 
     log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:red;'> $prefix$src->{nick} parted the channel ($r). </span> </br>");
@@ -292,7 +304,7 @@ sub on_notice {
     pathchk($src->{svr});
 
     my $msg = join ' ', @msg;
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
 
     log2file($target, $src->{svr}, "[$hour:$minute:$second] <span style='color:grey;'> -$src->{nick}\- $msg </span> </br>"); 
 
@@ -308,7 +320,7 @@ sub on_topic {
 
     pathchk($src->{svr});
 
-    my ($second, $minute, $hour, $dom, $month, $year) = timechk;
+    my ($second, $minute, $hour, undef, undef, undef) = timechk;
     my ($prefix, undef) = statuschk($src->{svr}, $chan, $src->{nick});
 
     log2file($chan, $src->{svr}, "[$hour:$minute:$second] * <span style='color:lawngreen;'> $prefix$src->{nick} changed the channel topic to: </span> $topic </br>");
@@ -439,7 +451,7 @@ sub cmd_logger {
 
 
 # Start initialization.
-API::Std::mod_init('Logger', 'Xelhua', '1.03', '3.0.0a11');
+API::Std::mod_init('Logger', 'Xelhua', '1.04', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -450,7 +462,7 @@ Logger - HTML Logger.
 
 =head1 VERSION
 
- 1.03
+ 1.04
 
 =head1 SYNOPSIS
 
