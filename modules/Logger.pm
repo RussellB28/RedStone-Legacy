@@ -152,7 +152,7 @@ sub statuschk {
 # Callback for our on_cprivmsg hook.
 sub on_cprivmsg {
     my ($src, $chan, @msg) = @_;
-    return if !check_log($src->{svr}, $chan);
+    return 0 if !check_log($src->{svr}, $chan);
 
     pathchk($src->{svr});
 
@@ -185,7 +185,7 @@ sub on_cprivmsg {
 # Callback for our on_action routine.
 sub on_action {
     my ($src, $chan, $msg) = @_;
-    return if !check_log($src->{svr}, $chan);
+    return 0 if !check_log($src->{svr}, $chan);
 
     pathchk($src->{svr});
 
@@ -207,7 +207,7 @@ sub on_ctcp {
 # Callback for our on_cmode hook.
 sub on_cmode {
     my ($src, $chan, $mstring) = @_;
-    return if !check_log($src->{svr}, $chan);
+    return 0 if !check_log($src->{svr}, $chan);
 
     pathchk($src->{svr});
 
@@ -221,7 +221,7 @@ sub on_cmode {
 # Callback for our on_kick hook.
 sub on_kick {
     my ($src, $chan, $user, $reason) = @_;
-    return if !check_log($src->{svr}, $chan);
+    return 0 if !check_log($src->{svr}, $chan);
 
     pathchk($src->{svr});
 
@@ -272,7 +272,7 @@ sub on_quit {
 # Callback for our on_rcjoin hook.
 sub on_join {
     my ($src, $chan) = @_;
-    return if !check_log($src->{svr}, $chan);
+    return 0 if !check_log($src->{svr}, $chan);
 
     pathchk($src->{svr});
 
@@ -287,7 +287,7 @@ sub on_join {
 # Callback for our on_part hook.
 sub on_part {
     my ($src, $chan, $msg) = @_;
-    return if !check_log($src->{svr}, $chan);
+    return 0 if !check_log($src->{svr}, $chan);
 
     pathchk($src->{svr});
 
@@ -305,9 +305,9 @@ sub on_notice {
     my ($src, $target, @msg) = @_;
 
     # Check if our target is a channel. If it's not, bail.
-    return if $target !~ m/#/xsm;
+    return 0 if $target !~ m/#/xsm;
 
-    return if !check_log($src->{svr}, $target);
+    return 0 if !check_log($src->{svr}, $target);
 
     pathchk($src->{svr});
 
@@ -322,7 +322,7 @@ sub on_notice {
 # Callback for our on_topic hook.
 sub on_topic {
     my ($src, @ntopic) = @_;
-    return if !check_log($src->{svr}, $src->{chan});
+    return 0 if !check_log($src->{svr}, $src->{chan});
     
     my $topic = join ' ', @ntopic;
     my $chan = $src->{chan};
