@@ -55,7 +55,7 @@ sub cmd_iplookup {
         }
         my $iaddr = inet_aton($ip);
         my $rdns = gethostbyaddr($iaddr, AF_INET);
-        privmsg($src->{svr}, $src->{chan}, "IP: ".$ip." | ASN: ".(defined($asn) ? $asn : 'N/A')." | Location: ".(defined($city) ? $city : 'N/A').", ".(defined($state) ? $state : 'N/A').", ".$iana->country." | Netname: ".$iana->netname." | Description: ".$iana->descr." | Source: ".$iana->source." | rDNS: ".$rdns." | Abuse: ".$iana->abuse);
+        privmsg($src->{svr}, $src->{chan}, "IP: ".$ip." | ASN: ".(defined($asn) ? $asn : 'N/A')." | Location: ".(defined($city) ? $city : 'N/A').", ".(defined($state) ? $state : 'N/A').", ".$iana->country." | Netname: ".$iana->netname." | Description: ".$iana->descr." | Source: ".$iana->source." | rDNS: ".(defined($rdns) ? $rnds : 'None')." | Abuse: ".$iana->abuse);
     } else {
         privmsg($src->{svr}, $src->{chan}, 'Not enough parameters.');
     }
