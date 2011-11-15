@@ -227,6 +227,9 @@ say ' Success';
 undef $configfile;
 undef $USECONFIG;
 
+# Checkin.
+Lib::Auto::checkin();
+
 if (conf_get('die')) {
     if ((conf_get('die'))[0][0] == 1) {
         say '!!! You didn\'t read the whole config.';

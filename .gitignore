@@ -5,3 +5,4 @@ autodoc/*
 *.db
 var/*
 *.pid
+*.uid

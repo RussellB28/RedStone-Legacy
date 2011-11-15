@@ -48,6 +48,66 @@ sub checkver {
     }
 }
 
+# Checkin.
+sub checkin {
+    if ((conf_get('contact_home'))[0][0]) {
+        my $getid = 0;
+        my $uidfile = ($Auto::UPREFIX ? "$Auto::bin{etc}/auto.uid" : "$Auto::Bin/../etc/auto.uid");
+        if (!-e $uidfile) { $getid = 1; }
+        if ($getid) {
+            say '* Connecting to master server...';
+            my $uss = IO::Socket::INET->new(
+                'Proto'    => 'tcp',
+                'PeerAddr' => 'checkin.xelhua.org',
+                'PeerPort' => 8082,
+                'Timeout'  => 30
+            ) or err(1, 'Cannot connect to master server! Aborting check-in.');
+            send $uss, "NEWID\r\n", 0;
+            while (my $data = readline $uss) {
+                $data =~ s/(\n|\r)//g;
+                if ($data =~ m/RESULT: (.*)/ixsm) {
+                    if ($1 !~ m/ERR_/ixsm) {
+                        if ($1 =~ m/ Your unique ID: (.*)/ism) {
+                            say("* Detected new Auto install. Got UID: $1");
+                            open my $FUID, '>', $uidfile or err(1, 'Cannot open UID file. Aborting check-in.');;
+                            print {$FUID} $1 or err(1, 'Cannot write to UID file. Aborting check-in.');
+                            close $FUID;
+                        }
+                    }
+                    else {
+                        err(1, "Master server returned error: $1. Aborting check-in.");
+                    }
+                }
+            }
+        }
+        open my $FUID, '<', $uidfile or err(1, 'Cannot open UID file. Aborting check-in.');
+        my @FUID = <$FUID>;
+        close $FUID;
+        $Auto::CUID = $FUID[0];
+        say '* Connecting to master server...';                                           
+        my $uss = IO::Socket::INET->new(
+            'Proto'    => 'tcp',
+            'PeerAddr' => 'checkin.xelhua.org',
+            'PeerPort' => 8082,
+            'Timeout'  => 30
+        ) or err(1, 'Cannot connect to master server! Aborting check-in.');
+        my $version = Auto::VER.q{.}.Auto::SVER.q{.}.Auto::REV.Auto::RSTAGE;
+        send $uss, "UPDATE $Auto::CUID $version $OSNAME\r\n", 0;
+        while (my $data = readline $uss) {
+            $data =~ s/(\n|\r)//g;
+            if ($data =~ m/RESULT: (.*)/ixsm) {
+                if ($1 !~ m/ERR_/ixsm) {
+                    say("*$1");
+                }
+                else {
+                    err(1, "Master server returned error: $1. Aborting check-in.");
+                }
+            }
+        }
+
+    }
+}
+
 sub rehash {
     # Parse configuration file.
     my %newsettings = $Auto::CONF->parse or err(2, 'Failed to parse configuration file!', 0) and return;

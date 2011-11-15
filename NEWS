@@ -13,6 +13,7 @@ the popular Auto IRC bot.
 In this alpha12 release, we have added:
 
 * IPLookup: Lookup information on an IP address
+* contact_home: Collect stats on version/operating systems Auto is ran on. In the future this will be expanded upon.
 
 Bug fixes:
 
