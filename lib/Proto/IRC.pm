@@ -86,15 +86,13 @@ sub ircparse {
         # Check if it's handled by core.
         elsif (defined $RAWC{$ex[1]}) {
             &{ $RAWC{$ex[1]} }($svr, @ex);
-        }
-        else {
-            # otherwise, check for a raw hook.
-            if (defined $API::Std::RAWHOOKS{$ex[1]}) {
-                foreach (keys %{$API::Std::RAWHOOKS{$ex[1]}}) {
-                    &{ $API::Std::RAWHOOKS{$ex[1]}{$_} }($svr, @ex);
-                }
-            }
-        }
+         }
+         # Check for a raw hook.
+         if (defined $API::Std::RAWHOOKS{$ex[1]}) {
+             foreach (keys %{$API::Std::RAWHOOKS{$ex[1]}}) {
+                 &{ $API::Std::RAWHOOKS{$ex[1]}{$_} }($svr, @ex);
+             }
+         }
     }
 
     return 1;
