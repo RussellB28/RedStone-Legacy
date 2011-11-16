@@ -269,8 +269,6 @@ sub rchook_add {
     my ($cmd, $name, $sub) = @_;
     $cmd = uc $cmd;
 
-    # Make sure core doesn't already handle this.
-    if (defined $Proto::IRC::RAWC{$cmd}) { return }
     # If the hook already exists, ignore it.
     if (defined $RAWHOOKS{$cmd}{$name}) { return }
     
