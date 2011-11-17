@@ -14,6 +14,8 @@ In this alpha12 release, we have added:
 
 * IPLookup: Lookup information on an IP address
 * contact_home: Collect stats on version/operating systems Auto is ran on. In the future this will be expanded upon.
+* API: allow hooking to any and every possible command via rchook.
+* Pisg: Added a module to automate Pisg and log with a recognized format.
 
 Bug fixes:
 

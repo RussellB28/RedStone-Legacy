@@ -8,6 +8,8 @@ Auto IRC Bot 3.0: Change Log
     * Fixed: bug in creating var/ making it unwritable and unreadable.
     * Logger: Added more logging to logchan and made all days be two digits (eg. November 1st -> November 01st)
     * contact_home: Collect stats on version/operating systems Auto is ran on. In the future this will be expanded upon.
+    * API: allow hooking to any and every possible command via rchook.
+    * Pisg: Added a module to automate Pisg and log with a recognized format.
 
 3.0 Alpha 11
 ===============================================================================
