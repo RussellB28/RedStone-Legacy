@@ -1,0 +1,86 @@
+#!/usr/bin/env perl
+# acmr - Auto Community Module Repository (Manager)
+# Copyright (C) 2010-2011 Xelhua Development Group, et al.
+# This program is free software; rights to this code are stated in doc/LICENSE.
+
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use feature qw(say switch);
+use Furl;
+
+our $VERBOSE = 0;
+
+my %words = ( help => 'Displays help and exits.',
+              verbose => 'V',
+              install => 'I',
+              remove => 'R',
+              version => 'v',
+);
+
+my %switches = ( h => $words{help},
+                V => $words{verbose},
+                I => 'Install.',
+                R => 'Remove.',
+                v => $words{version},
+);
+
+my %passed = ();
+
+foreach (@ARGV) {
+
+    if ($_ =~ m/-/) {
+       my @switches = split('-', $_);
+       foreach (@switches) {
+           my @options = split(//, $_);
+           foreach (@options) {
+              say("Invalid option $_") and next if !defined($switches{$_});
+              $passed{$_} = 1;
+           }
+           say($_) foreach (@options);
+       }
+    }
+    else {
+        say("Invalid option $_") if !defined($words{$_});
+        $passed{$words{$_}} = 1;
+        say("Setting $passed{$words{$_}}");
+        say($_);
+    }
+   
+  
+}
+
+#my %functions = ( h => \&display_help(), );
+
+
+sub display_help {
+   print <<ENDHELP;
+   
+** ACMR Help **
+Syntax: acmr <help/install/search/verbose/version/remove/upgrade/list> [module/pattern]
+
+Command (Switch) - Syntax - Description
+
+help (-h) - help - Displays this text and exits.
+install (-I) - install <module> -  Install a module from ACMR.
+version (-v) - version - Displays the current version and exits;
+remove (-r) - remove <module> - Removes a module that is installed.
+download (-d) - download <module> - Downloads a module to the current directory without building.
+upgrade (-u) - upgrade <module/*/auto> - Upgrades a module, all modules, or Auto itself.
+verbose (-V) - verbose - Displays verbose information on the current task.
+
+ENDHELP
+
+   exit(1);
+}
+
+foreach (keys %passed) { 
+   say("Passed $_");
+   $VERBOSE = 1 if $_ eq 'V';
+   say("*** Starting in verbose.") if $VERBOSE;
+
+#   if (defined $functions{$_}) {
+#       eval { $functions{$_}; };
+#   }
+
+}
