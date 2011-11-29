@@ -45,12 +45,14 @@ sub cmd_eval {
 
     # Evaluate the expression and return the result.
     my $expr = join ' ', @argv;
-    my $result = eval($expr);
+    my $source = exists $src->{chan} ? $src->{chan} : $src->{nick};
+    my $result = do {
+        local $SIG{__WARN__} = sub { privmsg($src->{svr}, $source, 'Warning: '.shift()) };
+        local $SIG{__DIE__}  = sub { privmsg($src->{svr}, $source, 'Error: '.shift())   };
+        eval $expr;
+    };
+
     if (!defined $result) { $result = 'None' }
-    if ($EVAL_ERROR) {
-        $result = $EVAL_ERROR;
-        $result =~ s/(\r|\n)//gxsm;
-    }
 
     # Return the result.
     if (!defined $src->{chan}) {
@@ -65,7 +67,7 @@ sub cmd_eval {
 
 
 # Start initialization.
-API::Std::mod_init('Eval', 'Xelhua', '1.01', '3.0.0a11');
+API::Std::mod_init('Eval', 'Xelhua', '1.02', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -76,7 +78,7 @@ Eval - Allows you to evaluate Perl code from IRC
 
 =head1 VERSION
 
- 1.01
+ 1.02
 
 =head1 SYNOPSIS
 
