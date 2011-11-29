@@ -8,6 +8,7 @@ use feature qw(switch);
 use API::Std qw(rchook_add rchook_del conf_get err trans cmd_add cmd_del hook_add hook_del timer_add);
 use API::IRC qw(notice privmsg cpart cjoin);
 use API::Log qw(slog dbug alog);
+use Time::HiRes qw(gettimeofday);
 our $LASTRUN = "It has never been ran.";
 our $HALTRUN = 0;
 our $DISABLE_RUN = 0;
@@ -171,7 +172,8 @@ sub log2file {
         mkdir "$LDIR/$svr";
     }
     open(my $LOGF, q{>>}, "$path");
-    print $LOGF "\n".time()." ".$msg;
+    my $ts = int((gettimeofday())*1000);
+    print $LOGF "\n".$ts." ".$msg;
     close $LOGF;
 
     return 1;
@@ -427,7 +429,7 @@ sub fix_net {
 
 # Start initialization.
 API::Std::mod_init('Pisg', 'Xelhua', '1.00', '3.0.0a11');
-# build: perl=5.010000
+# build: perl=5.010000 cpan=Time::HiRes
 
 __END__
 
