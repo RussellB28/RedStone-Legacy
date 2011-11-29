@@ -173,7 +173,7 @@ sub log2file {
     }
     open(my $LOGF, q{>>}, "$path");
     my $ts = int((gettimeofday())*1000);
-    print $LOGF "\n".$ts." ".$msg;
+    print $LOGF $ts." ".$msg."\n";
     close $LOGF;
 
     return 1;
