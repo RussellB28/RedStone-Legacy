@@ -72,6 +72,7 @@ BEGIN {
 use Lib::Auto;
 use API::Std qw(conf_get err);
 use API::Log qw(alog dbug);
+use API::Socket qw(add_socket del_socket send_socket);
 #use DB::Flatfile;
 use Parser::Config;
 use Parser::Lang;
@@ -83,6 +84,9 @@ use Core::Cmd;
 
 our $VERSION = 3.000000;
 local $PROGRAM_NAME = 'auto';
+
+# Binmode to avoid warnings;
+binmode(STDOUT, ':encoding(UTF-8)');
 
 # Check for build files.
 if (!-e "$bin{bld}/os" or !-e "$bin{bld}/perl" or !-e "$bin{bld}/time" or !-e "$bin{bld}/ver") {
@@ -514,7 +518,7 @@ while (1) {
         # Figure out what network is sending us data.
         my $sockid;
         foreach (keys %SOCKET) {
-            if ($SOCKET{$_} eq $sock) { $sockid = $_ }
+            if ($SOCKET{$_}{socket} eq $sock) { $sockid = $_ }
         }
         # Read the data.
         my $idata;
@@ -524,8 +528,7 @@ while (1) {
         if (!defined $idata || length($idata) == 0) {
             # Got EOF, close socket
             err(2, "Lost connection to $sockid!", 0);
-            $SELECT->remove($sock);
-            delete $SOCKET{$sockid};
+            del_socket($sockid);
             API::Std::event_run('on_disconnect', $sockid);
             if (!keys %SOCKET) {
                 # No more connections, stop the program.
@@ -546,10 +549,11 @@ while (1) {
             # Remove the newlines.
             chomp $line;
             # Debug.
-            dbug $sockid.' >> '.$line;
+            my $type = (conf_get("server:$sockid") ? 'IRC' : 'Socket');
+            dbug "[$type] $sockid >> $line";
 
             # Parse data.
-            Proto::IRC::ircparse($sockid, $line);
+            \&{$SOCKET{$sockid}{handler}}($sockid, $line);
         }
     }
 }
@@ -563,8 +567,7 @@ sub socksnd {
     my ($svr, $data) = @_;
 
     if (defined $SOCKET{$svr}) {
-        syswrite $SOCKET{$svr}, "$data\r\n", POSIX::BUFSIZ, 0;
-        dbug "$svr << $data";
+        send_socket($svr, $data);
         return 1;
     }
     else {
