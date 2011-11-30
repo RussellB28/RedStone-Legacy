@@ -11,6 +11,7 @@ Auto IRC Bot 3.0: Change Log
     * API: allow hooking to any and every possible command via rchook.
     * Pisg: Added a module to automate Pisg and log with a recognized format.
     * API::Socket - Exposing sockets to the API allowing custom sockets/parsers in modules.
+    * BotStats 1.01: Changed command to match module name and added support for API::Socket.
 
 3.0 Alpha 11
 ===============================================================================

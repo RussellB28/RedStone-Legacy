@@ -17,6 +17,7 @@ In this alpha12 release, we have added:
 * API: allow hooking to any and every possible command via rchook.
 * Pisg: Added a module to automate Pisg and log with a recognized format.
 * API::Socket - Exposing sockets to the API allowing custom sockets/parsers in modules.
+* BotStats: Changed command to match module name and added support for API::Socket.
 
 Bug fixes:
 
