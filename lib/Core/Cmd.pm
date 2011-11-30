@@ -160,7 +160,7 @@ sub cmd_shutdown
     notice($src->{svr}, $src->{nick}, "Shutting down.");
     dbug "Got SHUTDOWN from ".$src->{nick}."!".$src->{user}."@".$src->{host}."/".$src->{svr}."! Shutting down. . .";
     alog "Got SHUTDOWN from ".$src->{nick}."!".$src->{user}."@".$src->{host}."/".$src->{svr}."! Shutting down. . .";
-    quit($_, "SHUTDOWN from ".$src->{nick}."/".$src->{svr}) foreach (keys %Auto::SOCKET);
+    foreach (keys %Auto::SOCKET) { quit($_, "SHUTDOWN from ".$src->{nick}."/".$src->{svr}) if Auto::is_ircsock($_); }
     API::Std::event_run('on_shutdown');
     exit;
 
@@ -181,7 +181,7 @@ sub cmd_restart
     notice($src->{svr}, $src->{nick}, "Restarting.");
     dbug "Got RESTART from ".$src->{nick}."!".$src->{user}."@".$src->{host}."/".$src->{svr}."! Restarting. . .";
     alog "Got RESTART from ".$src->{nick}."!".$src->{user}."@".$src->{host}."/".$src->{svr}."! Restarting. . .";
-    quit($_, "RESTART from ".$src->{nick}."/".$src->{svr}) foreach (keys %Auto::SOCKET);
+    foreach (keys %Auto::SOCKET) { quit($_, "RESTART from ".$src->{nick}."/".$src->{svr}) if Auto::is_ircsock($_); }
     API::Std::event_run('on_shutdown');
 
     # Time to come back from the dead!
