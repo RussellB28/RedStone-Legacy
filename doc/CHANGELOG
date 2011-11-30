@@ -10,6 +10,7 @@ Auto IRC Bot 3.0: Change Log
     * contact_home: Collect stats on version/operating systems Auto is ran on. In the future this will be expanded upon.
     * API: allow hooking to any and every possible command via rchook.
     * Pisg: Added a module to automate Pisg and log with a recognized format.
+    * API::Socket - Exposing sockets to the API allowing custom sockets/parsers in modules.
 
 3.0 Alpha 11
 ===============================================================================
