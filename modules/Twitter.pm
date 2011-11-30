@@ -5,7 +5,7 @@ package M::Twitter;
 use strict;
 use warnings;
 use feature qw(switch);
-use API::Std qw(rchook_add rchook_del conf_get err trans cmd_add cmd_del hook_add hook_del timer_add);
+use API::Std qw(conf_get err trans cmd_add cmd_del hook_add hook_del timer_add timer_del);
 use API::IRC qw(notice privmsg cpart cjoin);
 use API::Log qw(slog dbug alog);
 use XML::RSS::Parser::Lite;
@@ -13,11 +13,8 @@ use LWP::Simple;
 use LWP::UserAgent;
 use HTML::Entities;
 use TryCatch;
-our $LASTRUN = "It has never been ran.";
-our $HALTRUN = 0;
 our $ENABLE_RUN = 0;
 our $RUN_DELAY = 30;
-our ($PDIR, $LDIR, $WDIR, $UBASE, $RSCRIPT);
 
 # Initialization subroutine.
 sub _init {
@@ -286,19 +283,6 @@ sub process_feed {
 }
 
 
-
-sub global {
-    my ($msg) = @_;
-    my $dbh = $Auto::DB->prepare('SELECT * FROM twitter');
-    $dbh->execute;
-    my $data = $dbh->fetchall_arrayref;
-    foreach my $r (@$data) {
-        my $net = $r->[0];
-        my $chan = $r->[1];
-        return if !fix_net($net);
-        privmsg(fix_net($net), $chan, $msg);
-    }
-}
 
 sub fix_net {
     my ($net) = @_;
