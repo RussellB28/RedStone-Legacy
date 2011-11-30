@@ -22,6 +22,7 @@ In this alpha12 release, we have added:
 Bug fixes:
 
 * var/ permissions error on first run.
+* If -c was passed at runtime, also pass it upon restart.
 
 Incompatibilities:
 

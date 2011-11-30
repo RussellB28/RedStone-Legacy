@@ -222,13 +222,12 @@ if ($ENFEAT =~ /ipv6/) { require IO::Socket::INET6 }
 if ($ENFEAT =~ /ssl/) { require IO::Socket::SSL }
 
 # Parse configuration file.
-my $configfile = 'auto.conf';
+our $configfile = 'auto.conf';
 if ($USECONFIG) { $configfile = $USECONFIG }
 say "* Parsing configuration file $configfile...";
 our $CONF = Parser::Config->new($configfile) or err(1, 'Failed to parse configuration file!', 1);
 our %SETTINGS = $CONF->parse or err(1, 'Failed to parse configuration file!', 1);
 say ' Success';
-undef $configfile;
 undef $USECONFIG;
 
 # Checkin.

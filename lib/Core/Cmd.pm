@@ -185,12 +185,10 @@ sub cmd_restart
     API::Std::event_run('on_shutdown');
 
     # Time to come back from the dead!
-    if ($Auto::DEBUG) {
-        exec "perl $Auto::Bin/auto -d -nuc";
-    }
-    else {
-        exec "perl $Auto::Bin/auto -nuc";
-    }
+    my $command = "perl $Auto::Bin/auto -nuc -c $Auto::configfile ";
+    $command .= '-d' if $Auto::DEBUG;
+    exec $command;
+
     exit;
 
     # To appease PerlCritic.
