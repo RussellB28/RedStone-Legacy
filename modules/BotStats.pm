@@ -10,8 +10,8 @@ use API::IRC qw(privmsg);
 
 # Initialization subroutine.
 sub _init {
-    # Create the STATS command.
-    cmd_add('STATS', 2, 0, \%M::BotStats::HELP_STATS, \&M::BotStats::stats) or return;
+    # Create the BOTSTATS command.
+    cmd_add('BOTSTATS', 2, 0, \%M::BotStats::HELP_STATS, \&M::BotStats::stats) or return;
 
     # Success.
     return 1;
@@ -20,7 +20,7 @@ sub _init {
 # Void subroutine.
 sub _void {
     # Delete the STATS command.
-    cmd_del('STATS') or return;
+    cmd_del('BOTSTATS') or return;
 
     # Success.
     return 1;
@@ -59,20 +59,28 @@ sub stats {
     privmsg($src->{svr}, $target, 'I am running '.Auto::NAME.' (version '.Auto::VER.q{.}.Auto::SVER.q{.}.Auto::REV.Auto::RSTAGE.") for Perl $PERL_VERSION on $OSNAME.");
 
     # Get network and channel data.
-    my $nets = keys %Auto::SOCKET;
+    my $sockets = keys %Auto::SOCKET;
+    my $nets;
+    foreach (%Auto::SOCKET) {
+        if (Auto::is_ircsock($_)) {
+             $nets++;
+        }
+    }
     my $chans;
     foreach my $net (keys %Auto::SOCKET) {
-        foreach (keys %{$Proto::IRC::botchans{$net}}) { $chans++ }
+        if (Auto::is_ircsock($net)) {
+            foreach (keys %{$Proto::IRC::botchans{$net}}) { $chans++ }
+        }
     }
 
     # Return network/channel data.
-    privmsg($src->{svr}, $target, "I am on \2$chans\2 channels across \2$nets\2 networks.");
+    privmsg($src->{svr}, $target, "I am on \2$chans\2 channels across \2$nets\2 networks. In all, I have \2$sockets\2 active sockets.");
 
     return 1;
 }
 
 
-API::Std::mod_init('BotStats', 'Xelhua', '1.00', '3.0.0a11');
+API::Std::mod_init('BotStats', 'Xelhua', '1.01', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
