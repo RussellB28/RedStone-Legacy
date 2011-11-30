@@ -18,7 +18,7 @@ sub add_socket {
     alog('add_socket(): Specified socket object is not a valid IO::Socket object.') if !$object->isa('IO::Handle');
     $Auto::SOCKET{$id}{handler} = $handler;
     $Auto::SOCKET{$id}{socket} = $object;
-    if (conf_get("server:$id") and ref($object) ne 'IO::Socket::SSL') {
+    if (Auto::is_ircsock($id) and ref($object) ne 'IO::Socket::SSL') {
         binmode($object, ':encoding(UTF-8)');
     }
     $Auto::SELECT->add($object);
