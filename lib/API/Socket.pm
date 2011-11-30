@@ -5,7 +5,6 @@ package API::Socket;
 use strict;
 use warnings;
 use API::Log qw(alog dbug);
-use API::Std qw(conf_get);
 use Exporter;
 use base qw(Exporter);
 use POSIX;
@@ -40,7 +39,7 @@ sub send_socket {
     my ($id, $data) = @_;
     if (defined($Auto::SOCKET{$id})) {
         syswrite $Auto::SOCKET{$id}{socket}, "$data\r\n", POSIX::BUFSIZ, 0;
-        if (conf_get("server:$id")) {
+        if (Auto::is_ircsock($id)) {
             dbug "[IRC] $id >> $data";
         }
         else {

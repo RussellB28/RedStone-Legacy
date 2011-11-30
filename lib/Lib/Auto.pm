@@ -310,7 +310,7 @@ hook_add('on_shutdown', 'shutdown.core_cleanup', sub {
 sub signal_term {
     API::Std::event_run('on_sigterm');
     API::Std::event_run('on_shutdown');
-    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGTERM') if conf_get("server:$_"); }
+    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGTERM') if Auto::is_ircsock($_); }
     dbug '!!! Caught SIGTERM; terminating...';
     alog '!!! Caught SIGTERM; terminating...';
     sleep 1;
@@ -321,7 +321,7 @@ sub signal_term {
 sub signal_int {
     API::Std::event_run('on_sigint');
     API::Std::event_run('on_shutdown');
-    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGINT') if conf_get("server:$_"); }
+    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGINT') if Auto::is_ircsock($_); }
     dbug '!!! Caught SIGINT; terminating...';
     alog '!!! Caught SIGINT; terminating...';
     sleep 1;
@@ -353,7 +353,7 @@ sub signal_perldie {
 
     return if $EXCEPTIONS_BEING_CAUGHT;
     alog 'Perl Fatal: '.$diemsg.' -- Terminating program!';
-    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'A fatal error occurred!') if conf_get("server:$_"); }
+    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'A fatal error occurred!') if Auto::is_ircsock($_); }
     API::Std::event_run('on_shutdown');
     sleep 1;
     say 'FATAL: '.$diemsg;
