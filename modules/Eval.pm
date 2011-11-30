@@ -47,8 +47,15 @@ sub cmd_eval {
     my $expr = join ' ', @argv;
     my $source = exists $src->{chan} ? $src->{chan} : $src->{nick};
     my $result = do {
-        local $SIG{__WARN__} = sub { privmsg($src->{svr}, $source, 'Warning: '.shift()) };
-        local $SIG{__DIE__}  = sub { privmsg($src->{svr}, $source, 'Error: '.shift())   };
+        local $SIG{__WARN__} = sub {
+            my $msg = shift;
+            chomp $msg; privmsg($src->{svr}, $source, 'Warning: '.$msg);
+        };
+        local $SIG{__DIE__}  = sub {
+            my $msg = shift;
+            chomp $msg;
+            privmsg($src->{svr}, $source, 'Error: '.$msg)
+        };
         eval $expr;
     };
 
