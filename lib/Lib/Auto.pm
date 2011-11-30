@@ -10,6 +10,7 @@ use Sys::Hostname;
 use feature qw(switch);
 use API::Std qw(hook_add conf_get err);
 use API::Log qw(dbug alog);
+use API::Socket qw(add_socket);
 our $VERSION = 3.000000;
 
 # Core events.
@@ -262,21 +263,14 @@ sub ircsock {
 
     # Create the socket.
     if ($use6) {
-        $Auto::SOCKET{$svrname} = IO::Socket::INET6->new(%conndata) or # Or error.
-        err(2, 'Failed to connect to server ('.$ERRNO.'): '.$svrname.' ['.$cdata->{'host'}[0].q{:}.$cdata->{'port'}[0].']', 0)
-            and delete $Auto::SOCKET{$svrname} and return;
+        add_socket($svrname, IO::Socket::INET6->new(%conndata), \&Proto::IRC::ircparse);
     }
     else {
         if ($usessl) {
-            $Auto::SOCKET{$svrname} = IO::Socket::SSL->new(%conndata) or # Or error.
-            err(2, 'Failed to connect to server ('.$ERRNO.'): '.$svrname.' ['.$cdata->{'host'}[0].q{:}.$cdata->{'port'}[0].']', 0)
-            and delete $Auto::SOCKET{$svrname} and next;
+            add_socket($svrname, IO::Socket::SSL->new(%conndata), \&Proto::IRC::ircparse);
         }
         else {
-            $Auto::SOCKET{$svrname} = IO::Socket::INET->new(%conndata) or # Or error.
-            err(2, 'Failed to connect to server ('.$ERRNO.'): '.$svrname.' ['.$cdata->{'host'}[0].q{:}.$cdata->{'port'}[0].']', 0)
-            and delete $Auto::SOCKET{$svrname} and next;
-            binmode($Auto::SOCKET{$svrname}, ':encoding(UTF-8)');
+            add_socket($svrname, IO::Socket::INET->new(%conndata), \&Proto::IRC::ircparse);
         }
     }
 
@@ -293,8 +287,6 @@ sub ircsock {
     # Send NICK/USER.
     API::IRC::nick($svrname, $cdata->{'nick'}[0]);
     Auto::socksnd($svrname, 'USER '.$cdata->{'ident'}[0].q{ }.hostname.q{ }.$cdata->{'host'}[0].' :'.$cdata->{'realname'}[0]) or return;
-    # Add to select.
-    $Auto::SELECT->add($Auto::SOCKET{$svrname});
     # Success!
     alog '** Successfully connected to server: '.$svrname;
     dbug '** Successfully connected to server: '.$svrname;
@@ -318,7 +310,7 @@ hook_add('on_shutdown', 'shutdown.core_cleanup', sub {
 sub signal_term {
     API::Std::event_run('on_sigterm');
     API::Std::event_run('on_shutdown');
-    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGTERM') }
+    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGTERM') if conf_get("server:$_"); }
     dbug '!!! Caught SIGTERM; terminating...';
     alog '!!! Caught SIGTERM; terminating...';
     sleep 1;
@@ -329,7 +321,7 @@ sub signal_term {
 sub signal_int {
     API::Std::event_run('on_sigint');
     API::Std::event_run('on_shutdown');
-    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGINT') }
+    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'Caught SIGINT') if conf_get("server:$_"); }
     dbug '!!! Caught SIGINT; terminating...';
     alog '!!! Caught SIGINT; terminating...';
     sleep 1;
@@ -361,7 +353,7 @@ sub signal_perldie {
 
     return if $EXCEPTIONS_BEING_CAUGHT;
     alog 'Perl Fatal: '.$diemsg.' -- Terminating program!';
-    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'A fatal error occurred!') }
+    foreach (keys %Auto::SOCKET) { API::IRC::quit($_, 'A fatal error occurred!') if conf_get("server:$_"); }
     API::Std::event_run('on_shutdown');
     sleep 1;
     say 'FATAL: '.$diemsg;
