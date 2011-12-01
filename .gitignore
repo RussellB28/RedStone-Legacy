@@ -1,4 +1,8 @@
 auto.conf
+testing.conf
+somebot.conf
+*.tmp
+*.save
 build/*
 *.swp
 autodoc/*
