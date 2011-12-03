@@ -552,7 +552,7 @@ while (1) {
             dbug "[$type] $sockid >> $line";
 
             # Parse data.
-            \&{$SOCKET{$sockid}{handler}}($sockid, $line);
+            &{$SOCKET{$sockid}{handler}}($sockid, $line);
         }
     }
 }
