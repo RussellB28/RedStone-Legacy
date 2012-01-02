@@ -112,7 +112,7 @@ sub checkcore {
 
 sub installmods {
     my ($prefix) = @_;
-    print 'Would you like to install any official modules? [y/n] ';
+    print 'Would you like to install any official modules? [y/N] ';
     my $response = <STDIN>;
     chomp $response;
     if (lc $response eq 'y') {
