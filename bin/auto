@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 # bin/auto - Main file.
-# Copyright (C) 2010-2011 Xelhua Development Group, et al.
+# Copyright (C) 2010-2012 Xelhua Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package Auto;
 use 5.010_000;
@@ -180,7 +180,7 @@ if ($opt_version) {
     say NAME.' version '.VER.', subversion '.SVER.', revision '.REV.' ('.VER.q{.}.SVER.q{.}.REV.RSTAGE.').';
     print <<'VERINFO';
 
-Copyright (C) 2010-2011, Xelhua Development Group. All rights reserved.
+Copyright (C) 2010-2012, Xelhua Development Group. All rights reserved.
 
 Auto is released under the licensing terms of the New (3-Clause) BSD License,
 which may be found in doc/LICENSE.

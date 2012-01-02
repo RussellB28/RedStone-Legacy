@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # auto - Launcher.
-# Copyright (C) 2010-2011 Xelhua Development Group, et al.
+# Copyright (C) 2010-2012 Xelhua Development Group, et al.
 # Written in sh because the user may not have Perl...to run Auto....
 
 PID=bin/auto.pid

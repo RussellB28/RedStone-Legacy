@@ -1,5 +1,5 @@
 # Module: LinkTitle. See below for documentation.
-# Copyright (C) 2010-2011 Xelhua Development Group, et al.
+# Copyright (C) 2010-2012 Xelhua Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::LinkTitle;
 use strict;
@@ -118,7 +118,7 @@ This module is maintained by Xelhua Development Group.
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2010-2011 Xelhua Development Group. All rights
+This module is Copyright 2010-2012 Xelhua Development Group. All rights
 reserved.
 
 This module is released under the same licensing terms as Auto itself.

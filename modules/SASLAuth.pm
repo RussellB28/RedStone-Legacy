@@ -1,5 +1,5 @@
 # Module: SASLAuth. See below for documentation.
-# Copyright (C) 2010-2011 Xelhua Development Group, et al.
+# Copyright (C) 2010-2012 Xelhua Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::SASLAuth;
 use strict;
