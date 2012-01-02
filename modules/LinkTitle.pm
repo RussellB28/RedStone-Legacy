@@ -4,7 +4,7 @@
 package M::LinkTitle;
 use strict;
 use warnings;
-use LWP::UserAgent;
+use Furl;
 use HTML::Entities;
 use API::Std qw(hook_add hook_del);
 use API::IRC qw(privmsg);
