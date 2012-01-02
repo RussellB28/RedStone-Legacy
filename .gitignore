@@ -1,6 +1,7 @@
 auto.conf
 testing.conf
 somebot.conf
+develop.conf
 *.tmp
 *.save
 build/*
