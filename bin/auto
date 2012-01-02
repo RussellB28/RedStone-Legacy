@@ -549,7 +549,7 @@ while (1) {
             chomp $line;
             # Debug.
             my $type = (conf_get("server:$sockid") ? 'IRC' : 'Socket');
-            dbug "[$type] $sockid >> $line";
+            dbug "[$type] $sockid << $line";
 
             # Parse data.
             &{$SOCKET{$sockid}{handler}}($sockid, $line);
