@@ -13,7 +13,7 @@ Auto IRC Bot 3.0: Change Log
     * API::Socket - Exposing sockets to the API allowing custom sockets/parsers in modules.
     * BotStats 1.01: Changed command to match module name and added support for API::Socket.
     * Fixed: If -c was passed at runtime, also pass it upon restart.
-    * Sanboxing Eval and Modules
+    * Sandboxing Eval and Modules
     * QDB: Majority rewrite. New features. See module for details.
 
 3.0 Alpha 11
