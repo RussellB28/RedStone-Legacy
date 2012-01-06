@@ -23,11 +23,11 @@ sub checkver {
         say '* Connecting to update server...';
         my $uss = IO::Socket::INET->new(
             'Proto'    => 'tcp',
-            'PeerAddr' => 'dist.xelhua.org',
+            'PeerAddr' => 'dist.ethrik.net',
             'PeerPort' => 80,
             'Timeout'  => 30
         ) or err(1, 'Cannot connect to update server! Aborting update check.');
-        send $uss, "GET http://dist.xelhua.org/auto/version.txt\n", 0;
+        send $uss, "GET http://dist.ethrik.net/auto/version.txt\n", 0;
         my $dll = q{};
         while (my $data = readline $uss) {
             $data =~ s/(\n|\r)//g;
@@ -59,7 +59,7 @@ sub checkin {
             say '* Connecting to master server...';
             my $uss = IO::Socket::INET->new(
                 'Proto'    => 'tcp',
-                'PeerAddr' => 'checkin.xelhua.org',
+                'PeerAddr' => 'checkin.ethrik.net',
                 'PeerPort' => 8082,
                 'Timeout'  => 30
             ) or err(1, 'Cannot connect to master server! Aborting check-in.');
@@ -88,7 +88,7 @@ sub checkin {
         say '* Connecting to master server...';                                           
         my $uss = IO::Socket::INET->new(
             'Proto'    => 'tcp',
-            'PeerAddr' => 'checkin.xelhua.org',
+            'PeerAddr' => 'checkin.ethrik.net',
             'PeerPort' => 8082,
             'Timeout'  => 30
         ) or err(1, 'Cannot connect to master server! Aborting check-in.');
