@@ -19,6 +19,7 @@ In this alpha12 release, we have added:
 * API::Socket - Exposing sockets to the API allowing custom sockets/parsers in modules.
 * BotStats: Changed command to match module name and added support for API::Socket.
 * Sanboxing Eval and Modules
+* QDB: Majority rewrite. New features. See module for details.
 
 Bug fixes:
 
