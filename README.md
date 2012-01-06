@@ -26,23 +26,24 @@ contributed modules. There is a chance that it will be accepted.
 
 ## 2. DEVELOPERS
 
-Auto IRC Bot is developed by Xelhua Development Group, a team
+Auto IRC Bot is developed by Ethrik Development Group, a team
 of people who contribute their time and knowledge to the
 maintenance of Auto, and other projects.
 
 + Elijah "starcoder" Perrault &lt;elijah@starcoder.info&gt;
 + Matthew Barksdale &lt;mattwb65@gmail.com&gt;
++ Alexandria "alyx" Wolcott &lt;alyx@woomoo.org&gt;
 
 
 Contributors - Non-developers who contribute to the project
 greatly.
 
-+ Alexandria "alyx" Wolcott &lt;alyx@woomoo.org&gt;
++ None at present.
 
 
 ## 3. HOW TO INSTALL
 
-Installation documentation can be found [here](http://wiki.xelhua.org/index.php/Auto:Installation_guide).
+Installation documentation can be found [here](http://wiki.xelhua.org/index.php/Auto:Installation_guide). (yes, down)
 
 
 ## 4. HOW TO UPGRADE
@@ -52,10 +53,10 @@ Reserved. Currently there is no method of upgrading version.
 
 ## 5. HELP, BUGS, SUGGESTIONS
 
-For help with Auto, you can ask on the [forums](http://forums.xelhua.org) or in our IRC chatroom at irc.xelhua.org
-&#35;xelhua.
+For help with Auto, you can ask on the [forums](http://forums.xelhua.org) or in our IRC chatroom at irc.ethrik.net
+&#35;ethrik.
 
-To report a bug, please see [our tracker](http://rm.xelhua.org/projects/auto/issues).
+To report a bug, please see [our tracker](http://rm.xelhua.org/projects/auto/issues). (yes, down)
 Thanks for contributing by reporting issues!
 
 To suggest a feature, it's best to post it on the above link,
