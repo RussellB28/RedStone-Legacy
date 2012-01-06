@@ -444,7 +444,15 @@ if (conf_get('module')) {
     alog '* Loading modules...';
     dbug '* Loading modules...';
     foreach (@{ (conf_get('module'))[0] }) {
-        mod_load($_);
+        my $module = mod_load($_);
+        if ($module) {
+            alog "* Module $_ failed to load: $module";
+            dbug "* Module $_ failed to load: $module";
+        }
+        else {
+            alog "* Module $_ loaded.";
+            dbug "* Module $_ loaded.";
+        }
     }
 }
 
@@ -585,24 +593,15 @@ sub is_ircsock {
 sub mod_load {
     my ($module) = @_;
 
-    if (-e "$bin{mod}/$module.pm") {
-        do "$bin{mod}/$module.pm" and return 1;
-    }
-    else {
-        if (-e "$bin{mod}/$module/main.pm") {
-            do "$bin{mod}/$module/main.pm" and return 1;
-        }
-    }
+    my $mod = (-e "$bin{mod}/$module.pm") ? "$bin{mod}/$module.pm" :
+              (-e "$bin{mod}/$module/main.pm") ? "$bin{mod}/$module/main.pm" : undef;
+    return 'Module not found' unless defined $mod;
 
-    my $errs = $EVAL_ERROR;
-    while ($errs =~ s/(.*\n)//) {
-        my $line = $1;
-        $line =~ s/(\r|\n)//g;
-        alog 'Error in '.$module.': '.$line;
-        dbug 'Error in '.$module.': '.$line;
+    return eval {
+        $SIG{__WARN__} = $SIG{__DIE__} = sub {};
+        do $mod or return $@;
+        undef
     }
-
-    return;
 }
 
 # vim: set ai et sw=4 ts=4:

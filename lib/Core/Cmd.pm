@@ -35,12 +35,12 @@ sub cmd_modload
 
     # Check if we were successful or not.
     if ($tn) {
-        # We were!
-        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 successfully loaded.");
+        # We weren't.
+        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to load: $tn.");
     }
     else {
-        # We weren't.
-        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to load.");
+        # We were!
+        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 successfully loaded.");
         return;
     }
 
@@ -112,13 +112,13 @@ sub cmd_modreload
     $tln = Auto::mod_load($argv[0]) if $tvn;
 
     # Check if we were successful or not.
-    if ($tvn and $tln) {
+    if ($tvn and !$tln) {
         # We were!
         notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 successfully reloaded.");
     }
     else {
         # We weren't.
-        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to reload.");
+        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to reload: $tln.");
         return;
     }
 
