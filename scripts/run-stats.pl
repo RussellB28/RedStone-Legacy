@@ -1,4 +1,7 @@
 #!/usr/bin/env perl
+# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# This program is free software; rights to this code are stated in doc/LICENSE.
+
 use strict;
 use warnings;
 use POSIX;
