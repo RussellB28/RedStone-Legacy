@@ -11,7 +11,7 @@ our $greet;
 # Initialization subroutine.
 sub _init {
     # Add a hook for when we join a channel.
-    hook_add('on_ucjoin', 'OnJoin', \&M::OnJoin::hello) or return;
+    hook_add('on_ucjoin', 'oj.cjoin', \&M::OnJoin::on_chanjoin) or return;
     hook_add('on_rehash', 'oj.rehash', \&M::OnJoin::on_rehash) or return;
     $greet = (conf_get('onjoin_greet') ? (conf_get('onjoin_greet'))[0][0] : "Hello channel! I am a bot!");
     return 1;
@@ -20,13 +20,13 @@ sub _init {
 # Void subroutine.
 sub _void {
     # Delete the hooks.
-    hook_del('on_ucjoin', 'OnJoin') or return;
+    hook_del('on_ucjoin', 'oj.cjoin') or return;
     hook_del('on_rehash', 'oj.rehash') or return;
     return 1;
 }
 
-# Main subroutine.
-sub hello {
+# on_chanjoin subroutine.
+sub on_chanjoin {
     my ($svr, $chan) = @_;
     
     # Send a PRIVMSG.
