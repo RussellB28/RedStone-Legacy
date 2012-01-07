@@ -26,7 +26,7 @@ sub hello {
     my (($svr, $chan)) = @_;
     
     # Send a PRIVMSG.
-    privmsg($svr, $chan, 'Hello world! I am a bot!');
+    privmsg($svr, $chan, 'Hello channel! I am a bot!');
     
     return 1;
 }
