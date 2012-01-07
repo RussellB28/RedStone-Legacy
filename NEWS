@@ -20,6 +20,7 @@ In this alpha12 release, we have added:
 * BotStats: Changed command to match module name and added support for API::Socket.
 * Sandboxing Eval and Modules
 * QDB: Majority rewrite. New features. See module for details.
+* OnJoin: Added a configurable HelloChan replacement.
 
 Bug fixes:
 

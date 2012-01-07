@@ -15,6 +15,7 @@ Auto IRC Bot 3.0: Change Log
     * Fixed: If -c was passed at runtime, also pass it upon restart.
     * Sandboxing Eval and Modules
     * QDB: Majority rewrite. New features. See module for details.
+    * OnJoin: Added a configurable HelloChan replacement.
 
 3.0 Alpha 11
 ===============================================================================
