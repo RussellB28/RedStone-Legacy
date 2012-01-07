@@ -12,6 +12,7 @@ our $greet;
 sub _init {
     # Add a hook for when we join a channel.
     hook_add('on_ucjoin', 'OnJoin', \&M::OnJoin::hello) or return;
+    hook_add('on_rehash', 'oj.rehash', \&M::OnJoin::on_rehash) or return;
     $greet = (conf_get('onjoin_greet') ? (conf_get('onjoin_greet'))[0][0] : "Hello channel! I am a bot!");
     return 1;
 }
@@ -20,6 +21,7 @@ sub _init {
 sub _void {
     # Delete the hooks.
     hook_del('on_ucjoin', 'OnJoin') or return;
+    hook_del('on_rehash', 'oj.rehash') or return;
     return 1;
 }
 
@@ -33,6 +35,11 @@ sub hello {
     return 1;
 }
 
+# on_rehash subroutine.
+sub on_rehash {
+    # Reset $greet
+    $greet = (conf_get('onjoin_greet') ? (conf_get('onjoin_greet'))[0][0] : "Hello channel! I am a bot!");
+}
 
 # Start initialization.
 API::Std::mod_init('OnJoin', 'Xelhua', '1.00', '3.0.0a11');
