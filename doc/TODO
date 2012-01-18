@@ -13,7 +13,7 @@ Legend:
      [X] Replace println with Perl 5.10's say.
      [!] Fix inconsistencies in official modules.
      [!] Fix inconsistencies in hook naming.
-     [ ] Get rid of the build files crap. It should've never been added.
+     [ ] Get rid of the build files. It should've never been added.
      [ ] General clean up.
 
  [X] Language
