@@ -8,7 +8,7 @@ use API::Std qw(hook_add hook_del cmd_add cmd_del conf_get err trans);
 use API::IRC qw(notice);
 our $LPATH;
 our $CURPATH;
-our $time;
+our $lines;
 
 # Initialization subroutine.
 sub _init {
@@ -26,7 +26,7 @@ sub _init {
     # Create our command.
     cmd_add('REPLAY', 2, 0, \%M::Replay::HELP_REPLAY, \&M::Replay::cmd_replay) or return;
  
-    $time = (conf_get('replay:lines') ? (conf_get('replay:lines'))[0][0] : 25);
+    $lines = (conf_get('replay:lines') ? (conf_get('replay:lines'))[0][0] : 25);
     
     # Do some checks.
     if (!conf_get('replay:dir')) {
@@ -276,7 +276,7 @@ sub cmd_replay {
     my ($src, undef) = @_;
 
     my $path = $CURPATH . "/" . $src->{chan} .".log";
-    my $lines = `tail -n $time $path`;
+    my $lines = `tail -n $lines $path`;
 
     my @line = split("\n", $lines);
 
