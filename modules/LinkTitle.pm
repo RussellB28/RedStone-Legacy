@@ -59,6 +59,7 @@ sub gettitle {
                     # Found. Decode it.
                     my $title = decode_entities($1);
                     # Return to channel.
+                    return if length($title) < 1;
                     privmsg($src->{svr}, $chan, "\2Title:\2 $title");
                 }
             }
