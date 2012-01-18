@@ -14,7 +14,10 @@ sub _init {
     cmd_add('GOMINI', 0, 0, \%M::GoMini::HELP_GOMINI, \&M::GoMini::cmd_gomini) or return;
 
     # Success.
-    return 1;
+    #return 1;
+
+    # Until fixed fail to load.
+    return 0;
 }
 
 # Void subroutine.
