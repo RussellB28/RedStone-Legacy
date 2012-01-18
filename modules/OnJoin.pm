@@ -49,7 +49,7 @@ __END__
 
 =head1 NAME
 
-OnJoin - An example module. Also, cows go moo.
+OnJoin - An example module meant to replace HelloChan.
 
 =head1 VERSION
 
