@@ -315,7 +315,7 @@ Add the following to your configuration:
 
 =head1 DESCRIPTION
 
-This module replays channel history.
+This module replays channel history similar to +H on inspircd.
 
 =head1 AUTHOR
 
