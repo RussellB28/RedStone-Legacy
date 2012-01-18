@@ -58,7 +58,7 @@ OnJoin - An example module meant to replace HelloChan.
 =head1 SYNOPSIS
 
  * Auto has joined #moocows
- <Auto> Hello channel! I am a bot!
+ <Auto> Hello channel! I am a moocow!
 
 =head1 DESCRIPTION
 
