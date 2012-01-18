@@ -16,6 +16,11 @@ Auto IRC Bot 3.0: Change Log
     * Sandboxing Eval and Modules
     * QDB: Majority rewrite. New features. See module for details.
     * OnJoin: Added a configurable HelloChan replacement.
+    * LinkTitle: Remove trailing/leading spaces and ignore if a title is empty.
+    * Replay: Added a module to replay channel history.
+    * Twitter: A twitter feed announcer.
+    * QDB: Massive rewrite
+
 
 3.0 Alpha 11
 ===============================================================================

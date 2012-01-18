@@ -21,11 +21,15 @@ In this alpha12 release, we have added:
 * Sandboxing Eval and Modules
 * QDB: Majority rewrite. New features. See module for details.
 * OnJoin: Added a configurable HelloChan replacement.
+* Replay: Added a module to replay channel history.
+* Twitter: A twitter feed announcer.
+* QDB: Massive rewrite
 
 Bug fixes:
 
 * var/ permissions error on first run.
 * If -c was passed at runtime, also pass it upon restart.
+* LinkTitle: Remove trailing/leading spaces and ignore if a title is empty.
 
 Incompatibilities:
 
