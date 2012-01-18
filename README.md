@@ -56,7 +56,7 @@ Reserved. Currently there is no method of upgrading version.
 For help with Auto, you can ask on the [forums](http://forums.xelhua.org) or in our IRC chatroom at irc.ethrik.net
 &#35;ethrik.
 
-To report a bug, please see [our tracker](http://rm.xelhua.org/projects/auto/issues). (yes, down)
+To report a bug, please visit our IRC channel.
 Thanks for contributing by reporting issues!
 
 To suggest a feature, it's best to post it on the above link,
