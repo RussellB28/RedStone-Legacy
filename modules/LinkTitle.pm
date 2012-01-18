@@ -58,8 +58,14 @@ sub gettitle {
                 if ($data =~ m{<title>(.*)</title>}ixsm) {
                     # Found. Decode it.
                     my $title = decode_entities($1);
-                    # Return to channel.
+                    # Return if an empty title.
                     return if length($title) < 1;
+                    # Housekeeping.
+                    #    Remove leading spaces
+                    $title =~ s/^\s+//;
+                    #    Remove trailing spaces
+                    $title =~ s/\s+$//;
+                    # Return to channel.
                     privmsg($src->{svr}, $chan, "\2Title:\2 $title");
                 }
             }
