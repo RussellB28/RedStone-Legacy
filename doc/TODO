@@ -50,7 +50,7 @@ Legend:
      [X] Weather module
      [X] Urban Dictionary module
      [X] UNO module
-     [%] Google Search module
+     [%] Google Search module (works but has a memory leak --matthew)
      [ ] IRC Relay module
      [ ] (Google?) News module
      [X] QDB module
