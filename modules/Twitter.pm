@@ -1,5 +1,5 @@
 # Module: Twitter. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2011 Xelhua Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Twitter;
 use strict;
@@ -246,7 +246,7 @@ sub process_feed {
                         {
                             my $it = $rp->get(0);
                             my $title = $it->get('title');
-                            $title =~ s/$second->[2]: - //g;
+                            #$title =~ s/$second->[2]: - //g;
                             $t_title = decode_entities($title);
                             $t_url = decode_entities($it->get('url'));
                         }
@@ -264,8 +264,19 @@ sub process_feed {
 
                     if($t_url ne $second->[3])  
                     {
-                        privmsg(fix_net($second->[0]), $second->[1], "Latest Tweet from ".$second->[2].": $t_title");
-                        privmsg(fix_net($second->[0]), $second->[1], "See $t_url for more information.");
+                        my $lfm_url = "http://ur.cx/api/create.php?url=$t_url";
+                        my $agent = LWP::UserAgent->new();
+                        $agent->agent('RedStone IRC Bot');
+
+                        $agent->timeout(60);
+
+                        my $request = HTTP::Request->new(GET => $lfm_url);
+                        my $result = $agent->request($request);
+
+                        $result->is_success;
+
+                        privmsg(fix_net($second->[0]), $second->[1], "[Twitter] Latest Tweet from $t_title");
+                        privmsg(fix_net($second->[0]), $second->[1], "[Twitter] See ".$result->content." for more information.");
                         my $dbq = $Auto::DB->prepare('UPDATE twitter SET lasturl=? WHERE net = ? AND chan = ?');
                         $dbq->execute($t_url, lc $second->[0], $second->[1]);
                     }
@@ -274,8 +285,8 @@ sub process_feed {
                 {
                         $t_title = "We were unable to retrieve the latest tweet from Twitter at this time.";
                         $t_url = "http://twitter.com/".$second->[2];
-                        privmsg(fix_net($second->[0]), $second->[1], "Latest Tweet from ".$second->[2].": $t_title");
-                        privmsg(fix_net($second->[0]), $second->[1], "See $t_url for more information.");
+                        privmsg(fix_net($second->[0]), $second->[1], "[Twitter] Latest Tweet from ".$second->[2].": $t_title");
+                        privmsg(fix_net($second->[0]), $second->[1], "[Twitter] See $t_url for more information.");
 
                 }
         }
@@ -358,7 +369,7 @@ This module is maintained by Xelhua Development Group.
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2010-2012 Xelhua Development Group. All rights
+This module is Copyright 2010-2011 Xelhua Development Group. All rights
 reserved.
 
 This module is released under the same licensing terms as Auto itself.
