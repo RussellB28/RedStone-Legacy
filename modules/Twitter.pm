@@ -46,7 +46,7 @@ sub _init {
     }
 
 
-    cmd_add('TWITTER', 0, 'twitter.admin', \%M::Twitter::HELP_TWITTER, \&M::Twitter::cmd_twitter) or return;
+    cmd_add('TWITTER', 0, 0, \%M::Twitter::HELP_TWITTER, \&M::Twitter::cmd_twitter) or return;
 
     if($ENABLE_RUN == 1)
     {
@@ -100,8 +100,19 @@ sub cmd_twitter {
         return;
     }
 
+    my %data = (
+                'nick' => $src->{nick},
+                'user' => $src->{user},
+                'host' => $src->{host}
+               );
+
     given(uc $argv[0]) {
         when ('ENABLE') {
+            if (!API::Std::has_priv(API::Std::match_user(%data), "twitter.admin")) {
+                notice($src->{svr}, $src->{nick}, trans('Permission Denied').q{.});
+                return;
+            }
+
             my $chan;
             my $svr = lc($src->{svr});
             if (!defined $argv[2]) {
@@ -136,6 +147,11 @@ sub cmd_twitter {
 
         }
         when ('DISABLE') {
+            if (!API::Std::has_priv(API::Std::match_user(%data), "twitter.admin")) {
+                notice($src->{svr}, $src->{nick}, trans('Permission Denied').q{.});
+                return;
+            }
+
             my $chan;
             my $svr = lc($src->{svr});
             if (!defined $argv[1]) {
@@ -169,11 +185,21 @@ sub cmd_twitter {
             }
         }
         when ('RUN') {
+            if (!API::Std::has_priv(API::Std::match_user(%data), "twitter.admin")) {
+                notice($src->{svr}, $src->{nick}, trans('Permission Denied').q{.});
+                return;
+            }
+
             privmsg($src->{svr}, $src->{chan}, "Processing Twitter Feeds...");
             process_feed();
             return;
         }
         when ('INFO') {
+            if (!API::Std::has_priv(API::Std::match_user(%data), "twitter.admin")) {
+                notice($src->{svr}, $src->{nick}, trans('Permission Denied').q{.});
+                return;
+            }
+
             my $chan;
             my $svr = lc($src->{svr});
             if (!defined $argv[1] and !defined $src->{chan}) {
@@ -204,7 +230,49 @@ sub cmd_twitter {
         }
         default {
             # We don't know this command.
-            notice($src->{svr}, $src->{nick}, trans('Unknown action', $_).q{.});
+                try
+                {
+                    my $rp = new XML::RSS::Parser::Lite;
+                    my $xml = get("http://twitter.com/statuses/user_timeline/$argv[0].rss");
+
+                    if($rp->parse($xml))
+                    {
+                        if($rp->get(0))
+                        {
+                            my $it = $rp->get(0);
+                            my $title = $it->get('title');
+                            my $t_title = decode_entities($title);
+                            my $t_url = decode_entities($it->get('url'));
+
+                            my $tweet_url = "http://ur.cx/api/create.php?url=$t_url";
+                            my $agent = LWP::UserAgent->new();
+                            $agent->agent('RedStone IRC Bot');
+
+                            $agent->timeout(60);
+
+                            my $request = HTTP::Request->new(GET => $tweet_url);
+                            my $result = $agent->request($request);
+
+                            $result->is_success;
+
+                            privmsg($src->{svr}, $src->{chan}, "Latest Tweet from $t_title");
+                            privmsg($src->{svr}, $src->{chan}, "See ".$result->content." for more information.");
+                        }
+                        else
+                        {
+                            privmsg($src->{svr}, $src->{chan}, "Sorry, This Twitter Username does not exist.");
+                        }
+                    }
+                    else
+                    {
+                        privmsg($src->{svr}, $src->{chan}, "Sorry, We could not retrieve the Latest Tweet at this time. Please try again later.");
+                    }
+                }
+                catch
+                {
+                        privmsg($src->{svr}, $src->{chan}, "Sorry, We could not retrieve the Latest Tweet at this time. Please try again later.");
+
+                }
             return;
         }
     }
@@ -334,10 +402,16 @@ Twitter
  <user> !twitter run
  <auto> Processing Twitter Feeds...
 
+ <user> !twitter SomeTwitterUsername
+ <auto> Latest Tweet from SomeTwitterUsername: Tweet Message Here
+ <auto> See http://short-twitter-url/bleh for more information.
+
+
 =head1 DESCRIPTION
 
 This module outputs the latest tweets from a specified username in a specifc
-channel automatically at a set interval.
+channel automatically at a set interval. It is also possible to retrieve the latest tweet or
+from a Twitter User via command.
 
 =head1 CONFIGURATION
 
@@ -358,7 +432,7 @@ Simply add the following to your configuration file in a block called twitter { 
 =head2 Notes
 
 Due to twitter limitations, only 150 requests can be made per hour. This means if you were
-to have several feeds polling at a 10 minute interval, it may not work after a while.
+to have several feeds polling at a 10 minute interval, it may not work after a while. 
 
 
 =head1 AUTHOR
