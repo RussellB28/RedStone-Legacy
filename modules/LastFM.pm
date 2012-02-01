@@ -10,7 +10,7 @@ use API::IRC qw(notice privmsg cpart cjoin);
 use API::Log qw(slog dbug alog);
 use POSIX;
 use LWP::UserAgent;
-use TryCatch;
+use XML::Simple;
 our $ENABLE_RUN = 0;
 our $RUN_DELAY = 30;
 
@@ -110,48 +110,55 @@ sub cmd_np {
     given(uc $argv[0]) {
 
         my $uname = $argv[0];
-        my $lfm_url = "http://ws.audioscrobbler.com/1.0/user/".$uname."/recenttracks.txt";
+
+        my $xml = new XML::Simple;
+
+        my $xml_url = "http://ws.audioscrobbler.com/2.0/user/".$uname."/recenttracks.xml";
         my $agent = LWP::UserAgent->new();
-        $agent->agent('RedStone IRC Bot');
- 
+        $agent->agent('Auto IRC Bot');
+
         $agent->timeout(60);
- 
-        my $request = HTTP::Request->new(GET => $lfm_url);
+
+        my $request = HTTP::Request->new(GET => $xml_url);
         my $result = $agent->request($request);
- 
-        $result->is_success;
- 
-        my $str = $result->content;
-        my @arr = split(/\n/, $str);
-        my $new_track = '';
 
-        $new_track = $arr[0];
-        $new_track =~ s/^[0-9]*,//;
-        $new_track =~ s/\xe2\x80\x93/-/;
-
-        my @parts = split(/,/, $arr[0]);
-
-        if($new_track eq "")
-        {
-            privmsg($src->{svr}, $src->{chan}, "$uname has never played anything.");
-            return 1;
-        }
-        if($new_track eq "No user exists with this name.")
+        if(!$result->is_success)
         {
             privmsg($src->{svr}, $src->{chan}, "There is no LastFM user with the username '$uname'.");
             return 1;
         }
-        if(time() > $parts[0]+10)
-        {
-            my $played_time = scalar localtime ($parts[0]);
-            privmsg($src->{svr}, $src->{chan}, "$uname is not playing anything at the moment but last played: '$new_track' on $played_time");
+
+        my $data = $xml->XMLin($result->content);
+
+	    if($data->{'total'} eq "0")
+	    {
+            privmsg($src->{svr}, $src->{chan}, "$uname has never played anything.");
             return 1;
-        }
-        else
+	    }
+
+        my ($date, $track, $artist);
+
+
+        foreach my $key ( keys %{$data->{'track'}} )
         {
-            privmsg($src->{svr}, $src->{chan}, "$uname is now playing: $new_track");
-            return 1;
-        }
+		    if($data->{'track'}->{$key}->{'nowplaying'} eq "true")
+		    {
+                privmsg($src->{svr}, $src->{chan}, "$uname is now playing: $key - ".$data->{'track'}->{$key}->{'artist'}->{'content'});
+                return 1;
+		    }
+            
+		    elsif($date < $data->{'track'}->{$key}->{'date'}->{'uts'})
+		    {
+				$track = $key;
+				$artist = $data->{'track'}->{$key}->{'artist'}->{'content'};
+				$date = $data->{'track'}->{$key}->{'date'}->{'uts'};
+		    }
+		}
+
+        my $played_time = scalar localtime ($date);
+        privmsg($src->{svr}, $src->{chan}, "$uname is not playing anything at the moment but last played: '$track - $artist' on $played_time");
+        return 1;
+
     }
 
    return 1;
@@ -301,54 +308,46 @@ sub process_feed {
         foreach my $second (@{$first}) {
 
 
+            my $xml = new XML::Simple;
+
             my $uname = $second->[2];
-            my $lfm_url = "http://ws.audioscrobbler.com/1.0/user/".$uname."/recenttracks.txt";
+            my $xml_url = "http://ws.audioscrobbler.com/2.0/user/".$uname."/recenttracks.xml";
             my $agent = LWP::UserAgent->new();
-            $agent->agent('RedStone IRC Bot');
- 
+            $agent->agent('Auto IRC Bot');
+
             $agent->timeout(60);
- 
-            my $request = HTTP::Request->new(GET => $lfm_url);
+
+            my $request = HTTP::Request->new(GET => $xml_url);
             my $result = $agent->request($request);
- 
-            $result->is_success;
- 
-            my $str = $result->content;
-            my @arr = split(/\n/, $str);
-            my $new_track = '';
-    
-            $new_track = $arr[0];
-            $new_track =~ s/^[0-9]*,//;
-            $new_track =~ s/\xe2\x80\x93/-/;
 
-            my @parts = split(/,/, $arr[0]);
-
-            if($new_track eq "")
-            {
-                privmsg(fix_net($second->[0]), $second->[1], "[LastFM] $uname has never played anything.");
-                my $dbq = $Auto::DB->prepare('UPDATE lastfm SET lastsong=? WHERE net = ? AND chan = ?');
-                $dbq->execute("NONE", lc $second->[0], $second->[1]);
-            }
-            if($new_track eq "No user exists with this name.")
+            if(!$result->is_success)
             {
                 privmsg(fix_net($second->[0]), $second->[1], "[LastFM] There is no LastFM user with the username '$uname'.");
                 my $dbq = $Auto::DB->prepare('UPDATE lastfm SET lastsong=? WHERE net = ? AND chan = ?');
                 $dbq->execute("NONE", lc $second->[0], $second->[1]);
             }
-            if(time() > $parts[0]+10)
-            {
+
+            my $data = $xml->XMLin($result->content);
+
+	        if($data->{'total'} eq "0")
+	        {
+                privmsg(fix_net($second->[0]), $second->[1], "[LastFM] $uname has never played anything.");
                 my $dbq = $Auto::DB->prepare('UPDATE lastfm SET lastsong=? WHERE net = ? AND chan = ?');
-                $dbq->execute($new_track, lc $second->[0], $second->[1]);
-            }
-            else
+                $dbq->execute("NONE", lc $second->[0], $second->[1]);
+	        }
+
+            my ($date, $track, $artist);
+
+
+            foreach my $key ( keys %{$data->{'track'}} )
             {
-                if($new_track ne $second->[3])
-                {
+		        if($data->{'track'}->{$key}->{'nowplaying'} eq "true")
+		        {
                     my $dbq = $Auto::DB->prepare('UPDATE lastfm SET lastsong=? WHERE net = ? AND chan = ?');
-                    $dbq->execute($new_track, lc $second->[0], $second->[1]);
-                    privmsg(fix_net($second->[0]), $second->[1], "[LastFM] $uname is now playing: $new_track");
-                }
-            }
+                    $dbq->execute($key." - ".$data->{'track'}->{$key}->{'artist'}->{'content'}, lc $second->[0], $second->[1]);
+                    privmsg(fix_net($second->[0]), $second->[1], "[LastFM] $uname is now playing: $key - ".$data->{'track'}->{$key}->{'artist'}->{'content'});
+		        }
+		    }
         }
     }
 }
