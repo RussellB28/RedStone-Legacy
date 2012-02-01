@@ -1,5 +1,5 @@
 # Module: LastFM. See below for documentation.
-# Copyright (C) 2010-2011 Xelhua Development Group, et al.
+# Copyright (C) 2010-2012 Xelhua Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::LastFM;
 use strict;
@@ -367,7 +367,7 @@ sub fix_net {
 
 # Start initialization.
 API::Std::mod_init('LastFM', 'Russell', '1.00', '3.0.0a11');
-# build: perl=5.010000
+# build: perl=5.010000 cpan=LWP::UserAgent, XML::Simple
 
 __END__
 
@@ -432,7 +432,7 @@ This module is maintained by Xelhua Development Group.
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2010-2011 Xelhua Development Group. All rights
+This module is Copyright 2010-2012 Xelhua Development Group. All rights
 reserved.
 
 This module is released under the same licensing terms as Auto itself.
