@@ -31,7 +31,7 @@ of people who contribute their time and knowledge to the
 maintenance of Auto, and other projects.
 
 + Matthew Barksdale &lt;mattwb65@gmail.com&gt;
-+ Russell Bradford &lt;?@?&gt;
++ Russell Bradford &lt;Russell@rbradford.me&gt;
 + Liam Smith &lt;me@liam.co&gt;
 + Alexandria "alyx" Wolcott &lt;alyx@woomoo.org&gt;
 
