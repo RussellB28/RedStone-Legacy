@@ -30,8 +30,9 @@ Auto IRC Bot is developed by Ethrik Development Group, a team
 of people who contribute their time and knowledge to the
 maintenance of Auto, and other projects.
 
-+ Elijah "starcoder" Perrault &lt;elijah@starcoder.info&gt;
 + Matthew Barksdale &lt;mattwb65@gmail.com&gt;
++ Russell Bradford &lt;?@?&gt;
++ Liam Smith &lt;me@liam.co&gt;
 + Alexandria "alyx" Wolcott &lt;alyx@woomoo.org&gt;
 
 
@@ -40,6 +41,8 @@ greatly.
 
 + None at present.
 
+'Retired' Developers 
++ Elijah "starcoder" Perrault &lt;elijah@starcoder.info&gt;
 
 ## 3. HOW TO INSTALL
 
