@@ -42,6 +42,7 @@ greatly.
 + None at present.
 
 'Retired' Developers 
+
 + Elijah "starcoder" Perrault &lt;elijah@starcoder.info&gt;
 
 ## 3. HOW TO INSTALL
