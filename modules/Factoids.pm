@@ -38,7 +38,7 @@ sub _void {
 
 # Help hash for the FACTOID command.
 our %HELP_FACTOID = (
-    en => "This command allows you to add/delete/edit factoids. [#channel] is only needed in PM. \2Syntax:\2 FACTOID (ADD|DEL|EDIT) [#channel] <trigger> [response]",
+    en => "This command allows you to add/delete/edit factoids. [#channel] is only needed in PM. \2Syntax:\2 FACTOID (ADD|DEL|EDIT|INFO) [#channel] <trigger> [response]",
 );
 
 # Callback for FACTOID command.
@@ -100,7 +100,36 @@ sub cmd_factoid {
 
             notice($src->{svr}, $src->{nick}, "Factoid \2".lc $argv[1]."\2 for \2$src->{chan}\2 on \2$src->{svr}\2 successfully edited.");
        }
-        when ('DEL') {
+       when ('INFO') {
+            # Ensure it exists.
+            my $match;
+            my $cdbq = $Auto::DB->prepare('SELECT * FROM factoids WHERE net = ? AND chan = ? AND trigger = ?');
+            $cdbq->execute(lc $src->{svr}, lc $src->{chan}, lc $argv[1]);
+            my @crow = $cdbq->fetchrow_array;
+            my @mrow;
+            if (!@crow) {
+                my $gdbq = $Auto::DB->prepare('SELECT * FROM factoids WHERE net = ? AND chan = ? AND trigger = ?');
+                $gdbq->execute(lc $src->{svr}, '*', lc $argv[1]);
+                my @grow = $gdbq->fetchrow_array;
+                if (@grow) { @mrow = @grow; }
+            }
+            else {
+                @mrow = @crow;
+            }
+            if (!@mrow) {
+                notice($src->{svr}, $src->{nick}, "That factoid doesn't exist.");
+                return;
+            }
+            else {
+            # Get information on it.
+                my $command = $mrow[2];
+                my $fchar = (conf_get('fantasy_pf'))[0][0];
+                $command =~ s/\$!\$/$fchar/gxsm;
+                $command =~ s/\[s\]/ /gxsm;
+                notice($src->{svr}, $src->{nick}, "Information for \2$mrow[2]\2: \2Final Command:\2 $command \2Response:\2 $mrow[3] \2Channel:\2 $mrow[1]\@$mrow[0]");
+           }
+       }
+       when ('DEL') {
             # Ensure it exists.
             my $cdbq = $Auto::DB->prepare('SELECT * FROM factoids WHERE net = ? AND chan = ? AND trigger = ?');
             $cdbq->execute(lc $src->{svr}, lc $src->{chan}, lc $argv[1]);
@@ -156,7 +185,7 @@ sub on_cprivmsg {
 }
 
 # Start initialization.
-API::Std::mod_init('Factoids', 'Xelhua', '1.00', '3.0.0a11');
+API::Std::mod_init('Factoids', 'Xelhua', '1.01', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
@@ -167,7 +196,7 @@ Factoids - Provides per-channel-per-network factoids.
 
 =head1 VERSION
 
- 1.00
+ 1.01
 
 =head1 SYNOPSIS
 
@@ -183,6 +212,8 @@ Factoids - Provides per-channel-per-network factoids.
  -blue- Factoid $!$foo for #bot on testnet successfully created.
  <starcoder> .foo
  <blue> Bar, foo, baz, etc.
+ <starcoder> .factoid info $!$foo
+ -blue- Information for $!$foo: Final Command: .foo Response: Bar, foo, baz, etc. Channel: #bot@testnet
 
 =head1 DESCRIPTION
 

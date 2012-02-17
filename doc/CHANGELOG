@@ -19,7 +19,7 @@ Auto IRC Bot 3.0: Change Log
     * LinkTitle: Remove trailing/leading spaces and ignore if a title is empty.
     * Replay: Added a module to replay channel history.
     * Twitter: A twitter feed announcer.
-
+    * Factoids: Added INFO command.
 
 3.0 Alpha 11
 ===============================================================================

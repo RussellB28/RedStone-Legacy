@@ -24,6 +24,7 @@ In this alpha12 release, we have added:
 * Replay: Added a module to replay channel history.
 * Twitter: A twitter feed announcer.
 * QDB: Massive rewrite
+* Factoids: Added INFO command.
 
 Bug fixes:
 
