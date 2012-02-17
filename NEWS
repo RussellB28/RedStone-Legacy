@@ -25,6 +25,7 @@ In this alpha12 release, we have added:
 * Twitter: A twitter feed announcer.
 * QDB: Massive rewrite
 * Factoids: Added INFO command.
+* ABStats: Additonal bot statistics.
 
 Bug fixes:
 

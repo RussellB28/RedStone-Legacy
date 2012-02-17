@@ -20,6 +20,7 @@ Auto IRC Bot 3.0: Change Log
     * Replay: Added a module to replay channel history.
     * Twitter: A twitter feed announcer.
     * Factoids: Added INFO command.
+    * ABStats: Additonal bot statistics.
 
 3.0 Alpha 11
 ===============================================================================
