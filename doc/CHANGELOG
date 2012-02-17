@@ -21,6 +21,8 @@ Auto IRC Bot 3.0: Change Log
     * Twitter: A twitter feed announcer.
     * Factoids: Added INFO command.
     * ABStats: Additonal bot statistics.
+    * Pisg 1.01: Recheck certain things when rehashed.
+
 
 3.0 Alpha 11
 ===============================================================================

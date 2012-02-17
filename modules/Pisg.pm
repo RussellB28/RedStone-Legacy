@@ -31,6 +31,7 @@ sub _init {
     rchook_add('PART', 'plog.part', \&M::Pisg::on_event) or return;
     hook_add('on_connect', 'plog.connect', \&M::Pisg::on_connect) or return;
     rchook_add('MODE', 'plog.mode', \&M::Pisg::on_event) or return;
+    hook_add('on_rehash', 'plog.rehash', \&M::Pisg::on_rehash) or return;
 
  
    # Do some checks.
@@ -52,6 +53,7 @@ sub _init {
         err(2, "Pisg: Please verify that you have defined the URL that reflects pisg:www_dir (for informing of stats location) [pisg:url_base].", 0);
         return;
     }
+
     $UBASE = (conf_get('pisg:url_base'))[0][0];
 
     if (!conf_get('pisg:run_script')) {
@@ -89,6 +91,7 @@ sub _init {
 sub _void {
     # Delete the logging hooks.
     hook_del('on_connect', 'plog.connect') or return;
+    hook_del('on_rehash', 'plog.rehash') or return;
     rchook_del('PRIVMSG', 'plog.msg') or return;
     rchook_del('KICK', 'plog.kick') or return;
     rchook_del('TOPIC', 'plog.topic') or return;
@@ -101,6 +104,33 @@ sub _void {
     cmd_del('STATS') or return;
 
     # Success.
+    return 1;
+}
+
+sub on_rehash {
+  
+    $DISABLE_RUN = 0;
+
+    if (!conf_get('pisg:run_script')) {
+        dbug("Pisg: Please verify that you have defined the run script (ran when stats regeneration is requested) [pisg:run_script]. Disabling RUN until resolved...");
+        alog("Pisg: Please verify that you have defined the run script (ran when stats regeneration is requested) [pisg:run_script]. Disabling RUN until resolved...");
+        $DISABLE_RUN = 1;
+    }
+
+    $RSCRIPT = (conf_get('pisg:run_script'))[0][0] if !$DISABLE_RUN;
+    if (!$DISABLE_RUN and (!-r $RSCRIPT or !-e $RSCRIPT)) {
+        dbug('Pisg: Run script not able to be read. Disabling RUN...');
+        alog('Pisg: Run script not able to be read. Disabling RUN...');
+        $DISABLE_RUN = 1;
+    }
+
+    if ((conf_get('pisg:url_base'))[0][0] ne $UBASE) { $UBASE = (conf_get('pisg:url_base'))[0][0]; }
+
+    if (conf_get('pisg:run_delay')) {
+        $RUN_DELAY = (conf_get('pisg:run_delay'))[0][0];
+    }
+
+
     return 1;
 }
 
@@ -428,7 +458,7 @@ sub fix_net {
 }
 
 # Start initialization.
-API::Std::mod_init('Pisg', 'Xelhua', '1.00', '3.0.0a11');
+API::Std::mod_init('Pisg', 'Xelhua', '1.01', '3.0.0a11');
 # build: perl=5.010000 cpan=Time::HiRes
 
 __END__
@@ -439,7 +469,7 @@ Pisg
 
 =head1 VERSION
 
- 1.00
+ 1.01
 
 =head1 SYNOPSIS
 

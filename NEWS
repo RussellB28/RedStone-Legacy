@@ -26,6 +26,7 @@ In this alpha12 release, we have added:
 * QDB: Massive rewrite
 * Factoids: Added INFO command.
 * ABStats: Additonal bot statistics.
+* Pisg 1.01: Recheck certain things when rehashed.
 
 Bug fixes:
 
