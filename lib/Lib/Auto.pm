@@ -189,7 +189,7 @@ sub rehash {
     if (conf_get('module')) {
         alog '* Loading modules...';
         foreach (@{ (conf_get('module'))[0] }) {
-            if (!API::Std::mod_exists($_)) { my $module = mod_load($_); if ($module) { alog "* Module $_ failed to load: $module"; } else { alog "* Module $_ loaded."; } }
+            if (!API::Std::mod_exists($_)) { my $module = Auto::mod_load($_); if ($module) { alog "* Module $_ failed to load: $module"; } else { alog "* Module $_ loaded."; } }
         }
     }
 
