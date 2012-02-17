@@ -102,7 +102,6 @@ sub cmd_factoid {
        }
        when ('INFO') {
             # Ensure it exists.
-            my $match;
             my $cdbq = $Auto::DB->prepare('SELECT * FROM factoids WHERE net = ? AND chan = ? AND trigger = ?');
             $cdbq->execute(lc $src->{svr}, lc $src->{chan}, lc $argv[1]);
             my @crow = $cdbq->fetchrow_array;
