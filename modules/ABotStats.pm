@@ -87,7 +87,7 @@ __END__
 
 =head1 NAME
 
-BotStats - General information about the bot
+ABotStats - General information about the bot
 
 =head1 VERSION
 
