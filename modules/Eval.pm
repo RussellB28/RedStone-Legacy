@@ -72,10 +72,11 @@ sub cmd_eval {
         $i++;
         if ($i > $max) { 
             $msg = 'Reached maximum number of lines. Giving up.';
+            privmsg($src->{svr}, $target, $msg);
             last;
         }
-        my $line = (defined $src->{chan} ? "$src->{nick}: $_" : "Output: $_");
-        privmsg($src->{svr}, $target, $line);
+        $msg = (defined $src->{chan} ? "$src->{nick}: $_" : "Output: $_");
+        privmsg($src->{svr}, $target, $msg);
     }
 
     return 1;
