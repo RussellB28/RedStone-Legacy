@@ -62,11 +62,14 @@ sub cmd_eval {
     if (!defined $result) { $result = 'None' }
 
     # Return the result.
-    if (!defined $src->{chan}) {
-        notice($src->{svr}, $src->{nick}, "Output: $result");
-    }
-    else {
-        privmsg($src->{svr}, $src->{chan}, "$src->{nick}: $result");
+    my @lines = split("\n", $result);
+    foreach (@lines) {
+        if (!defined $src->{chan}) {
+            notice($src->{svr}, $src->{nick}, "Output: $result");
+        }
+        else {
+            privmsg($src->{svr}, $src->{chan}, "$src->{nick}: $result");
+        }
     }
 
     return 1;
