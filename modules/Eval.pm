@@ -65,10 +65,10 @@ sub cmd_eval {
     my @lines = split("\n", $result);
     foreach (@lines) {
         if (!defined $src->{chan}) {
-            notice($src->{svr}, $src->{nick}, "Output: $result");
+            notice($src->{svr}, $src->{nick}, "Output: $_");
         }
         else {
-            privmsg($src->{svr}, $src->{chan}, "$src->{nick}: $result");
+            privmsg($src->{svr}, $src->{chan}, "$src->{nick}: $_");
         }
     }
 
