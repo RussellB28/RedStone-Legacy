@@ -66,19 +66,16 @@ sub cmd_eval {
     my $i = 0;
     my $msg = 'Unexpected error.';
     my $max = (conf_get('eval_maxlines') ? (conf_get('eval_maxlines'))[0][0] : 5);
-    foreach my $line (@lines) {
+    my $target = (defined $src->{chan} ? $src->{chan} : $src->{nick});
+
+    foreach (@lines) {
         $i++;
         if ($i > $max) { 
             $msg = 'Reached maximum number of lines. Giving up.';
+            last;
         }
-        if (!defined $src->{chan}) {
-            $msg = "Output: $line";
-            notice($src->{svr}, $src->{nick}, $msg);
-        }
-        else {
-            $msg = "$src->{nick}: $line";
-            privmsg($src->{svr}, $src->{chan}, $msg);
-        }
+        my $line = (defined $src->{chan} ? "$src->{nick}: $_" : "Output: $_");
+        privmsg($src->{svr}, $target, $line);
     }
 
     return 1;
