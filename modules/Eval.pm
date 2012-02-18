@@ -63,12 +63,20 @@ sub cmd_eval {
 
     # Return the result.
     my @lines = split("\n", $result);
-    foreach (@lines) {
+    my $i = 0;
+    my $max = (conf_get('eval_maxlines') ? (conf_get('eval_maxlines'))[0][0] ? 5);
+    foreach my $line (@lines) {
+        $i++;
+        if ($i > $max) { 
+            $msg = 'Reached maximum number of lines. Giving up.';
+        }
         if (!defined $src->{chan}) {
-            notice($src->{svr}, $src->{nick}, "Output: $_");
+            $msg = "Output: $line";
+            notice($src->{svr}, $src->{nick}, $msg);
         }
         else {
-            privmsg($src->{svr}, $src->{chan}, "$src->{nick}: $_");
+            $msg = "$src->{nick}: $line";
+            privmsg($src->{svr}, $src->{chan}, $msg);
         }
     }
 
