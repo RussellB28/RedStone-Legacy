@@ -64,6 +64,7 @@ sub cmd_eval {
     # Return the result.
     my @lines = split("\n", $result);
     my $i = 0;
+    my $msg = 'Unexpected error.';
     my $max = (conf_get('eval_maxlines') ? (conf_get('eval_maxlines'))[0][0] : 5);
     foreach my $line (@lines) {
         $i++;
