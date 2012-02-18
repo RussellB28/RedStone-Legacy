@@ -5,7 +5,7 @@ package M::Eval;
 use strict;
 use warnings;
 use English qw(-no_match_vars);
-use API::Std qw(cmd_add cmd_del trans);
+use API::Std qw(cmd_add cmd_del trans conf_get);
 use API::IRC qw(privmsg notice);
 
 # Initialization subroutine.
@@ -64,7 +64,7 @@ sub cmd_eval {
     # Return the result.
     my @lines = split("\n", $result);
     my $i = 0;
-    my $max = (conf_get('eval_maxlines') ? (conf_get('eval_maxlines'))[0][0] ? 5);
+    my $max = (conf_get('eval_maxlines') ? (conf_get('eval_maxlines'))[0][0] : 5);
     foreach my $line (@lines) {
         $i++;
         if ($i > $max) { 
