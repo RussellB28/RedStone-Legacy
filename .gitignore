@@ -11,3 +11,4 @@ autodoc/*
 var/*
 *.pid
 *.uid
+.*~
