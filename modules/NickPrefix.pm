@@ -75,7 +75,7 @@ sub on_privmsg {
 
 
 # Start initialization.
-API::Std::mod_init('NickPrfix', 'Ethrik', '1.00', '3.0.0a11');
+API::Std::mod_init('NickPrefix', 'Ethrik', '1.00', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
