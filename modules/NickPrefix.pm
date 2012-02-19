@@ -34,9 +34,13 @@ sub on_privmsg {
     if ($argv[0] =~ m/^\Q$snick\E([:\,]{0,1})$/i) {
         # We were just highlighted here.
         my $cmd = uc($argv[1]);
+        my ($lcn, $lcc); # Only used in command level 3.
         shift @argv; shift @argv;
         if (defined $API::Std::CMDS{$cmd}) {
-            if ($API::Std::CMDS{$cmd}{lvl} == 0 or $API::Std::CMDS{$cmd}{lvl} == 2) {
+            if ($API::Std::CMDS{$cmd}{lvl} == 3) { 
+                ($lcn, $lcc) = split '/', (conf_get('logchan'))[0][0];
+            }
+            if (($API::Std::CMDS{$cmd}{lvl} == 0 or $API::Std::CMDS{$cmd}{lvl} == 2) or ($API::Std::CMDS{$cmd}{lvl} == 3 and lc $chan eq lc $lcc and lc $src->{svr} eq lc $lcn)) {
                 # This is a public command.
                 if (API::Std::ratelimit_check(%data)) {
                     # Continue if user passes rate limit checks.
