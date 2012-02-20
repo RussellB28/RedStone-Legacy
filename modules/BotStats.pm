@@ -61,15 +61,11 @@ sub stats {
     # Get network and channel data.
     my $sockets = keys %Auto::SOCKET;
     my $nets;
+    my $chans;
     foreach (%Auto::SOCKET) {
         if (Auto::is_ircsock($_)) {
              $nets++;
-        }
-    }
-    my $chans;
-    foreach my $net (keys %Auto::SOCKET) {
-        if (Auto::is_ircsock($net)) {
-            foreach (keys %{$Proto::IRC::botchans{$net}}) { $chans++ }
+             foreach (keys %{$Proto::IRC::botchans{$_}}) { $chans++; }
         }
     }
 
