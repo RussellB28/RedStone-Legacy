@@ -71,6 +71,20 @@ sub cmd_abstats {
     # Return version data.
     privmsg($src->{svr}, $target, 'I am running '.Auto::NAME.' (version '.Auto::VER.q{.}.Auto::SVER.q{.}.Auto::REV.Auto::RSTAGE.") for Perl $PERL_VERSION on $OSNAME.");
 
+    # Get network and channel data.
+    my $sockets = keys %Auto::SOCKET;
+    my $nets;
+    my $chans;
+    foreach (%Auto::SOCKET) {
+        if (Auto::is_ircsock($_)) {
+            $nets++;
+            foreach (keys %{$Proto::IRC::botchans{$_}}) { $chans++; }
+        }
+    }
+
+    # Return network/channel data.
+    privmsg($src->{svr}, $target, "I am on \2$chans\2 channels across \2$nets\2 networks. In all, I have \2$sockets\2 active sockets.");
+
     # Get memory usage.
     my $usage = 'N/A';
     $usage = `ps h -o sz $$`;
