@@ -27,6 +27,7 @@ In this alpha12 release, we have added:
 * Factoids: Added INFO command.
 * ABStats: Additonal bot statistics.
 * Pisg 1.01: Recheck certain things when rehashed.
+* NickPrefix: Extends fantasy support to allow for command execution when the bot is addressed.
 
 Bug fixes:
 
