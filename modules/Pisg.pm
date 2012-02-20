@@ -404,7 +404,12 @@ sub cmd_stats {
 
     if (!defined $argv[0]) {
         my $chan = substr(lc($src->{chan}), 1);
-        privmsg($src->{svr}, $src->{chan}, "Channel stats can be found at ".$UBASE."/".$svr."/".$chan.".html");
+        if (check_log($svr, lc($src->{chan}))) {
+            privmsg($src->{svr}, $src->{chan}, "Channel stats can be found at ".$UBASE."/".$svr."/".$chan.".html");
+        }
+        else {
+            privmsg($src->{svr}, $src->{chan}, "I am not configured for stats in \2$src->{chan}\2.");
+        }
         return;
     }
 
