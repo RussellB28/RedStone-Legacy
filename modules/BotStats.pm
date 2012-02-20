@@ -36,13 +36,7 @@ sub stats {
     my ($src, undef) = @_;
 
     # Check if this was private or public.
-    my $target;
-    if ($src->{chan}) {
-        $target = $src->{chan};
-    }
-    else {
-        $target = $src->{nick};
-    }
+    my $target = ($src->{chan} ? $src->{chan} : $src->{nick});
 
     # Get uptime data.
     my $uptime = time - $Auto::STARTTIME;

@@ -36,13 +36,7 @@ sub cmd_abstats {
     my ($src, @argv) = @_;
 
     # Check if this was private or public.
-    my $target;
-    if ($src->{chan}) {
-        $target = $src->{chan};
-    }
-    else {
-        $target = $src->{nick};
-    }
+    my $target = ($src->{chan} ? $src->{chan} : $src->{nick});
 
     if ($argv[0] eq "--memory") {
         my $usage = 'N/A';
