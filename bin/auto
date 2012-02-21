@@ -227,8 +227,8 @@ if ($ENFEAT =~ /ssl/) { require IO::Socket::SSL }
 our $configfile = 'auto.conf';
 if ($USECONFIG) { $configfile = $USECONFIG }
 say "* Parsing configuration file $configfile...";
-our $CONF = Parser::Config->new($configfile) or err(1, 'Failed to parse configuration file!', 1);
-our %SETTINGS = $CONF->parse or err(1, 'Failed to parse configuration file!', 1);
+our $CONF = Parser::Config->new($configfile) or err(1, 'Failed to parse configuration file!', 0) and $logger->fire(FATAL => 'Failed to parse configuration file!');
+our %SETTINGS = $CONF->parse or err(1, 'Failed to parse configuration file!', 0) and $logger->fire(FATAL => 'Failed to parse configuration file!');
 say ' Success';
 undef $USECONFIG;
 
