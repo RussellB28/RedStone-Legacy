@@ -73,7 +73,8 @@ use Auto::Logger;
 our $logger = Auto::Logger->new;
 use Lib::Auto;
 use API::Std qw(conf_get err);
-$logger->on(FATAL => sub { say "FATAL ERROR: @_[1..$#_]"; API::Std::event_run('on_shutdown'); exit; }, 'core.fatal'); 
+$logger->on(FATAL => sub { say "FATAL ERROR: @_[1..$#_]"; API::Std::event_run('on_shutdown'); exit; }, 'core.fatal');
+$logger->on(MISC => sub { say @_[1..$#_]; }, 'core.misc');
 use API::Log qw(alog dbug);
 use API::Socket qw(add_socket del_socket send_socket);
 use Parser::Config;
@@ -92,49 +93,49 @@ binmode(STDOUT, ':encoding(UTF-8)');
 
 # Check for build files.
 if (!-e "$bin{bld}/os" or !-e "$bin{bld}/perl" or !-e "$bin{bld}/time" or !-e "$bin{bld}/ver") {
-    say 'Missing build file(s). Please build Auto before running it.' and exit;
+    $logger->fire(FATAL => 'Missing build file(s). Please build Auto before running it.');
 }
 
 # Check build OS.
-open my $BFOS, '<', "$bin{bld}/os" or say 'Cannot start: Broken build.' and exit;
+open my $BFOS, '<', "$bin{bld}/os" or $logger->fire(FATAL => 'Cannot start: Broken build.');
 my @BFOS = <$BFOS>;
-close $BFOS or say 'Cannot start: Broken build.' and exit;
+close $BFOS or $logger->fire(FATAL => 'Cannot start: Broken build.');
 if ($BFOS[0] ne $OSNAME."\n") {
-    say 'Cannot start: Broken build.' and exit;
+    $logger->fire(FATAL => 'Cannot start: Broken build.');
 }
 undef @BFOS;
 
 # Check build features.
 our $ENFEAT;
-open my $BFFEAT, '<', "$bin{bld}/feat" or say 'Cannot start: Broken build.' and exit;
+open my $BFFEAT, '<', "$bin{bld}/feat" or $logger->fire(FATAL => 'Cannot start: Broken build');
 my @BFFEAT = <$BFFEAT>;
-close $BFFEAT or say 'Cannot start: Broken build.' and exit;
+close $BFFEAT or $logger->fire(FATAL => 'Cannot start: Broken build.');
 $ENFEAT = substr $BFFEAT[0], 0, length($BFFEAT[0]) - 1;
 undef @BFFEAT;
 
 # Check build Perl version.
-open my $BFPERL, '<', "$bin{bld}/perl" or say 'Cannot start: Broken build.' and exit;
+open my $BFPERL, '<', "$bin{bld}/perl" or $logger->fire(FATAL => 'Cannot start: Broken build.');
 my @BFPERL = <$BFPERL>;
-close $BFPERL or say 'Cannot start: Broken build.' and exit;
+close $BFPERL or $logger->fire(FATAL => 'Cannot start: Broken build.');
 if ($BFPERL[0] ne $]."\n") {
-    say 'Cannot start: Broken build.' and exit;
+    $logger->fire(FATAL => 'Cannot start: Broken build.');
 }
 undef @BFPERL;
 
 # Check build Auto version.
-open my $BFVER, '<', "$bin{bld}/ver" or say 'Cannot start: Broken build.' and exit;
+open my $BFVER, '<', "$bin{bld}/ver" or $logger->fire(FATAL => 'Cannot start: Broken build.');
 my @BFVER = <$BFVER>;
-close $BFVER or say 'Cannot start: Broken build.' and exit;
+close $BFVER or $logger->fire(FATAL => 'Cannot start: Broken build.');
 if ($BFVER[0] ne VER.q{.}.SVER.q{.}.REV.RSTAGE."\n") {
-    say 'Cannot start: Broken build.' and exit;
+    $logger->fire(FATAL => 'Cannot start: Broken build.');
 }
 undef @BFVER;
 
 # Check build path setup.
 our $SYSWIDE;
-open my $BFPATH, '<', "$bin{bld}/syswide" or say 'Cannot start: Broken build.' and exit;
+open my $BFPATH, '<', "$bin{bld}/syswide" or $logger->fire(FATAL => 'Cannot start: Broken build.');
 my @BFPATH = <$BFPATH>;
-close $BFPATH or say 'Cannot start: Broken build.' and exit;
+close $BFPATH or $logger->fire(FATAL => 'Cannot start: Broken build.');
 if ($BFPATH[0] eq "1\n") { $SYSWIDE = 1 }
 else { $SYSWIDE = 0 }
 
