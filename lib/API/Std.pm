@@ -486,8 +486,7 @@ sub err { ## no critic qw(Subroutines::ProhibitBuiltinHomonyms)
 
     # If it's a fatal error, exit the program.
     if ($fatal) {
-        API::Std::event_run('on_shutdown');
-        exit; 
+        $Auto::logger->fire(FATAL => $msg);
     }
 
     return 1;
