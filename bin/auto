@@ -71,6 +71,7 @@ BEGIN {
 }
 use Auto::Logger;
 our $logger = Auto::Logger->new;
+$logger->on(FATAL => sub { say "ERROR: @_[1..$#_]"; exit; }, 'core.fatal');
 use Lib::Auto;
 use API::Std qw(conf_get err);
 use API::Log qw(alog dbug);
@@ -402,14 +403,14 @@ alog 'Auto successfully started.';
 # If we're on Windows, disable forking.
 if ($OSNAME =~ /win/i) {
     if (!$DEBUG) {
-        $logger->fire(PF_INFO => '!!! Forking unavailable (OS is Microsoft Windows), continuing in debug mode.');
+        say '!!! Forking unavailable (OS is Microsoft Windows), continuing in debug mode.';
         $DEBUG = 1;
     }
 }
 
 # Fork into the background if not in debug mode.
 if (!$DEBUG) {
-    $logger->fire(PF_INFO => 'Becoming a daemon...');
+    say '*** Becoming a daemon...';
     open STDIN, '<', '/dev/null' or err(2, "Can't read /dev/null: $ERRNO", 1);
     open STDOUT, '>>', '/dev/null' or err(2, "Can't write to /dev/null: $ERRNO", 1);
     open STDERR, '>>', '/dev/null' or err(2, "Can't write to /dev/null: $ERRNO", 1);
