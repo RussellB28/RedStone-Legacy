@@ -69,11 +69,12 @@ BEGIN {
         RSTAGE => 'd',
     };
 }
+use Auto::Logger;
+our $logger = Auto::Logger->new;
 use Lib::Auto;
 use API::Std qw(conf_get err);
 use API::Log qw(alog dbug);
 use API::Socket qw(add_socket del_socket send_socket);
-#use DB::Flatfile;
 use Parser::Config;
 use Parser::Lang;
 use Proto::IRC;
