@@ -33,7 +33,7 @@ sub gettitle {
 
     # Check if the message contains a URL.
     foreach my $smw (@msg) {
-        if ($smw =~ m{(http|https)://}xsm) {
+        if ($smw =~ m{^(http|https)://}xsm) {
             # We've got a match, connect to the server.
             my $srv = $1;
     
