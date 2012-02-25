@@ -240,7 +240,7 @@ sub update_seen {
     }
     else {
         # They're not already in the database, we need to create it.
-        my $q = "INSERT INTO seen (net, user, last, time) VALUES ('".$svr."', '".$user."', ".$last.", '".$time."')";
+        my $q = "INSERT INTO seen (net, user, last, time) VALUES ('".$svr."', '".$user."', '".$last."', '".$time."')";
         $Auto::DB->do($q);
     }
     return 1;
