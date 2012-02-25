@@ -30,6 +30,7 @@ In this alpha12 release, we have added:
 * NickPrefix: Extends fantasy support to allow for command execution when the bot is addressed.
 * DNS: A module for resolution of DNS hostnames.
 * Seen: A seen module, adds the SEEN command.
+* LinkTitle 3.00: Fixes all known bugs in LinkTitle and adds YouTube title support.
 
 Bug fixes:
 

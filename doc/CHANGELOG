@@ -26,7 +26,7 @@ Auto IRC Bot 3.0: Change Log
     * NickPrefix: Extends fantasy support to allow for command execution when the bot is addressed.
     * DNS: A module for resolution of DNS hostnames.
     * Seen: A seen module, adds the SEEN command.
-
+    * LinkTitle 3.00: Fixes all known bugs in LinkTitle and adds YouTube title support.
 
 
 3.0 Alpha 11
