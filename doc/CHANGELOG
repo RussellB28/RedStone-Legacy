@@ -25,6 +25,7 @@ Auto IRC Bot 3.0: Change Log
     * Rehash: fixed a crash bug when trying to load a module in config but not loaded.
     * NickPrefix: Extends fantasy support to allow for command execution when the bot is addressed.
     * DNS: A module for resolution of DNS hostnames.
+    * Seen: A seen module, adds the SEEN command.
 
 
 

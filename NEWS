@@ -29,6 +29,7 @@ In this alpha12 release, we have added:
 * Pisg 1.01: Recheck certain things when rehashed.
 * NickPrefix: Extends fantasy support to allow for command execution when the bot is addressed.
 * DNS: A module for resolution of DNS hostnames.
+* Seen: A seen module, adds the SEEN command.
 
 Bug fixes:
 
