@@ -1,16 +1,51 @@
-# lib/Auto/Attributes.pm
-# Copyright (C) 2010-2012 Ethrik Development Group, et al.
-# This program is free software; rights to this code are stated in doc/LICENSE.
-package Auto::Attributes;
+# Copyright (c) 2012 Ethrik Development Group
+# see doc/LICENSE for license information.
+package Attributes;
 
 use warnings;
 use strict;
+use 5.010;
 
 sub import {
     my $package = caller;
     no strict 'refs';
-    foreach my $name (@_[1..$#_]) {
-        *{$package.q(::).$name} = sub { shift->{$name} };
+    foreach my $sym (@_[1..$#_]) {
+        my $name = $sym;
+
+        # this is quite ugly, but it's the only way to do it for compatibility with perl 5.12
+        my $code = do { given (substr $name, 0, 1) {
+
+            # arrays
+            when ('@') { $name = substr $name, 1; sub {
+                my $self = shift;
+                if ($self->{$name} && ref $self->{$name} eq 'ARRAY') {
+                    return @{$self->{$name}};
+                }
+                # empty array
+                my @a;
+                $self->{$name} = \@a;
+                @a;
+            } }
+
+            # hashes
+            when ('%') { $name = substr $name, 1; sub {
+                my $self = shift;
+                if ($self->{$name} && ref $self->{$name} eq 'HASH') {
+                    return %{$self->{$name}};
+                }
+                # empty hash
+                my %h;
+                $self->{$name} = \%h;
+                %h;
+            } }
+
+            # plain old value
+            default { sub {
+                shift->{$name};
+            } }
+
+        } };
+        *{$package.q(::).$name} = $code;
     }
 }
 
