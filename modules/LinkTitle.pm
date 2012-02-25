@@ -4,8 +4,7 @@
 package M::LinkTitle;
 use strict;
 use warnings;
-use Furl;
-use HTML::Entities;
+use URI::Title qw(title);
 use API::Std qw(hook_add hook_del);
 use API::IRC qw(privmsg);
 
@@ -34,41 +33,10 @@ sub gettitle {
     # Check if the message contains a URL.
     foreach my $smw (@msg) {
         if ($smw =~ m{^(http|https)://.*\..*}xsm) {
-            # We've got a match, connect to the server.
-            my $srv = $1;
-    
-            # Create an instance of Furl.
-            my $ua = Furl->new(
-                agent => 'Auto IRC Bot',
-                timeout => 5,
-            );
-
             # Get data.
-            my $res = $ua->get($smw);
-            
-            # Check if we're successful.
-            if ($res->is_success) {
-                # We were, decode the data.
-                my $data = $res->content;
-
-                # Strip newlines.
-                $data =~ s/(\n|\r)//gxsm;
-                
-                # Check for <title>
-                if ($data =~ m{<title>(.*)</title>}ixsm) {
-                    # Found. Decode it.
-                    my $title = decode_entities($1);
-                    # Return if an empty title.
-                    return if length($title) < 1;
-                    # Housekeeping.
-                    #    Remove leading spaces
-                    $title =~ s/^\s+//;
-                    #    Remove trailing spaces
-                    $title =~ s/\s+$//;
-                    # Return to channel.
-                    privmsg($src->{svr}, $chan, "\2Title:\2 $title");
-                }
-            }
+            my $title = title($smw);
+            return if length($title) == 0;
+            privmsg($src->{svr}, $chan, "\2Title:\2 $title");
         }
     }
 
@@ -76,8 +44,8 @@ sub gettitle {
 }
 
 # Start initialization.
-API::Std::mod_init('LinkTitle', 'Xelhua', '2.00', '3.0.0a11');
-# build: cpan=Furl,HTML::Entities perl=5.010000
+API::Std::mod_init('LinkTitle', 'Xelhua', '3.00', '3.0.0a11');
+# build: cpan=URI::Title,Encode::Detect::Detector perl=5.010000
 
 __END__
 
@@ -87,7 +55,7 @@ LinkTitle - A module for returning the page title of links.
 
 =head1 VERSION
 
- 2.00
+ 3.00
 
 =head1 SYNOPSIS
 
@@ -106,14 +74,13 @@ This module is dependent on two modules from the CPAN.
 
 =over
 
-=item L<Furl>
+=item L<URI::TItle>
 
-This module is used for connecting to the target web server via HTTP(S).
+This module is used for getting the URLs title.
 
-=item L<HTML::Entities>
+=item L<Encode::Detect::Detector>
 
-This module is used for decoding HTML entities in the response we receive from
-the server.
+Dependency of URI::Title.
 
 =back
 
