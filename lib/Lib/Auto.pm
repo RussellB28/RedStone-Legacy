@@ -62,7 +62,7 @@ sub checkin {
                 'PeerAddr' => 'checkin.ethrik.net',
                 'PeerPort' => 8082,
                 'Timeout'  => 30
-            ) or err(1, 'Cannot connect to master server! Aborting check-in.');
+            ) or err(1, 'Cannot connect to master server! Aborting check-in.', 0) and return;
             send $uss, "NEWID\r\n", 0;
             while (my $data = readline $uss) {
                 $data =~ s/(\n|\r)//g;
@@ -76,12 +76,12 @@ sub checkin {
                         }
                     }
                     else {
-                        err(1, "Master server returned error: $1. Aborting check-in.");
+                        err(1, "Master server returned error: $1. Aborting check-in.", 0);
                     }
                 }
             }
         }
-        open my $FUID, '<', $uidfile or err(1, 'Cannot open UID file. Aborting check-in.');
+        open my $FUID, '<', $uidfile or err(1, 'Cannot open UID file. Aborting check-in.', 0) and return;
         my @FUID = <$FUID>;
         close $FUID;
         $Auto::CUID = $FUID[0];
@@ -91,7 +91,7 @@ sub checkin {
             'PeerAddr' => 'checkin.ethrik.net',
             'PeerPort' => 8082,
             'Timeout'  => 30
-        ) or err(1, 'Cannot connect to master server! Aborting check-in.');
+        ) or err(1, 'Cannot connect to master server! Aborting check-in.', 0) and return;
         my $version = Auto::VER.q{.}.Auto::SVER.q{.}.Auto::REV.Auto::RSTAGE;
         send $uss, "UPDATE $Auto::CUID $version $OSNAME\r\n", 0;
         while (my $data = readline $uss) {
@@ -101,7 +101,7 @@ sub checkin {
                     say("*$1");
                 }
                 else {
-                    err(1, "Master server returned error: $1. Aborting check-in.");
+                    err(1, "Master server returned error: $1. Aborting check-in.", 0);
                 }
             }
         }
