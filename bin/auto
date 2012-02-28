@@ -601,7 +601,9 @@ sub mod_load {
 
     return eval {
         $SIG{__WARN__} = $SIG{__DIE__} = sub {};
-        do $mod or return $@;
+        my $result = do $mod;
+        return $@ if $@; # Parse/Syntax error.
+        return 'Module initialization failed. Check logs for more information' if !$result; # mod_init() failed.
         undef
     }
 }

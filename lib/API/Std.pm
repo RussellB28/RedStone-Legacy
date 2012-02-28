@@ -33,8 +33,20 @@ sub mod_init {
         return;
     }
 
+    my $mi;
     # Run the module's _init sub.
-    my $mi = eval($pkg.'::_init();'); ## no critic qw(BuiltinFunctions::ProhibitStringyEval)
+    if ($pkg->can('_init')) {
+        $mi = $pkg->_init();
+    }
+    else {
+        API::Log::dbug('MODULES: Failed to load '.$name.': No _init subroutine.');
+        API::Log::alog('MODULES: Failed to load '.$name.': No _init subroutine.');
+        if (keys %Auto::SOCKET) { API::Log::slog('MODULES: Failed to load '.$name.': No _init subroutine.'); }
+        # Just in case.
+        Class::Unload->unload($pkg);
+
+        return;
+    }
 
     if ($mi) {
         # If successful, add to hash.
@@ -87,8 +99,17 @@ sub mod_void {
         return;
     }
 
+    my $mi;
     # Run the module's _void sub.
-    my $mi = eval($MODULE{$module}{pkg}.'::_void();'); ## no critic qw(BuiltinFunctions::ProhibitStringyEval)
+    if ($MODULE{$module}{pkg}->can('_void')) {
+        $mi = $MODULE{$module}{pkg}->_void();
+    }
+    else {
+        API::Log::dbug('MODULES: Failed to unload '.$module.': No _void subroutine.');
+        API::Log::alog('MODULES: Failed to unload '.$module.': No _void subroutine.');
+        if (keys %Auto::SOCKET) { API::Log::slog('MODULES: Failed to unload '.$module.': No _void subroutine.'); }
+        return;
+    }
 
     if ($mi) {
         # If successful, delete class from program and delete module from hash.
