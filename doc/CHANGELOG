@@ -29,6 +29,7 @@ Auto IRC Bot 3.0: Change Log
     * LinkTitle 3.00: Fixes all known bugs in LinkTitle and adds YouTube title support.
     * contact_home: Fixed bug when check-in server is unresponsive.
     * match_user/has_priv: Fixed a bug where only one block can be matched even if a user fits into multiple. This could cause you not to get some privileges.
+    * module loading: Fixed a bug where mod_load would say a module loaded fine when it really didn't.
 
 
 3.0 Alpha 11
