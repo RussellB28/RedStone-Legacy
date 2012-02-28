@@ -362,6 +362,9 @@ sub match_user {
     if (!conf_get('user')) { return }
     my %uhp = conf_get('user');
 
+    # Create an array of matches.
+    my @matches = ();
+
     foreach my $userkey (keys %uhp) {
         # For each user block.
         my %ulhp = %{ $uhp{$userkey} };
@@ -381,7 +384,7 @@ sub match_user {
                 my $mask = $user{nick}.q{!}.$user{user}.q{@}.$user{host};
                 if (API::IRC::match_mask($mask, ($ulhp{$uhk})[0][0])) {
                     # We've got a host match.
-                    return $userkey;
+                    push @matches, $userkey;
                 }
             }
             elsif ($uhk eq 'chanstatus' and defined $ulhp{'net'}) {
@@ -390,14 +393,14 @@ sub match_user {
                 if (defined $Auto::SOCKET{$svr}) {
                     if ($ccnm eq 'CURRENT' and defined $user{chan}) {
                         if (defined $State::IRC::chanusers{$svr}{$user{chan}}{lc $user{nick}}) {
-                            if ($State::IRC::chanusers{$svr}{$user{chan}}{lc $user{nick}} =~ m/($ccst)/sm) { return $userkey } ## no critic qw(RegularExpressions::RequireExtendedFormatting)
+                            if ($State::IRC::chanusers{$svr}{$user{chan}}{lc $user{nick}} =~ m/($ccst)/sm) { push @matches, $userkey; } ## no critic qw(RegularExpressions::RequireExtendedFormatting)
                         }
                     }
                     else {
                         foreach my $bcj (keys %{ $Proto::IRC::botchans{$svr} }) {
                             if (lc($bcj) eq lc($ccnm)) {
                                 if (defined $State::IRC::chanusers{$svr}{$bcj}{lc $user{nick}}) {
-                                    if ($State::IRC::chanusers{$svr}{$bcj}{lc $user{nick}} =~ m/($ccst)/sm) { return $userkey } ## no critic qw(RegularExpressions::RequireExtendedFormatting)
+                                    if ($State::IRC::chanusers{$svr}{$bcj}{lc $user{nick}} =~ m/($ccst)/sm) { push @matches, $userkey; } ## no critic qw(RegularExpressions::RequireExtendedFormatting)
                                 }
                             }
                         }
@@ -407,19 +410,21 @@ sub match_user {
         }
     }
 
-    return;
+    return @matches;
 }
 
 # Privilege subroutine.
 sub has_priv {
-    my ($cuser, $cpriv) = @_;
+    my (@matches, $cpriv) = @_;
 
-    if (conf_get("user:$cuser:privs")) {
-        my $cups = (conf_get("user:$cuser:privs"))[0][0];
+    foreach my $cuser (@matches) {
+        if (conf_get("user:$cuser:privs")) {
+            my $cups = (conf_get("user:$cuser:privs"))[0][0];
 
-        if (defined $Auto::PRIVILEGES{$cups}) {
-            foreach (@{ $Auto::PRIVILEGES{$cups} }) {
-                if ($_) { if ($_ eq $cpriv or $_ eq 'ALL') { return 1 } }
+            if (defined $Auto::PRIVILEGES{$cups}) {
+                foreach (@{ $Auto::PRIVILEGES{$cups} }) {
+                    if ($_) { if ($_ eq $cpriv or $_ eq 'ALL') { return 1 } }
+                }
             }
         }
     }
