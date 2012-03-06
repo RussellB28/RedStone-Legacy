@@ -27,18 +27,33 @@ sub _init {
     rchook_add('904', 'sasl.904', \&M::SASLAuth::handle_904) or return;
     # Hook for parsing 906.
     rchook_add('906', 'sasl.906', \&M::SASLAuth::handle_906) or return;
+    # Hook for rehash.
+    hook_add('on_rehash', 'sasl.rehash', \&M::SASLAuth::on_rehash) or return;
     return 1;
 }
 
 # Void subroutine.
 sub _void {
     # Delete the hooks.
-    hook_del('on_capack') or return;
+    hook_del('on_capack', 'sasl.cap') or return;
     rchook_del('903', 'sasl.903') or return;
     rchook_del('904', 'sasl.904') or return;
     rchook_del('906', 'sasl.906') or return;
+    hook_del('on_rehash', 'sasl.rehash');
     return 1;
 }
+
+sub on_rehash {
+    my %servers = conf_get('server');
+    foreach my $svr (keys %servers) {
+        if (conf_get("server:$svr:sasl_username") and conf_get("server:$svr:sasl_password") and conf_get("server:$svr:sasl_timeout")) {
+            if ($Proto::IRC::cap{$svr} !~ m/sasl/) {
+                $Proto::IRC::cap{$svr} .= ' sasl';
+            }
+        }
+    }
+}
+
 
 sub handle_capack {
     my (($svr, $sacap)) = @_;
