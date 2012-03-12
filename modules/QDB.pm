@@ -302,7 +302,7 @@ sub qdb_del {
     my ($src,@argv) = @_;
     # Check for the cmd.qdbdel privilege.
     if (!has_priv(match_user(%$src), 'cmd.qdbdel')) {
-        notice($src->{svr}, $src->{chan}, trans('Permission denied').q{.});
+        notice($src->{svr}, $src->{nick}, trans('Permission denied').q{.});
         return;
     }
     # Check for the needed parameter.
