@@ -124,7 +124,14 @@ sub cmd_np {
 
         if(!$result->is_success)
         {
-            privmsg($src->{svr}, $src->{chan}, "There is no LastFM user with the username '$uname'.");
+            if(lc($result->content) =~ m/private/)
+	        {
+                privmsg($src->{svr}, $src->{chan}, "The LastFM user '$uname' has made their recent tracks private. You will need to login to LastFM and have access to view this users tracks.");
+            }
+            if(lc($result->content) =~ m/no user/)
+	        {
+                privmsg($src->{svr}, $src->{chan}, "There is no LastFM user with the username '$uname'.");
+	        }
             return 1;
         }
 
@@ -322,7 +329,14 @@ sub process_feed {
 
             if(!$result->is_success)
             {
-                privmsg(fix_net($second->[0]), $second->[1], "[LastFM] There is no LastFM user with the username '$uname'.");
+                if(lc($result->content) =~ m/private/)
+	            {
+                    privmsg(fix_net($second->[0]), $second->[1], "[LastFM] The LastFM user '$uname' has made their recent tracks private. You will need to login to LastFM and have access to view this users tracks.");
+                }
+                if(lc($result->content) =~ m/no user/)
+	            {
+                    privmsg(fix_net($second->[0]), $second->[1], "[LastFM] There is no LastFM user with the username '$uname'.");
+	            }
                 my $dbq = $Auto::DB->prepare('UPDATE lastfm SET lastsong=? WHERE net = ? AND chan = ?');
                 $dbq->execute("NONE", lc $second->[0], $second->[1]);
             }
