@@ -13,10 +13,10 @@ our @EXPORT_OK = qw(add_socket del_socket send_socket is_socket);
 
 sub add_socket {
     my ($id, $object, $handler) = @_;
-    alog('add_socket(): Socket already exists.') if defined($Auto::SOCKET{$id});
-    alog('add_socket(): Specified handler is not valid.') if ref($handler) ne 'CODE';
-    alog('add_socket(): Specified socket object is not defined.') if !defined $object;
-    alog('add_socket(): Specified socket object is not a valid IO::Socket object.') if !$object->isa('IO::Handle');
+    alog('add_socket(): Socket already exists.') and return if defined($Auto::SOCKET{$id});
+    alog('add_socket(): Specified handler is not valid.') and return if ref($handler) ne 'CODE';
+    alog('add_socket(): Specified socket object is not defined.') and return if !defined $object;
+    alog('add_socket(): Specified socket object is not a valid IO::Socket object.') and return if !$object->isa('IO::Handle');
     $Auto::SOCKET{$id}{handler} = $handler;
     $Auto::SOCKET{$id}{socket} = $object;
     if (Auto::is_ircsock($id) and ref($object) ne 'IO::Socket::SSL') {

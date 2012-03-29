@@ -24,7 +24,6 @@ my ($opt_help, $opt_syswide, $PREFIX, $feature_nossl, $feature_sasl, $feature_ip
 GetOptions(
     '--disable-ssl'    => \$feature_nossl,
     '--enable-sasl'    => \$feature_sasl,
-    '--enable-ipv6'    => \$feature_ipv6,
     '--with-mysql'     => \$feature_mysql,
     '--with-pgsql'     => \$feature_pgsql,
     '--prefix=s'       => \$PREFIX,
@@ -42,7 +41,6 @@ Usage: perl install [options]
 Options:
     --disable-ssl  Disables SSL support.
     --enable-sasl  Enables SASL support.
-    --enable-ipv6  Enables IPv6 support.
     --with-mysql   Uses MySQL instead of SQLite.
     --with-pgsql   Uses PostgreSQL instead of SQLite.
     --syswide      Prefixes bin/ files with auto- (excluding `auto` itself), as
@@ -60,7 +58,6 @@ HELP
 my $features = 'base';
 $features .= ' ssl' unless $feature_nossl;
 $features .= ' sasl' if $feature_sasl;
-$features .= ' ipv6' if $feature_ipv6;
 if ($feature_mysql) { $features .= ' mysql' }
 elsif ($feature_pgsql) { $features .= ' pgsql' }
 else { $features .= ' sqlite' }
@@ -142,7 +139,7 @@ modfind('DBD::SQLite') if $features =~ /sqlite/;
 modfind('DBD::mysql') if $features =~ /mysql/;
 modfind('DBD::Pg') if $features =~ /pgsql/;
 modfind('Class::Unload');
-modfind('IO::Socket::INET6') if $features =~ /ipv6/;
+modfind('IO::Socket::IP');
 modfind('IO::Socket::SSL') if $features =~ /ssl/;
 modfind('MIME::Base64') if $features =~ /sasl/;
 println "\0";

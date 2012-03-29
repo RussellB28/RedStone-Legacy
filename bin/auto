@@ -218,8 +218,8 @@ our ($APID, %TIMERS);
 # Check for updates.
 Lib::Auto::checkver();
 
-# Include IPv6 if Auto was built for it.
-if ($ENFEAT =~ /ipv6/) { require IO::Socket::INET6 }
+# Regardless of if we're built with IPv6 or not we're still going to use IO::Socket::IP.
+use IO::Socket::IP;
 # Include SSL if Auto was built for it.
 if ($ENFEAT =~ /ssl/) { require IO::Socket::SSL }
 
