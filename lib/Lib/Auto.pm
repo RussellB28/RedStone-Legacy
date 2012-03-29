@@ -230,7 +230,7 @@ sub ircsock {
     # Prepare socket data.
     my %conndata = (
         Proto => 'tcp',
-        #LocalAddr => $cdata->{'bind'}[0],
+        LocalAddr => $cdata->{'bind'}[0],
         PeerAddr  => $cdata->{'host'}[0],
         PeerPort  => $cdata->{'port'}[0],
         Timeout   => 20,
