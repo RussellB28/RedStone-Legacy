@@ -32,6 +32,7 @@ In this alpha12 release, we have added:
 * Seen: A seen module, adds the SEEN command.
 * LinkTitle 3.00: Fixes all known bugs in LinkTitle and adds YouTube title support.
 * Added IPv6 SSL support.
+* Made bind optional in server blocks.
 
 Bug fixes:
 

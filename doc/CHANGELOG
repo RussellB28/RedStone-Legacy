@@ -13,7 +13,7 @@ Auto IRC Bot 3.0: Change Log
     * API::Socket - Exposing sockets to the API allowing custom sockets/parsers in modules.
     * BotStats 1.01: Changed command to match module name and added support for API::Socket.
     * Fixed: If -c was passed at runtime, also pass it upon restart.
-    * Sandboxing Eval and Modules
+    * Sandboxing Eval and module loading
     * QDB: Majority rewrite. New features. See module for details.
     * OnJoin: Added a configurable HelloChan replacement.
     * LinkTitle: Remove trailing/leading spaces and ignore if a title is empty.
@@ -32,6 +32,7 @@ Auto IRC Bot 3.0: Change Log
     * module loading: Fixed a bug where mod_load would say a module loaded fine when it really didn't.
     * Added IPv6 SSL support.
     * Fixed a bug in API::Socket that'd cause the function to not return upon an error.
+    * Made bind optional in server blocks.
 
 3.0 Alpha 11
 ===============================================================================
