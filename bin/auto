@@ -12,6 +12,7 @@ use POSIX;
 use English qw(-no_match_vars);
 use Sys::Hostname;
 use IO::Socket;
+use IO::Socket::IP;
 use IO::Select;
 use Getopt::Long;
 use DBI;
@@ -55,7 +56,7 @@ BEGIN {
     unshift @INC, $bin{lib};
 
     if (-d "$Bin/../.git") {
-        open my $gitfh, '<', "$Bin/../.git/refs/heads/indev";
+        open my $gitfh, '<', "$Bin/../.git/refs/heads/master";
         our $VERGITREV = substr readline $gitfh, 0, 7;
         close $gitfh;
     }
@@ -218,8 +219,6 @@ our ($APID, %TIMERS);
 # Check for updates.
 Lib::Auto::checkver();
 
-# Regardless of if we're built with IPv6 or not we're still going to use IO::Socket::IP.
-use IO::Socket::IP;
 # Include SSL if Auto was built for it.
 if ($ENFEAT =~ /ssl/) { require IO::Socket::SSL }
 

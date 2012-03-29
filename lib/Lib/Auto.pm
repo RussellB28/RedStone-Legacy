@@ -221,26 +221,25 @@ sub rehash {
 sub ircsock {
     my ($cdata, $svrname) = @_;
 
-    # Prepare socket data.
-    my %conndata = (
-        Proto => 'tcp',
-        LocalAddr => $cdata->{'bind'}[0],
-        PeerAddr  => $cdata->{'host'}[0],
-        PeerPort  => $cdata->{'port'}[0],
-        Timeout   => 20,
-    );
     # Set IPv6/SSL data.
     my $use6 = 0;
     my $usessl = 0;
     if (defined $cdata->{'ipv6'}[0]) { $use6 = $cdata->{'ipv6'}[0] }
     if (defined $cdata->{'ssl'}[0]) { $usessl = $cdata->{'ssl'}[0] }
 
+    # Prepare socket data.
+    my %conndata = (
+        Proto => 'tcp',
+        #LocalAddr => $cdata->{'bind'}[0],
+        PeerAddr  => $cdata->{'host'}[0],
+        PeerPort  => $cdata->{'port'}[0],
+        Timeout   => 20,
+        Domain    => ($use6 ? Socket::AF_INET6 : Socket::AF_INET),
+    );
+
     # Check for appropriate build data.
     if ($usessl) {
         if ($Auto::ENFEAT !~ m/ssl/ixsm) { err(2, '** Auto not built with SSL support: Aborting connection to '.$svrname, 0); return }
-    }
-    if ($use6) {
-        if ($Auto::ENFEAT !~ m/ipv6/ixsm) { err(2, '** Auto not built with IPv6 support: Aborting connection to '.$svrname, 0); return }
     }
 
     # CertFP.
@@ -262,17 +261,9 @@ sub ircsock {
     }
 
     # Create the socket.
-    if ($use6) {
-        add_socket($svrname, IO::Socket::INET6->new(%conndata), \&Proto::IRC::ircparse);
-    }
-    else {
-        if ($usessl) {
-            add_socket($svrname, IO::Socket::SSL->new(%conndata), \&Proto::IRC::ircparse);
-        }
-        else {
-            add_socket($svrname, IO::Socket::INET->new(%conndata), \&Proto::IRC::ircparse);
-        }
-    }
+    my $pkg = ($usessl ? 'IO::Socket::SSL' : 'IO::Socket::IP');
+    my $object = $pkg->new(%conndata) or say "$!" and return;
+    add_socket($svrname, $object, \&Proto::IRC::ircparse);
 
     # Create a CAP entry if it doesn't already exist.
     if (!$Proto::IRC::cap{$svrname}) { $Proto::IRC::cap{$svrname} = 'multi-prefix' }
