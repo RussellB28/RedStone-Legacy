@@ -30,7 +30,8 @@ Auto IRC Bot 3.0: Change Log
     * contact_home: Fixed bug when check-in server is unresponsive.
     * match_user/has_priv: Fixed a bug where only one block can be matched even if a user fits into multiple. This could cause you not to get some privileges.
     * module loading: Fixed a bug where mod_load would say a module loaded fine when it really didn't.
-
+    * Added IPv6 SSL support.
+    * Fixed a bug in API::Socket that'd cause the function to not return upon an error.
 
 3.0 Alpha 11
 ===============================================================================

@@ -31,6 +31,7 @@ In this alpha12 release, we have added:
 * DNS: A module for resolution of DNS hostnames.
 * Seen: A seen module, adds the SEEN command.
 * LinkTitle 3.00: Fixes all known bugs in LinkTitle and adds YouTube title support.
+* Added IPv6 SSL support.
 
 Bug fixes:
 
@@ -41,10 +42,11 @@ Bug fixes:
 * contact_home: Fixed bug when check-in server is unresponsive.
 * match_user/has_priv: Fixed a bug where only one block can be matched even if a user fits into multiple. This could cause you not to get some privileges.
 * module loading: Fixed a bug where mod_load would say a module loaded fine when it really didn't.
+* Fixed a bug in API::Socket that'd cause the function to not return upon an error.
 
 Incompatibilities:
 
-None
+* SSL on InspIRCd doesn't appear to be working correctly for some. Looking into this.
 
 We thank you for choosing Auto. Please remember that he is coming to late
 development stages soon, and testers are needed! But we hope we've piqued
