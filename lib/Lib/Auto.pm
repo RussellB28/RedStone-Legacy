@@ -230,11 +230,10 @@ sub ircsock {
     # Prepare socket data.
     my %conndata = (
         Proto => 'tcp',
-        LocalAddr => $cdata->{'bind'}[0],
         PeerAddr  => $cdata->{'host'}[0],
         PeerPort  => $cdata->{'port'}[0],
         Timeout   => 20,
-        Domain    => ($use6 ? Socket::AF_INET6 : Socket::AF_INET),
+        Domain    => ($use6 ? Socket::AF_INET6 : Socket::AF_INET)
     );
 
     # Check for appropriate build data.
@@ -261,7 +260,8 @@ sub ircsock {
     }
 
     # Create the socket.
-    my $pkg = ($usessl ? 'IO::Socket::SSL' : 'IO::Socket::IP');
+    my $pkg = ($usessl ? 'IO::Socket::SSL' : 'IO::Socket');
+    $conndata{LocalAddr} = $cdata->{'bind'}[0] if defined $cdata->{'bind'}[0]; 
     my $object = $pkg->new(%conndata) or say "$!" and return;
     add_socket($svrname, $object, \&Proto::IRC::ircparse);
 
