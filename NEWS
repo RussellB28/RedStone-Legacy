@@ -39,7 +39,7 @@ Bug fixes:
 * var/ permissions error on first run.
 * If -c was passed at runtime, also pass it upon restart.
 * LinkTitle: Remove trailing/leading spaces and ignore if a title is empty.
-* Rehash: fixed a crash bug when trying to load a module in config but not loaded.
+* Rehash: fixed a crash bug when trying to load a module in config that's not already loaded.
 * contact_home: Fixed bug when check-in server is unresponsive.
 * match_user/has_priv: Fixed a bug where only one block can be matched even if a user fits into multiple. This could cause you not to get some privileges.
 * module loading: Fixed a bug where mod_load would say a module loaded fine when it really didn't.
