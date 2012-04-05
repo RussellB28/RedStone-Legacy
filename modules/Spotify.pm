@@ -8,7 +8,6 @@ use Net::Spotify;
 use XML::TreePP;
 use API::Std qw(hook_add hook_del);
 use API::IRC qw(privmsg);
-use API::Log qw(dbug);
 
 # Initialization subroutine.
 sub _init {
