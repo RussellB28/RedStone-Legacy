@@ -12,7 +12,7 @@ use base qw(Exporter);
 our (%LANGE, %MODULE, %EVENTS, %HOOKS, %CMDS, %ALIASES, %RAWHOOKS);
 our @EXPORT_OK = qw(conf_get trans err awarn timer_add timer_del cmd_add 
                     cmd_del hook_add hook_del rchook_add rchook_del match_user
-                    has_priv mod_exists ratelimit_check fpfmt);
+                    has_priv mod_exists ratelimit_check fpfm0t hook_exists);
 
 
 # Initialize a module.
@@ -208,9 +208,11 @@ sub event_run {
     my ($event, @args) = @_;
 
     if (defined $EVENTS{lc $event} and defined $HOOKS{lc $event}) {
-        foreach my $hk (keys %{ $HOOKS{lc $event} }) {
-            my $ri = &{ $HOOKS{lc $event}{$hk} }(@args);
-            if ($ri == -1) { last }
+        foreach my $priority (sort { $a <=> $b } keys %{ $HOOKS{lc $event} }) {
+            foreach my $cb (@{$API::Std::HOOKS{lc $event}{$priority}}) {
+                my $result = $cb->[1]->(@args);
+                if (int $result == -1) { last }
+            }
         }
     }
 
@@ -221,9 +223,12 @@ sub event_run {
 sub hook_add {
     my ($event, $name, $sub) = @_;
 
-    if (!defined $API::Std::HOOKS{lc $name}) {
+    my $priority = (defined $_[3] ? $_[3] : 2);
+
+    if (!hook_exists($event, $name)) {
         if (defined $API::Std::EVENTS{lc $event}) {
-            $API::Std::HOOKS{lc $event}{lc $name} = $sub;
+            $API::Std::HOOKS{lc $event}{$priority} ||= [];
+            push @{$API::Std::HOOKS{lc $event}{$priority}}, [$name, $sub];
             return 1;
         }
         else {
@@ -239,14 +244,29 @@ sub hook_add {
 sub hook_del {
     my ($event, $name) = @_;
 
-    if (defined $API::Std::HOOKS{lc $event}{lc $name}) {
-        delete $API::Std::HOOKS{lc $event}{lc $name};
-        return 1;
+    foreach my $priority (keys %{$API::Std::HOOKS{lc $event}}) {
+        my $a = $API::Std::HOOKS{lc $event}{$priority};
+        @$a = grep { lc $_->[0] ne lc $name } @$a;
+
+        # Check if there's any hooks left for this priority.
+        if (scalar @$a == 0) {
+            # There isn't.
+            delete $API::Std::HOOKS{lc $event}{$priority};
+        }
     }
-    else {
-        return;
-    }
+    return 1;
 }
+
+# Check if a hook exists.
+sub hook_exists {
+    my ($event, $name) = @_;
+    foreach my $priority (keys %{$API::Std::HOOKS{lc $event}}) {
+        my $a = $API::Std::HOOKS{lc $event}{$priority};
+        if (grep { lc $_->[0] eq lc $name } @$a) { return 1; }
+    }
+    return;
+}
+
 
 # Add a timer to Auto.
 sub timer_add {
