@@ -23,7 +23,6 @@ In this alpha12 release, we have added:
 * OnJoin: Added a configurable HelloChan replacement.
 * Replay: Added a module to replay channel history.
 * Twitter: A twitter feed announcer.
-* QDB: Massive rewrite
 * Factoids: Added INFO command.
 * ABStats: Additonal bot statistics.
 * Pisg 1.01: Recheck certain things when rehashed.
@@ -33,6 +32,8 @@ In this alpha12 release, we have added:
 * LinkTitle 3.00: Fixes all known bugs in LinkTitle and adds YouTube title support.
 * Added IPv6 SSL support.
 * Made bind optional in server blocks.
+* Spotify: New module that adds spotify searching and spotify uri information.
+* LastFM: New module that apps last.fm now playing and auto-annoucements of your now playing.
 
 Bug fixes:
 

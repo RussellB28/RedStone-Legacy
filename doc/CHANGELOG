@@ -33,6 +33,8 @@ Auto IRC Bot 3.0: Change Log
     * Added IPv6 SSL support.
     * Fixed a bug in API::Socket that'd cause the function to not return upon an error.
     * Made bind optional in server blocks.
+    * Spotify: New module that adds spotify searching and spotify uri information.
+    * LastFM: New module that apps last.fm now playing and auto-annoucements of your now playing.
 
 3.0 Alpha 11
 ===============================================================================
