@@ -1,6 +1,7 @@
 # lib/Core/IRC.pm - Core IRC hooks and timers.
 # Copyright (C) 2010-2012 Xelhua Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
+                     # Trigger event on_cprivmsg.
 package Core::IRC;
 use strict;
 use warnings;
@@ -8,30 +9,132 @@ use English qw(-no_match_vars);
 use API::Std qw(hook_add timer_add conf_get);
 use API::IRC qw(notice usrc);
 
+# Events.
+API::Std::event_add('on_cprivmsg');
+API::Std::event_add('on_uprivmsg');
+
 our (%usercmd);
 
-# CTCP VERSION reply.
-hook_add('on_uprivmsg', 'ctcp_replies.version', sub {
-    my ($src, @msg) = @_;
-
-    if ($msg[0] eq "\001VERSION\001") {
-        if (Auto::RSTAGE ne 'd') {
-            notice($src->{svr}, $src->{nick}, "\001VERSION ".Auto::NAME." ".Auto::VER.".".Auto::SVER.".".Auto::REV.Auto::RSTAGE." $OSNAME\001");
-        }
-        else {
-            notice($src->{svr}, $src->{nick}, "\001VERSION ".Auto::NAME." ".Auto::VER.".".Auto::SVER.".".Auto::REV.Auto::RSTAGE."-$Auto::VERGITREV $OSNAME\001");
-        }
+# PRIVMSG parser for commands.
+hook_add('on_privmsg', 'irc.privmsg.parse', sub {
+    my ($src, @ex) = @_;
+    my %data = %$src;
+    my @argv;
+    for (my $i = 4; $i < scalar(@ex); $i++) {
+        push(@argv, $ex[$i]);
     }
+    my ($cmd, $cprefix, $rprefix);
+    # Check if it's to a channel or to us.
+    if (lc($ex[2]) eq lc($State::IRC::botinfo{$src->{svr}}{nick})) {
+        # It is coming to us in a private message.
 
-    return 1;
-}, 1);
+        # Check for a prefix.
+        $cprefix = (conf_get('fantasy_pf'))[0][0];
 
-# CTCP TIME reply.
-hook_add('on_uprivmsg', 'ctcp_replies.time', sub {
-    my ($src, @msg) = @_;
+        # Ensure it's a valid length.
+        if (length($ex[3]) > 2) {
+            $cmd = uc substr $ex[3], 1;
+            if (substr($cmd, 0, 1) eq $cprefix) { $cmd = substr $cmd, 1 }
+            if (defined $API::Std::CMDS{$cmd}) {
+                # If this is indeed a command, continue.
+                if ($API::Std::CMDS{$cmd}{lvl} == 1 or $API::Std::CMDS{$cmd}{lvl} == 2) {
+                    # Ensure the level is private or all.
+                    if (API::Std::ratelimit_check(%data)) {
+                        # Continue if the user has not passed the ratelimit amount.
+                        if ($API::Std::CMDS{$cmd}{priv}) {
+                            # If this command requires a privilege...
+                            if (API::Std::has_priv(API::Std::match_user(%data), $API::Std::CMDS{$cmd}{priv})) {
+                                # Make sure they have it.
+                                &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
+                            }
+                            else {
+                                # Else give them the boot.
+                                notice($data{svr}, $data{nick}, API::Std::trans("Permission denied").".");
+                            }
+                        }
+                        else {
+                            # Else execute the command without any extra checks.
+                            &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
+                        }
+                    }
+                    else {
+                        # Send them a notice about their bad deed.
+                        notice($data{svr}, $data{nick}, trans('Rate limit exceeded').q{.});
+                    }
+                }
+            }
+        }
 
-    if ($msg[0] eq "\001TIME\001") {
-        notice($src->{svr}, $src->{nick}, "\001TIME ".POSIX::strftime('%a %b %d %H:%M:%S %Y', localtime)."\001");
+        # Trigger event on_uprivmsg.
+        shift @ex; shift @ex; shift @ex;
+        $ex[0] = substr $ex[0], 1;
+        API::Std::event_run("on_uprivmsg", (\%data, @ex));
+    }
+    else {
+        # It is coming to us in a channel message.
+        $data{chan} = $ex[2];
+        # Ensure it's a valid length before continuing.
+        if (length($ex[3]) > 1) {
+            $cprefix = (conf_get("fantasy_pf"))[0][0];
+            $rprefix = substr($ex[3], 1, 1);
+            $cmd = uc(substr($ex[3], 2));
+            if (defined $API::Std::CMDS{$cmd} and $rprefix eq $cprefix) {
+                # If this is indeed a command, continue.
+                if ($API::Std::CMDS{$cmd}{lvl} == 0 or $API::Std::CMDS{$cmd}{lvl} == 2) {
+                    # Ensure the level is public or all.
+                    if (API::Std::ratelimit_check(%data)) {
+                        # Continue if the user has not passed the ratelimit amount.
+                        if ($API::Std::CMDS{$cmd}{priv}) {
+                            # If this command takes a privilege...
+                            if (API::Std::has_priv(API::Std::match_user(%data), $API::Std::CMDS{$cmd}{priv})) {
+                                # Make sure they have it.
+                                &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
+                            }
+                            else {
+                                # Else give them the boot.
+                                notice($data{svr}, $data{nick}, API::Std::trans('Permission denied').q{.});
+                            }
+                        }
+                        else {
+                            # Else continue executing without any extra checks.
+                            &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
+                        }
+                    }
+                    else {
+                        # Send them a notice about their bad deed.
+                        notice($data{svr}, $data{nick}, trans('Rate limit exceeded').q{.});
+                    }
+                }
+                elsif ($API::Std::CMDS{$cmd}{lvl} == 3) {
+                    # Or if it's a logchan command...
+                    my ($lcn, $lcc) = split '/', (conf_get('logchan'))[0][0];
+                    if ($lcn eq $data{svr} and lc $lcc eq lc $data{chan}) {
+                        # Check if it's being sent from the logchan.
+                        if ($API::Std::CMDS{$cmd}{priv}) {
+                            # If this command takes a privilege...
+                            if (API::Std::has_priv(API::Std::match_user(%data), $API::Std::CMDS{$cmd}{priv})) {
+                                # Make sure they have it.
+                                &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
+                            }
+                            else {
+                                # Else give them the boot.
+                                notice($data{svr}, $data{nick}, API::Std::trans('Permission denied').q{.});
+                            }
+                        }
+                        else {
+                            # Else continue executing without any extra checks.
+                            &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
+                        }
+                    }
+                }
+            }
+        }
+
+        # Trigger event on_cprivmsg.
+        my $target = $ex[2]; delete $data{chan};
+        shift @ex; shift @ex; shift @ex;
+        $ex[0] = substr $ex[0], 1;
+        API::Std::event_run("on_cprivmsg", (\%data, $target, @ex));
     }
 
     return 1;
@@ -84,7 +187,7 @@ hook_add('on_uprivmsg', 'irc.commands.aliases', sub {
         my @actual;
         if ($API::Std::ALIASES{uc $cmd} =~ m/ /xsm) { @actual = split /\s/xsm, $API::Std::ALIASES{uc $cmd} }
         else { @actual = ($API::Std::ALIASES{uc $cmd}) }
-        # Prepare data.
+        # Prepare data.	
         my @msg = (
             q{:}.$src->{nick}.q{!}.$src->{user}.q{@}.$src->{host},
             'PRIVMSG',
@@ -96,6 +199,33 @@ hook_add('on_uprivmsg', 'irc.commands.aliases', sub {
         if (defined $args[0]) { foreach (@args) { push @msg, $_ } }
         # Simulate a PRIVMSG.
         Proto::IRC::privmsg($src->{svr}, @msg);
+    }
+
+    return 1;
+}, 1);
+
+# CTCP VERSION reply.
+hook_add('on_uprivmsg', 'ctcp_replies.version', sub {
+    my ($src, @msg) = @_;
+
+    if ($msg[0] eq "\001VERSION\001") {
+        if (Auto::RSTAGE ne 'd') {
+            notice($src->{svr}, $src->{nick}, "\001VERSION ".Auto::NAME." ".Auto::VER.".".Auto::SVER.".".Auto::REV.Auto::RSTAGE." $OSNAME\001");
+        }
+        else {
+            notice($src->{svr}, $src->{nick}, "\001VERSION ".Auto::NAME." ".Auto::VER.".".Auto::SVER.".".Auto::REV.Auto::RSTAGE."-$Auto::VERGITREV $OSNAME\001");
+        }
+    }
+
+    return 1;
+}, 1);
+
+# CTCP TIME reply.
+hook_add('on_uprivmsg', 'ctcp_replies.time', sub {
+    my ($src, @msg) = @_;
+
+    if ($msg[0] eq "\001TIME\001") {
+        notice($src->{svr}, $src->{nick}, "\001TIME ".POSIX::strftime('%a %b %d %H:%M:%S %Y', localtime)."\001");
     }
 
     return 1;

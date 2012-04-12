@@ -10,37 +10,40 @@ use API::IRC qw(privmsg notice);
 # Initialization subroutine.
 sub _init {
     # Add a hook for when we join a channel.
-    hook_add('on_cprivmsg', 'nprefix.msg', \&M::NickPrefix::on_privmsg) or return;
+    hook_add('on_privmsg', 'nprefix.msg', \&M::NickPrefix::on_privmsg, 1) or return;
     return 1;
 }
 
 # Void subroutine.
 sub _void {
     # Delete the hook.
-    hook_del('on_cprivmsg', 'nprefix.msg') or return;
+    hook_del('on_privmsg', 'nprefix.msg') or return;
     return 1;
 }
 
 # PRIVMSG hook subroutine.
 sub on_privmsg {
-    my ($src, $chan, @argv) = @_;
+    my ($src, @ex) = @_;
     
-    return if !defined $argv[1]; # If there's no argument, no need to parse it.
+    return if !defined $ex[1]; # If there's no argument no need to parse it.
+    return if lc $ex[2] eq lc $State::IRC::botinfo{$src->{svr}}{nick}; # If it's not a channel message no need to parse it.
 
-    $src->{chan} = $chan;
+    $src->{chan} = $ex[2];
     my %data = %$src;
     my $snick = $State::IRC::botinfo{$src->{svr}}{nick};
+    shift @ex; shift @ex; shift @ex;
+    $ex[0] = substr($ex[0], 1);
 
-    if ($argv[0] =~ m/^\Q$snick\E([:\,]{0,1})$/i) {
+    if ($ex[0] =~ m/^\Q$snick\E([:\,]{0,1})$/i) {
         # We were just highlighted here.
-        my $cmd = uc($argv[1]);
+        my $cmd = uc($ex[1]);
         my ($lcn, $lcc); # Only used in command level 3.
-        shift @argv; shift @argv;
+        shift @ex; shift @ex;
         if (defined $API::Std::CMDS{$cmd}) {
             if ($API::Std::CMDS{$cmd}{lvl} == 3) { 
                 ($lcn, $lcc) = split '/', (conf_get('logchan'))[0][0];
             }
-            if (($API::Std::CMDS{$cmd}{lvl} == 0 or $API::Std::CMDS{$cmd}{lvl} == 2) or ($API::Std::CMDS{$cmd}{lvl} == 3 and lc $chan eq lc $lcc and lc $src->{svr} eq lc $lcn)) {
+            if (($API::Std::CMDS{$cmd}{lvl} == 0 or $API::Std::CMDS{$cmd}{lvl} == 2) or ($API::Std::CMDS{$cmd}{lvl} == 3 and lc $src->{chan} eq lc $lcc and lc $src->{svr} eq lc $lcn)) {
                 # This is a public command.
                 if (API::Std::ratelimit_check(%data)) {
                     # Continue if user passes rate limit checks.
@@ -48,7 +51,7 @@ sub on_privmsg {
                         # This command requires a privilege.
                         if (has_priv(match_user(%data), $API::Std::CMDS{$cmd}{priv})) {
                             # They have the privilege.
-                            & { $API::Std::CMDS{$cmd}{'sub'} } ($src, @argv);
+                            & { $API::Std::CMDS{$cmd}{'sub'} } ($src, @ex);
                         }
                         else {
                             # They don't have the privilege.
@@ -57,7 +60,7 @@ sub on_privmsg {
                     }
                     else {
                         # This command does not require a privilege.
-                        & { $API::Std::CMDS{$cmd}{'sub'} } ($src, @argv);
+                        & { $API::Std::CMDS{$cmd}{'sub'} } ($src, @ex);
                     }
                 }
                 else {

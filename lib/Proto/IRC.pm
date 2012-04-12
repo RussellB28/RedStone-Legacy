@@ -56,8 +56,7 @@ API::Std::event_add('on_nick');
 API::Std::event_add('on_notice');
 API::Std::event_add('on_part');
 API::Std::event_add('on_upart');
-API::Std::event_add('on_cprivmsg');
-API::Std::event_add('on_uprivmsg');
+API::Std::event_add('on_privmsg');
 API::Std::event_add('on_quit');
 API::Std::event_add('on_iquit');
 API::Std::event_add('on_topic');
@@ -612,126 +611,10 @@ sub privmsg {
     }
     else { %data = API::IRC::usrc(substr($ex[0], 1)) }
 
-    my @argv;
-    for (my $i = 4; $i < scalar(@ex); $i++) {
-        push(@argv, $ex[$i]);
-    }
     $data{svr} = $svr;
     
-    my ($cmd, $cprefix, $rprefix);
-    # Check if it's to a channel or to us.
-    if (lc($ex[2]) eq lc($State::IRC::botinfo{$svr}{nick})) {
-        # It is coming to us in a private message.
-        
-        # Check for a prefix.
-        $cprefix = (conf_get('fantasy_pf'))[0][0];
-        
-        # Ensure it's a valid length.
-        if (length($ex[3]) > 2) {
-            $cmd = uc substr $ex[3], 1;
-            if (substr($cmd, 0, 1) eq $cprefix) { $cmd = substr $cmd, 1 }
-            if (defined $API::Std::CMDS{$cmd}) {
-                # If this is indeed a command, continue.
-                if ($API::Std::CMDS{$cmd}{lvl} == 1 or $API::Std::CMDS{$cmd}{lvl} == 2) {
-                    # Ensure the level is private or all.
-                    if (API::Std::ratelimit_check(%data)) {
-                        # Continue if the user has not passed the ratelimit amount.
-                        if ($API::Std::CMDS{$cmd}{priv}) {
-                            # If this command requires a privilege...
-                            if (API::Std::has_priv(API::Std::match_user(%data), $API::Std::CMDS{$cmd}{priv})) {
-                                # Make sure they have it.
-                                &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
-                            }
-                            else {
-                                # Else give them the boot.
-                                API::IRC::notice($data{svr}, $data{nick}, API::Std::trans("Permission denied").".");
-                            }
-                        }
-                        else {
-                            # Else execute the command without any extra checks.
-                            &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
-                        }
-                    }
-                    else {
-                        # Send them a notice about their bad deed.
-                        API::IRC::notice($data{svr}, $data{nick}, trans('Rate limit exceeded').q{.});
-                    }
-                }
-            }
-        }
+    API::Std::event_run("on_privmsg", (\%data, @ex));
 
-        # Trigger event on_uprivmsg.
-        shift @ex; shift @ex; shift @ex;
-        $ex[0] = substr $ex[0], 1;
-        API::Std::event_run("on_uprivmsg", (\%data, @ex));
-    }
-    else {
-        # It is coming to us in a channel message.
-        $data{chan} = $ex[2];
-        # Ensure it's a valid length before continuing.
-        if (length($ex[3]) > 1) {
-            $cprefix = (conf_get("fantasy_pf"))[0][0];
-            $rprefix = substr($ex[3], 1, 1);
-            $cmd = uc(substr($ex[3], 2));
-            if (defined $API::Std::CMDS{$cmd} and $rprefix eq $cprefix) {
-                # If this is indeed a command, continue.
-                if ($API::Std::CMDS{$cmd}{lvl} == 0 or $API::Std::CMDS{$cmd}{lvl} == 2) {
-                    # Ensure the level is public or all.
-                    if (API::Std::ratelimit_check(%data)) {
-                        # Continue if the user has not passed the ratelimit amount.
-                        if ($API::Std::CMDS{$cmd}{priv}) {
-                            # If this command takes a privilege...
-                            if (API::Std::has_priv(API::Std::match_user(%data), $API::Std::CMDS{$cmd}{priv})) {
-                                # Make sure they have it.
-                                &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
-                            }
-                            else {
-                                # Else give them the boot.
-                                API::IRC::notice($data{svr}, $data{nick}, API::Std::trans('Permission denied').q{.});
-                            }
-                        }
-                        else {
-                            # Else continue executing without any extra checks.
-                            &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
-                        }
-                    }
-                    else {
-                        # Send them a notice about their bad deed.
-                        API::IRC::notice($data{svr}, $data{nick}, trans('Rate limit exceeded').q{.});
-                    }
-                }
-                elsif ($API::Std::CMDS{$cmd}{lvl} == 3) {
-                    # Or if it's a logchan command...
-                    my ($lcn, $lcc) = split '/', (conf_get('logchan'))[0][0];
-                    if ($lcn eq $data{svr} and lc $lcc eq lc $data{chan}) {
-                        # Check if it's being sent from the logchan.
-                        if ($API::Std::CMDS{$cmd}{priv}) {
-                            # If this command takes a privilege...
-                            if (API::Std::has_priv(API::Std::match_user(%data), $API::Std::CMDS{$cmd}{priv})) {
-                                # Make sure they have it.
-                                &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
-                            }
-                            else {
-                                # Else give them the boot.
-                                API::IRC::notice($data{svr}, $data{nick}, API::Std::trans('Permission denied').q{.});
-                            }
-                        }
-                        else {
-                            # Else continue executing without any extra checks.
-                            &{ $API::Std::CMDS{$cmd}{'sub'} }(\%data, @argv);
-                        }
-                    }
-                }
-            }
-        }
-
-        # Trigger event on_cprivmsg.
-        my $target = $ex[2]; delete $data{chan};
-        shift @ex; shift @ex; shift @ex;
-        $ex[0] = substr $ex[0], 1;
-        API::Std::event_run("on_cprivmsg", (\%data, $target, @ex));
-    }
-    
     return 1;
 }
 
