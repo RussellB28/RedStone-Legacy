@@ -16,7 +16,7 @@ hook_add('on_namesreply', 'state.irc.names', sub {
     push @who_wait, lc $chan;
 
     return 1;
-});
+}, 1);
 
 # Create a WHO reply hook.
 hook_add('on_whoreply', 'state.irc.who', sub {
@@ -51,7 +51,7 @@ hook_add('on_whoreply', 'state.irc.who', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Create end of WHO hook.
 rchook_add('315', 'state.irc.eow', sub {

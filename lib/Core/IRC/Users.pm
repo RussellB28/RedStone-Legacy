@@ -22,7 +22,7 @@ hook_add('on_rcjoin', 'ircusers.onjoin', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Create the on_whoreply hook.
 hook_add('on_whoreply', 'ircusers.who', sub {
@@ -38,7 +38,7 @@ hook_add('on_whoreply', 'ircusers.who', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Create the on_nick hook.
 hook_add('on_nick', 'ircusers.onnick', sub {
@@ -51,7 +51,7 @@ hook_add('on_nick', 'ircusers.onnick', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Create the on_kick hook.
 hook_add('on_kick', 'ircusers.onkick', sub {
@@ -74,7 +74,7 @@ hook_add('on_kick', 'ircusers.onkick', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Create the on_part hook.
 hook_add('on_part', 'ircusers.onpart', sub {
@@ -97,7 +97,7 @@ hook_add('on_part', 'ircusers.onpart', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Create the on_quit hook.
 hook_add('on_quit', 'ircusers.onquit', sub {
@@ -109,7 +109,7 @@ hook_add('on_quit', 'ircusers.onquit', sub {
     }
 
     return 1;
-});
+}, 1);
 
 
 1;

@@ -24,7 +24,7 @@ hook_add('on_uprivmsg', 'ctcp_replies.version', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # CTCP TIME reply.
 hook_add('on_uprivmsg', 'ctcp_replies.time', sub {
@@ -35,7 +35,7 @@ hook_add('on_uprivmsg', 'ctcp_replies.time', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Command alias parsing for channel messages.
 hook_add('on_cprivmsg', 'irc.commands.aliases', sub {
@@ -70,7 +70,7 @@ hook_add('on_cprivmsg', 'irc.commands.aliases', sub {
     }
 
     return 1;
-});
+}, 1);
                         
 # Command alias parsing for private messages.
 hook_add('on_uprivmsg', 'irc.commands.aliases', sub {
@@ -99,7 +99,7 @@ hook_add('on_uprivmsg', 'irc.commands.aliases', sub {
     }
 
     return 1;
-});
+}, 1);
                         
 # QUIT hook; delete user from chanusers.
 hook_add('on_quit', 'state.chanusers_update.quit', sub {
@@ -112,7 +112,7 @@ hook_add('on_quit', 'state.chanusers_update.quit', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Modes on connect.
 hook_add('on_connect', 'connect.set_umodes', sub {
@@ -124,7 +124,7 @@ hook_add('on_connect', 'connect.set_umodes', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Self-WHO on connect.
 hook_add('on_connect', 'connect.self_who', sub {
@@ -133,7 +133,7 @@ hook_add('on_connect', 'connect.self_who', sub {
     API::IRC::who($svr, $State::IRC::botinfo{$svr}{nick});
 
     return 1;
-});
+}, 1);
 
 # Plaintext auth.
 hook_add('on_connect', 'connect.auth.plaintext', sub {
@@ -145,7 +145,7 @@ hook_add('on_connect', 'connect.auth.plaintext', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # WHO reply.
 hook_add('on_whoreply', 'state.self_who.parse', sub {
@@ -159,7 +159,7 @@ hook_add('on_whoreply', 'state.self_who.parse', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # Auto join.
 hook_add('on_connect', 'autojoin', sub {
@@ -211,7 +211,7 @@ hook_add('on_connect', 'autojoin', sub {
     }
 
     return 1;
-});
+}, 1);
 
 # ISUPPORT - Set prefixes and channel modes.
 hook_add('on_isupport', 'state.svrmodes.parse', sub {
@@ -245,7 +245,7 @@ hook_add('on_isupport', 'state.svrmodes.parse', sub {
     }
 
     return 1;
-});
+}, 1);
 
 sub clear_usercmd_timer {
     # If ratelimit is set to 1 in config, add this timer.
@@ -277,7 +277,7 @@ hook_add('on_disconnect', 'state.svrlist.del', sub {
     if (defined $Proto::IRC::cap{$svr}) { delete $Proto::IRC::cap{$svr} }
 
     return 1;
-});
+}, 1);
 
 # Track our usermodes.
 hook_add('on_umode', 'state.self_umodes', sub {
@@ -307,7 +307,7 @@ hook_add('on_umode', 'state.self_umodes', sub {
     }
 
     return 1;
-});
+}, 1);
 
 
 1;

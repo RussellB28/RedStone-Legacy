@@ -12,7 +12,7 @@ use base qw(Exporter);
 our (%LANGE, %MODULE, %EVENTS, %HOOKS, %CMDS, %ALIASES, %RAWHOOKS);
 our @EXPORT_OK = qw(conf_get trans err awarn timer_add timer_del cmd_add 
                     cmd_del hook_add hook_del rchook_add rchook_del match_user
-                    has_priv mod_exists ratelimit_check fpfm0t hook_exists);
+                    has_priv mod_exists ratelimit_check fpfmt hook_exists);
 
 
 # Initialize a module.
@@ -208,10 +208,10 @@ sub event_run {
     my ($event, @args) = @_;
 
     if (defined $EVENTS{lc $event} and defined $HOOKS{lc $event}) {
-        foreach my $priority (sort { $a <=> $b } keys %{ $HOOKS{lc $event} }) {
+        PRIORITY: foreach my $priority (sort { $a <=> $b } keys %{ $HOOKS{lc $event} }) {
             foreach my $cb (@{$API::Std::HOOKS{lc $event}{$priority}}) {
                 my $result = $cb->[1]->(@args);
-                if (int $result == -1) { last }
+                if (int $result == -1) { last PRIORITY }
             }
         }
     }
