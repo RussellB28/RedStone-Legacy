@@ -226,8 +226,9 @@ sub usrc {
 
     return (
         nick  => $si[0],
-        user => $sii[0],
-        host  => $sii[1]
+        user  => $sii[0],
+        host  => $sii[1],
+        mask  => $ex
     );
 }
 
