@@ -1,4 +1,4 @@
-# Module: LastFM. See below for documentation.
+# Module: Autojoin. See below for documentation.
 # Copyright (C) 2010-2012 Xelhua Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Autojoin;
@@ -15,7 +15,7 @@ sub _init {
     if ($Auto::ENFEAT =~ /pgsql/) { err(3, 'Unable to load Autojoin: PostgreSQL is not supported.', 0); return }
 
 
-    # Create `lastfm` table.
+    # Create `autojoin` table.
     $Auto::DB->do('CREATE TABLE IF NOT EXISTS autojoin (net TEXT, chan TEXT, key TEXT)') or return;
 
     # Create our required hooks.
