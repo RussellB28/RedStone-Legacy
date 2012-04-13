@@ -147,7 +147,7 @@ sub cmd_ignore {
 
 sub fix_net {
     my ($net) = @_;
-    my %servers = conf_get('server');
+    my %servers = API::Std::conf_get('server');
     foreach my $name (keys %servers) {
          if (lc($name) eq lc($net)) {
               return $name;
