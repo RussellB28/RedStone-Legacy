@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use feature qw(switch);
 use API::Std qw(trans cmd_add cmd_del hook_add hook_del);
-use API::IRC qw(notice privmsg);
+use API::IRC qw(notice);
 use API::Log qw(slog dbug alog);
 
 # Initialization subroutine.
@@ -64,8 +64,6 @@ sub cmd_ignore {
         return;
     }
 
-    my $target = (defined $src->{chan} ? $src->{chan} : $src->{nick});
-
     given(uc $argv[0]) {
         when ('ADD') {
             if (!defined $argv[1]) {
@@ -74,21 +72,21 @@ sub cmd_ignore {
             }
             my $svr = (defined $argv[2] ? lc $argv[2] : lc $src->{svr});
             if(!fix_net($svr)) {
-                privmsg($src->{svr}, $target, "I'm not configured for $svr.");
+                notice($src->{svr}, $src->{nick}, "I'm not configured for $svr.");
                 return;
             }
             my %tmp = %$src;
             $tmp{svr} = fix_net($svr);
             $tmp{mask} = fix_mask($argv[1]);
-            privmsg($src->{svr}, $target, "$tmp{mask} is already on my ignore list on $svr.") and return if is_ignored(\%tmp);
+            notice($src->{svr}, $src->{nick}, "$tmp{mask} is already on my ignore list on $svr.") and return if is_ignored(\%tmp);
             my $dbq = $Auto::DB->prepare('INSERT INTO ignores (net, mask) VALUES (?, ?)');
             if ($dbq->execute(lc $svr, $tmp{mask})) {
                 $svr = fix_net($svr);
-                privmsg($src->{svr}, $target, "$tmp{mask} was added to my ignore list on $svr.");
+                notice($src->{svr}, $src->{nick}, "$tmp{mask} was added to my ignore list on $svr.");
                 slog("[\2Ignore\2] $$src{nick} added $tmp{mask} to my ignore list on $svr.");
             }
             else {
-                privmsg($src->{svr}, $target, 'Failed to add to ignore list.');
+                notice($src->{svr}, $src->{nick}, 'Failed to add to ignore list.');
             }
 
         }
@@ -99,27 +97,27 @@ sub cmd_ignore {
             }
             my $svr = (defined $argv[2] ? lc $argv[2] : lc $src->{svr});
             if(!fix_net($svr)) {
-                privmsg($src->{svr}, $target, "I'm not configured for $svr.");
+                notice($src->{svr}, $src->{nick}, "I'm not configured for $svr.");
                 return;
             }
             my %tmp = %$src;
             $tmp{svr} = fix_net($svr);
             $tmp{mask} = fix_mask($argv[1]);
-            privmsg($src->{svr}, $target, "$tmp{mask} is not on my ignore list on $svr.") and return if !is_ignored(\%tmp);
+            notice($src->{svr}, $src->{nick}, "$tmp{mask} is not on my ignore list on $svr.") and return if !is_ignored(\%tmp);
             my $dbq = $Auto::DB->prepare('DELETE FROM ignores WHERE net = ? AND mask = ?');
             if ($dbq->execute(lc $svr, $tmp{mask})) {
                 $svr = fix_net($svr);
-                privmsg($src->{svr}, $target, "$tmp{mask} deleted from my ignore list on $svr.");
+                notice($src->{svr}, $src->{nick}, "$tmp{mask} deleted from my ignore list on $svr.");
                 slog("[\2Ignore\2] $$src{nick} deleted $tmp{mask} from my autojoin list on $svr.");
             }
             else {
-                privmsg($src->{svr}, $target, 'Failed to delete from ignore list.');
+                notice($src->{svr}, $src->{nick}, 'Failed to delete from ignore list.');
             }
         }
         when ('LIST') {
             my $svr = (defined $argv[1] ? lc($argv[1]) : lc($src->{svr}));
             if(!fix_net($svr)) {
-                privmsg($src->{svr}, $target, "I'm not configured for $svr.");
+                notice($src->{svr}, $src->{nick}, "I'm not configured for $svr.");
                 return;
             }
             my $dbh = $Auto::DB->prepare('SELECT mask FROM ignores WHERE net = ?');
@@ -133,7 +131,7 @@ sub cmd_ignore {
                     }
                 }
             }
-            privmsg($src->{svr}, $target, join ', ', @masks);
+            notice($src->{svr}, $src->{nick}, "Ignores ($svr): ".join ', ', @masks);
         }
         default {
             # We don't know this command.
