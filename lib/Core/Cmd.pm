@@ -121,7 +121,10 @@ sub cmd_modreload
     }
     else {
         # We weren't.
-        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to reload: $tln.");
+        my @lines = split("\n", $tln);
+        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to reload: $tln.") and return if @lines == 1;
+        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to reload. Errors to follow.");
+        notice($src->{svr}, $src->{nick}, "$argv[0]/Error: $_") foreach @lines;
         return;
     }
 
