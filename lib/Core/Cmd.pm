@@ -36,7 +36,10 @@ sub cmd_modload
     # Check if we were successful or not.
     if ($tn) {
         # We weren't.
-        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to load: $tn.");
+        my @lines = split("\n", $tn);
+        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to load: $tn.") and return if @lines == 1;
+        notice($src->{svr}, $src->{nick}, "Module \002".$argv[0]."\002 failed to load. Errors to follow.");
+        notice($src->{svr}, $src->{nick}, "$argv[0]/Error: $_") foreach @lines;
     }
     else {
         # We were!
