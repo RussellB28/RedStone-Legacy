@@ -256,7 +256,7 @@ sub cmd_pisg {
             if ($dbq->execute($svr, lc $chan)) {
                 $svr = fix_net($svr);
                 privmsg($src->{svr}, $src->{chan}, "Statistics enabled for $chan\@$svr.");
-                slog("[\2pisg\2] $src->{nick} enabled satistics for $chan\@$svr.");
+                slog("[\2pisg\2] $src->{nick} enabled statistics for $chan\@$svr.");
                 make_conf();
                 cjoin($svr, $chan);
                 if (conf_get('pisg:notify_msg') && (conf_get('pisg:notify_msg'))[0][0]) {
