@@ -35,6 +35,7 @@ sub cmd_iplookup {
     my ($src, @args) = @_;
     my $ip = join(' ', @args);
     
+    privmsg($src->{svr}, $src->{chan}, 'Not enough parameters.') and return if !@args;
     privmsg($src->{svr}, $src->{chan}, "The IP address, ".$ip.", is not valid.") and return if $ip !~ /^$RE{net}{IPv4}$/;
 
     if ($ip) {
@@ -56,8 +57,6 @@ sub cmd_iplookup {
         my $iaddr = inet_aton($ip);
         my $rdns = gethostbyaddr($iaddr, AF_INET);
         privmsg($src->{svr}, $src->{chan}, "IP: ".$ip." | ASN: ".(defined($asn) ? $asn : 'N/A')." | Location: ".(defined($city) ? $city : 'N/A').", ".(defined($state) ? $state : 'N/A').", ".$iana->country." | Netname: ".$iana->netname." | Description: ".$iana->descr." | Source: ".$iana->source." | rDNS: ".(defined($rdns) ? $rdns : 'None')." | Abuse: ".$iana->abuse);
-    } else {
-        privmsg($src->{svr}, $src->{chan}, 'Not enough parameters.');
     }
     
     return 1;
