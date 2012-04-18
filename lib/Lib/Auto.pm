@@ -21,7 +21,7 @@ API::Std::event_add('on_rehash');
 sub checkver {
     if (!$Auto::NUC and Auto::RSTAGE ne 'd') {
         say '* Connecting to update server...';
-        my $uss = IO::Socket::INET->new(
+        my $uss = IO::Socket::IP->new(
             'Proto'    => 'tcp',
             'PeerAddr' => 'dist.ethrik.net',
             'PeerPort' => 80,
@@ -57,7 +57,7 @@ sub checkin {
         if (!-e $uidfile) { $getid = 1; }
         if ($getid) {
             say '* Connecting to master server...';
-            my $uss = IO::Socket::INET->new(
+            my $uss = IO::Socket::IP->new(
                 'Proto'    => 'tcp',
                 'PeerAddr' => 'checkin.ethrik.net',
                 'PeerPort' => 8082,
@@ -86,7 +86,7 @@ sub checkin {
         close $FUID;
         $Auto::CUID = $FUID[0];
         say '* Connecting to master server...';                                           
-        my $uss = IO::Socket::INET->new(
+        my $uss = IO::Socket::IP->new(
             'Proto'    => 'tcp',
             'PeerAddr' => 'checkin.ethrik.net',
             'PeerPort' => 8082,
@@ -114,7 +114,7 @@ sub rehash {
     my %newsettings = $Auto::CONF->parse or err(2, 'Failed to parse configuration file!', 0) and return;
 
     # Check for required configuration values.
-    my @REQCVALS = qw(locale expire_logs server fantasy_pf ratelimit bantype);
+    my @REQCVALS = qw(locale expire_logs server fantasy_pf ratelimit bantype loop);
     foreach my $REQCVAL (@REQCVALS) {
         if (!defined $newsettings{$REQCVAL}) {
             err(2, "Missing required configuration value: $REQCVAL", 0) and return;
