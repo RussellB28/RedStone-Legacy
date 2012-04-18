@@ -11,9 +11,10 @@ no feature qw(state);
 use POSIX;
 use English qw(-no_match_vars);
 use Sys::Hostname;
+use IO::Async;
+use IO::Async::Stream;
 use IO::Socket;
 use IO::Socket::IP -register;
-use IO::Select;
 use Getopt::Long;
 use DBI;
 use Class::Unload;
@@ -243,7 +244,7 @@ if (conf_get('die')) {
 }
 
 # Check for required configuration values.
-my @REQCVALS = qw(locale expire_logs server fantasy_pf ratelimit database:format bantype);
+my @REQCVALS = qw(locale expire_logs server fantasy_pf ratelimit database:format bantype loop);
 foreach my $REQCVAL (@REQCVALS) {
     if (!conf_get($REQCVAL)) {
         my $err = 2;
@@ -334,6 +335,18 @@ given (lc((conf_get('database:format'))[0][0])) {
     default { err(2, 'Unknown database format \''.lc((conf_get('database:format'))[0][0]).'\'. Aborting.', 1) }
 }
 
+# Setup loop.
+our $loop;
+if ($loop = (conf_get('loop'))[0][0]) {
+    $loop = eval {
+        require 'IO/Async/Loop/'.ucfirst($loop).'.pm';
+        ('IO::Async::Loop::'.ucfirst($loop))->new;
+    };
+    $logger->log(FATAL => 'Specified \'loop\' option does not exist or is not installed on this system') if !$loop;
+}
+else {
+    $logger->log(FATAL => 'No \'loop\' option specified. This is required.');
+}
 
 # Ratelimit timer.
 Core::IRC::clear_usercmd_timer();
@@ -462,9 +475,8 @@ alog '* Connecting to servers...';
 dbug '* Connecting to servers...';
 # Get servers from config.
 my %cservers = conf_get('server');
-# Set the socket hash and select instance.
-our (%SOCKET, $SELECT);
-$SELECT = IO::Select->new();
+# Set the socket hash.
+our %SOCKET;
 # Iterate through each configured server.
 foreach my $cskey (keys %cservers) {
     Lib::Auto::ircsock(\%{$cservers{$cskey}}, $cskey);
@@ -495,73 +507,6 @@ if (conf_get('aliases:alias')) {
         if ($_ =~ m/\s/xsm) {
             my @data = split /\s/xsm, $_;
             API::Std::cmd_alias($data[0], join ' ', @data[1..$#data]);
-        }
-    }
-}
-
-# Infinite while loop.
-while (1) {
-    # Timer check.
-    foreach my $tk (keys %TIMERS) {
-        if (exists $TIMERS{$tk}) {
-            if ($TIMERS{$tk}{time} <= time) {
-                &{ $TIMERS{$tk}{sub} }();
-                if ($TIMERS{$tk}{type} == 1) {
-                    # If it's type 1, delete from memory.
-                    delete $TIMERS{$tk};
-                }
-                elsif ($TIMERS{$tk}{type} == 2) {
-                    # If it's type 2, reset timer.
-                    $TIMERS{$tk}{time} = time + $TIMERS{$tk}{secs};
-                }
-                else {
-                    # This should never happen.
-                    delete $TIMERS{$tk};
-                }
-            }
-        }
-    }
-    # Socket check.
-    foreach my $sock ($SELECT->can_read(1)) {
-        # Figure out what network is sending us data.
-        my $sockid;
-        foreach (keys %SOCKET) {
-            if ($SOCKET{$_}{socket} eq $sock) { $sockid = $_ }
-        }
-        # Read the data.
-        my $idata;
-        sysread $sock, $idata, POSIX::BUFSIZ, 0;
-
-        # Check for the data.
-        if (!defined $idata || length($idata) == 0) {
-            # Got EOF, close socket
-            err(2, "Lost connection to $sockid!", 0);
-            del_socket($sockid);
-            API::Std::event_run('on_disconnect', $sockid) if is_ircsock($sockid);
-            if (!keys %SOCKET) {
-                # No more connections, stop the program.
-                API::Std::event_run('on_shutdown');
-                dbug '* No more IRC connections, shutting down.';
-                alog '* No more IRC connections, shutting down.';
-                sleep 1;
-                exit;
-            }
-            next;
-        }
-
-        # Read the buffer.
-        my $data .= $idata;
-        while ($data =~ s/(.*\n)//) {
-            my $line = $1;
-
-            # Remove the newlines.
-            chomp $line;
-            # Debug.
-            my $type = (conf_get("server:$sockid") ? 'IRC' : 'Socket');
-            dbug "[$type] $sockid << $line";
-
-            # Parse data.
-            &{$SOCKET{$sockid}{handler}}($sockid, $line);
         }
     }
 }
@@ -606,5 +551,8 @@ sub mod_load {
         undef
     }
 }
+
+# Infinite loop.
+$loop->loop_forever;
 
 # vim: set ai et sw=4 ts=4:

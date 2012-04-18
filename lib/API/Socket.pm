@@ -1,15 +1,16 @@
 # lib/API/Socket.pm - Socket manipulation subroutines.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2012 Ethrik Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package API::Socket;
 use strict;
 use warnings;
 use API::Log qw(alog dbug);
+use API::Std qw(err);
 use Exporter;
 use base qw(Exporter);
 use POSIX;
 
-our @EXPORT_OK = qw(add_socket del_socket send_socket is_socket);
+our @EXPORT_OK = qw(add_socket del_socket send_socket is_socket on_disconnect);
 
 sub add_socket {
     my ($id, $object, $handler) = @_;
@@ -22,7 +23,21 @@ sub add_socket {
     if (Auto::is_ircsock($id) and ref($object) ne 'IO::Socket::SSL') {
         binmode($object, ':encoding(UTF-8)');
     }
-    $Auto::SELECT->add($object);
+    my $stream = $Auto::SOCKET{$id}{stream} = IO::Async::Stream->new(
+        handle  => $object,
+        on_read => sub {
+            my (undef, $buffref, $eof) = @_;
+            while ($$buffref =~ s/^(.*)\n//) {
+                my $type = (Auto::is_ircsock($id) ? 'IRC' : 'Socket');
+                dbug "[$type] $id << $1";
+                &{$handler}($id, $1);
+            }
+        },
+        on_read_eof => sub {
+            API::Socket::on_disconnect($id);
+        }
+    );
+    $Auto::loop->add($stream);
     alog("add_socket(): Socket $id added.");
     return 1;
 }
@@ -30,7 +45,8 @@ sub add_socket {
 sub del_socket {
     my ($id) = @_;
     return if !defined($Auto::SOCKET{$id});
-    $Auto::SELECT->remove($Auto::SOCKET{$id}{socket});
+    $Auto::SOCKET{$id}{stream}->close_when_empty;
+    $Auto::loop->remove($Auto::SOCKET{$id}{stream});
     delete $Auto::SOCKET{$id};
     alog("del_socket(): Socket $id deleted.");
     return 1;
@@ -39,7 +55,7 @@ sub del_socket {
 sub send_socket {
     my ($id, $data) = @_;
     if (defined($Auto::SOCKET{$id})) {
-        syswrite $Auto::SOCKET{$id}{socket}, "$data\r\n", POSIX::BUFSIZ, 0;
+        $Auto::SOCKET{$id}{stream}->write("$data\r\n");
         if (Auto::is_ircsock($id)) {
             dbug "[IRC] $id >> $data";
         }
@@ -57,6 +73,22 @@ sub is_socket {
     my ($id) = @_;
     return 1 if defined($Auto::SOCKET{$id});
     return 0;
+}
+
+sub on_disconnect {
+    my $id = shift;
+    err(2, "Lost connection to $id!", 0);
+    del_socket($id);
+    API::Std::event_run('on_disconnect', $id) if Auto::is_ircsock($id);
+    my $i = 0;
+    foreach (keys %Auto::SOCKET) { $i++ if Auto::is_ircsock($_); }
+    if (!$i) {
+        API::Std::event_run('on_shutdown');
+        dbug '* No more IRC connections, shutting down.';
+        alog '* No more IRC connections, shutting down.';
+        sleep 1;
+        exit;
+    }
 }
 
 

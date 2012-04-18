@@ -5,9 +5,9 @@ package API::Std;
 use strict;
 use warnings;
 use feature qw(say);
+use Auto::Timer;
 use Exporter;
 use base qw(Exporter);
-
 
 our (%LANGE, %MODULE, %EVENTS, %HOOKS, %CMDS, %ALIASES, %RAWHOOKS);
 our @EXPORT_OK = qw(conf_get trans err awarn timer_add timer_del cmd_add 
@@ -282,10 +282,14 @@ sub timer_add {
     }
 
     if (!defined $Auto::TIMERS{$name}) {
-        $Auto::TIMERS{$name}{type} = $type;
-        $Auto::TIMERS{$name}{time} = time + $time;
-        if ($type == 2) { $Auto::TIMERS{$name}{secs} = $time }
-        $Auto::TIMERS{$name}{sub}  = $sub;
+        my $timer = Auto::Timer->new(
+            name     => $name,
+            function => $sub,
+            delay    => $time,
+            repeat   => ($type eq 1 ? 0 : 1)
+        );
+        $Auto::TIMERS{$name} = $timer;
+        $timer->go;
         return 1;
     }
 
