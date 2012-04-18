@@ -143,6 +143,7 @@ modfind('IO::Socket::IP');
 modfind('IO::Async');
 modfind('IO::Async::Stream');
 modfind('IO::Async::Timer::Periodic');
+modfind('Net::Async::HTTP');
 modfind('IO::Socket::SSL') if $features =~ /ssl/;
 modfind('MIME::Base64') if $features =~ /sasl/;
 println "\0";
