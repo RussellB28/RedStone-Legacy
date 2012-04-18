@@ -7,41 +7,31 @@ use warnings;
 
 # Create a new instance.
 sub new {
-    my $class = shift;
-    my ($file) = @_;
-    my $self = bless {}, $class;
+    my ($class, $file) = @_;
 
     # Check to see if the configuration file exists.
-    if (!-e "$Auto::bin{etc}/$file") {
+    if (!-e $file) {
         return;
     }
-    
-    # Open, read and close the config.
-    open(my $FCONF, q{<}, "$Auto::bin{etc}/$file") or return;
-    my @cosfl = <$FCONF> or return;
-    close $FCONF or return;
-    
-    # Save it to self variable.
-    $self->{'config'}->{'path'} = "$Auto::bin{etc}/$file";
 
-    return $self;
+    return bless {
+        file => $file
+    }, $class;
 }
 
 # Parse the configuration file.
 sub parse {
     # Get the path to the file.
     my $self = shift;
-    my $file = $self->{'config'}->{'path'};
+    my $file = $self->{file};
     my $blk = 0;
     my (%rs);
     
     # Open, read and close it.
     open(my $FCONF, q{<}, "$file") or return;
-    my @fbuf = <$FCONF> or return;
-    close $FCONF or return;
     
     # Iterate the file.
-    foreach my $buff (@fbuf) {
+    foreach my $buff (<$FCONF>) {
         # Main newline buffer.
         if (defined $buff) {
             # If the line begins with a #, it's a comment so ignore it.
@@ -168,7 +158,7 @@ sub parse {
             }
         }
     }    
-    
+    close $FCONF or return;
     # Return the configuration data.
     return %rs;                
 }

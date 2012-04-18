@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 # bin/auto - Main file.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2012 Ethrik Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package Auto;
 use 5.010_000;
@@ -92,77 +92,152 @@ local $PROGRAM_NAME = 'auto';
 # Binmode to avoid warnings;
 binmode(STDOUT, ':encoding(UTF-8)');
 
-# Check for build files.
-if (!-e "$bin{bld}/os" or !-e "$bin{bld}/perl" or !-e "$bin{bld}/time" or !-e "$bin{bld}/ver") {
-    $logger->fire(FATAL => 'Missing build file(s). Please build Auto before running it.');
+# Global variables.
+our ($DEBUG, $NUC, $configfile, $ENFEAT, $CONF, %SETTINGS, $LOCALE, $DB, $loop, %PRIVILEGES, $STARTTIME, %SOCKET, $APID);
+
+sub boot {
+    # Check buildfiles
+    check_buildfiles();
+    
+    # Register and setup signal handlers and events
+    setup_sighandlers();
+    
+    # Get arguments.
+    my ($opt_help, $opt_version, $USECONFIG);
+    GetOptions(
+        'nuc'        => \$NUC,
+        'config|c=s' => \$configfile,
+        'h|help'     => \$opt_help,
+        'debug|d'    => \$DEBUG,
+        'version|v'  => \$opt_version,
+    );
+    if ($opt_help) { print_help(); }
+    if ($opt_version) { print_version(); }
+    undef $opt_help;
+    undef $opt_version;
+    
+    # Print startup message
+    print_startup();
+    
+    our ($APID, %TIMERS);
+
+    # Check for updates.
+    Lib::Auto::checkver();
+
+    # Include SSL if Auto was built for it.
+    if ($ENFEAT =~ /ssl/) { require IO::Socket::SSL }
+    
+    # Setup configuration.
+    setup_config();
+    
+    # Checkin.
+    Lib::Auto::checkin();
+    
+    # Setup translations.
+    setup_trans();
+    
+    # Expire old logs.
+    API::Log::expire_logs();
+    
+    # Setup database.
+    setup_database();
+    
+    # Setup loop.
+    setup_loop();
+    
+    # Ratelimit timer.
+    Core::IRC::clear_usercmd_timer();
+    
+    # Parse privs.
+    parse_privs();
+    
+    # Print success message.
+    print_success();
+    
+    # Daemonize.
+    daemonize();
+    
+    # Prepare for sockets.
+    prepare();
+    
+    # Load modules
+    load_modules();
+    
+    # Setup sockets.
+    setup_sockets();
+    
+    # Setup core commands and aliases.
+    setup_cmds();
+    
+    # Infinite loop.
+    $loop->loop_forever;
 }
 
-# Check build OS.
-open my $BFOS, '<', "$bin{bld}/os" or $logger->fire(FATAL => 'Cannot start: Broken build.');
-my @BFOS = <$BFOS>;
-close $BFOS or $logger->fire(FATAL => 'Cannot start: Broken build.');
-if ($BFOS[0] ne $OSNAME."\n") {
-    $logger->fire(FATAL => 'Cannot start: Broken build.');
+boot();
+
+sub check_buildfiles {
+    # Check for build files.
+    if (!-e "$bin{bld}/os" or !-e "$bin{bld}/perl" or !-e "$bin{bld}/time" or !-e "$bin{bld}/ver") {
+        $logger->fire(FATAL => 'Missing build file(s). Please build Auto before running it.');
+    }
+
+    # Check build OS.
+    open my $BFOS, '<', "$bin{bld}/os" or $logger->fire(FATAL => 'Cannot start: Broken build.');
+    my @BFOS = <$BFOS>;
+    close $BFOS or $logger->fire(FATAL => 'Cannot start: Broken build.');
+    if ($BFOS[0] ne $OSNAME."\n") {
+        $logger->fire(FATAL => 'Cannot start: Broken build.');
+    }
+    undef @BFOS;
+
+    # Check build features.
+    open my $BFFEAT, '<', "$bin{bld}/feat" or $logger->fire(FATAL => 'Cannot start: Broken build');
+    my @BFFEAT = <$BFFEAT>;
+    close $BFFEAT or $logger->fire(FATAL => 'Cannot start: Broken build.');
+    $ENFEAT = substr $BFFEAT[0], 0, length($BFFEAT[0]) - 1;
+    undef @BFFEAT;
+
+    # Check build Perl version.
+    open my $BFPERL, '<', "$bin{bld}/perl" or $logger->fire(FATAL => 'Cannot start: Broken build.');
+    my @BFPERL = <$BFPERL>;
+    close $BFPERL or $logger->fire(FATAL => 'Cannot start: Broken build.');
+    if ($BFPERL[0] ne $]."\n") {
+        $logger->fire(FATAL => 'Cannot start: Broken build.');
+    }
+    undef @BFPERL;
+
+    # Check build Auto version.
+    open my $BFVER, '<', "$bin{bld}/ver" or $logger->fire(FATAL => 'Cannot start: Broken build.');
+    my @BFVER = <$BFVER>;
+    close $BFVER or $logger->fire(FATAL => 'Cannot start: Broken build.');
+    if ($BFVER[0] ne VER.q{.}.SVER.q{.}.REV.RSTAGE."\n") {
+        $logger->fire(FATAL => 'Cannot start: Broken build.');
+    }
+    undef @BFVER;
+
+    # Check build path setup.
+    our $SYSWIDE;
+    open my $BFPATH, '<', "$bin{bld}/syswide" or $logger->fire(FATAL => 'Cannot start: Broken build.');
+    my @BFPATH = <$BFPATH>;
+    close $BFPATH or $logger->fire(FATAL => 'Cannot start: Broken build.');
+    if ($BFPATH[0] eq "1\n") { $SYSWIDE = 1 }
+    else { $SYSWIDE = 0 }
 }
-undef @BFOS;
 
-# Check build features.
-our $ENFEAT;
-open my $BFFEAT, '<', "$bin{bld}/feat" or $logger->fire(FATAL => 'Cannot start: Broken build');
-my @BFFEAT = <$BFFEAT>;
-close $BFFEAT or $logger->fire(FATAL => 'Cannot start: Broken build.');
-$ENFEAT = substr $BFFEAT[0], 0, length($BFFEAT[0]) - 1;
-undef @BFFEAT;
-
-# Check build Perl version.
-open my $BFPERL, '<', "$bin{bld}/perl" or $logger->fire(FATAL => 'Cannot start: Broken build.');
-my @BFPERL = <$BFPERL>;
-close $BFPERL or $logger->fire(FATAL => 'Cannot start: Broken build.');
-if ($BFPERL[0] ne $]."\n") {
-    $logger->fire(FATAL => 'Cannot start: Broken build.');
+# Setup signal handlers and events.
+sub setup_sighandlers {
+    local $SIG{TERM}       = \&Lib::Auto::signal_term;
+    local $SIG{INT}        = \&Lib::Auto::signal_int;
+    local $SIG{HUP}        = \&Lib::Auto::signal_hup;
+    local $SIG{'__WARN__'} = \&Lib::Auto::signal_perlwarn;
+    local $SIG{'__DIE__'}  = \&Lib::Auto::signal_perldie;
+    API::Std::event_add('on_sigterm');
+    API::Std::event_add('on_sigint');
+    API::Std::event_add('on_sighup');
 }
-undef @BFPERL;
-
-# Check build Auto version.
-open my $BFVER, '<', "$bin{bld}/ver" or $logger->fire(FATAL => 'Cannot start: Broken build.');
-my @BFVER = <$BFVER>;
-close $BFVER or $logger->fire(FATAL => 'Cannot start: Broken build.');
-if ($BFVER[0] ne VER.q{.}.SVER.q{.}.REV.RSTAGE."\n") {
-    $logger->fire(FATAL => 'Cannot start: Broken build.');
-}
-undef @BFVER;
-
-# Check build path setup.
-our $SYSWIDE;
-open my $BFPATH, '<', "$bin{bld}/syswide" or $logger->fire(FATAL => 'Cannot start: Broken build.');
-my @BFPATH = <$BFPATH>;
-close $BFPATH or $logger->fire(FATAL => 'Cannot start: Broken build.');
-if ($BFPATH[0] eq "1\n") { $SYSWIDE = 1 }
-else { $SYSWIDE = 0 }
-
-# Set signal handlers.
-local $SIG{TERM}       = \&Lib::Auto::signal_term;
-local $SIG{INT}        = \&Lib::Auto::signal_int;
-local $SIG{HUP}        = \&Lib::Auto::signal_hup;
-local $SIG{'__WARN__'} = \&Lib::Auto::signal_perlwarn;
-local $SIG{'__DIE__'}  = \&Lib::Auto::signal_perldie;
-API::Std::event_add('on_sigterm');
-API::Std::event_add('on_sigint');
-API::Std::event_add('on_sighup');
-
-# Get arguments.
-our ($DEBUG, $NUC);
-my ($opt_help, $opt_version, $USECONFIG);
-GetOptions(
-    'nuc'        => \$NUC,
-    'config|c=s' => \$USECONFIG,
-    'h|help'     => \$opt_help,
-    'debug|d'    => \$DEBUG,
-    'version|v'  => \$opt_version,
-);
 
 # If we were passed -h, print help.
-if ($opt_help) {
+sub print_help {
     print <<"HELP";
 
 Usage: $PROGRAM_NAME [options]
@@ -179,225 +254,211 @@ HELP
 }
 
 # If we were passed -v, print version.
-if ($opt_version) {
+sub print_version {
     say q{};
     say NAME.' version '.VER.', subversion '.SVER.', revision '.REV.' ('.VER.q{.}.SVER.q{.}.REV.RSTAGE.').';
     print <<'VERINFO';
 
-Copyright (C) 2010-2012, Xelhua Development Group. All rights reserved.
+Copyright (C) 2010-2012, Ethrik Development Group. All rights reserved.
 
 Auto is released under the licensing terms of the New (3-Clause) BSD License,
 which may be found in doc/LICENSE.
 
-For documentation, you might refer to README, doc/*, and the Xelhua Wiki at
-http://wiki.xelhua.org. Documentation for modules is stored in Man Page and
-HTML form in autodoc/.
+For documentation, you might refer to README, and doc/*. Documentation for 
+modules is stored in Man Page and HTML form in autodoc/.
 
-For support, visit the Xelhua Forums at http://forums.xelhua.org, or drop by
-the official IRC chatroom at irc.ethrik.net #ethrik. Please report bugs and
-request new features at http://rm.xelhua.org.
+For support, feature requests, and bug reports drop by the official IRC chatroom 
+at irc.ethrik.net #ethrik.
 
 VERINFO
     exit 1;
 }
 
-undef $opt_help;
-undef $opt_version;
-
-# Print startup message.
-say <<'EOF';
-8""""8                  
-8    8 e   e eeeee eeeee
-8eeee8 8   8   8   8  88
-88   8 8e  8   8e  8   8
-88   8 88  8   88  8   8
-88   8 88ee8   88  8eee8
+sub print_startup {
+    say <<'EOF';
+    8""""8                  
+    8    8 e   e eeeee eeeee
+    8eeee8 8   8   8   8  88
+    88   8 8e  8   8e  8   8
+    88   8 88  8   88  8   8
+    88   8 88ee8   88  8eee8
 EOF
-say '* '.NAME.' (version '.VER.q{.}.SVER.q{.}.REV.RSTAGE.') is starting up...';
-
-our ($APID, %TIMERS);
-
-# Check for updates.
-Lib::Auto::checkver();
-
-# Include SSL if Auto was built for it.
-if ($ENFEAT =~ /ssl/) { require IO::Socket::SSL }
-
-# Parse configuration file.
-our $configfile = 'auto.conf';
-if ($USECONFIG) { $configfile = $USECONFIG }
-say "* Parsing configuration file $configfile...";
-our $CONF = Parser::Config->new($configfile) or err(1, 'Failed to parse configuration file!', 1);
-our %SETTINGS = $CONF->parse or err(1, 'Failed to parse configuration file!', 1);
-say ' Success';
-undef $USECONFIG;
-
-# Checkin.
-Lib::Auto::checkin();
-
-if (conf_get('die')) {
-    if ((conf_get('die'))[0][0] == 1) {
-        say '!!! You didn\'t read the whole config.';
-        say '!!! Insert new user then try again.';
-        exit;
-    }
+    say '* '.NAME.' (version '.VER.q{.}.SVER.q{.}.REV.RSTAGE.') is starting up...';
 }
 
-# Check for required configuration values.
-my @REQCVALS = qw(locale expire_logs server fantasy_pf ratelimit database:format bantype loop);
-foreach my $REQCVAL (@REQCVALS) {
-    if (!conf_get($REQCVAL)) {
-        my $err = 2;
-        if ($REQCVAL eq 'expire_logs') {
-            $err = 1;
+# Setup and check configuration file.
+sub setup_config {
+    # Parse configuration file.
+    $configfile ||= "$bin{etc}/auto.conf";
+    say "* Parsing configuration file $configfile...";
+    $CONF = Parser::Config->new($configfile) or err(1, 'Failed to parse configuration file!', 1);
+    %SETTINGS = $CONF->parse or err(1, 'Failed to parse configuration file!', 1);
+    say ' Success';
+
+    if (conf_get('die')) {
+        if ((conf_get('die'))[0][0] == 1) {
+            say '!!! You didn\'t read the whole config.';
+            say '!!! Insert new user then try again.';
+            exit;
         }
-        err($err, "Missing required configuration value: $REQCVAL", 1);
     }
+
+    # Check for required configuration values.
+    my @REQCVALS = qw(locale expire_logs server fantasy_pf ratelimit database:format bantype loop);
+    foreach my $REQCVAL (@REQCVALS) {
+        if (!conf_get($REQCVAL)) {
+            my $err = 2;
+            if ($REQCVAL eq 'expire_logs') {
+                $err = 1;
+            }
+            err($err, "Missing required configuration value: $REQCVAL", 1);
+        }
+    }
+    undef @REQCVALS;
 }
-undef @REQCVALS;
 
-# Parse translations.
-say '* Parsing translation files...';
-our $LOCALE = (conf_get('locale'))[0][0];
-my @lang = split m/[_]/, $LOCALE;
-Parser::Lang::parse($lang[0]) or err(2, 'Failed to parse translation files!', 1);
-undef @lang;
-say ' Success';
+# Parse translations and setup locale.
+sub setup_trans {
+    # Parse translations.
+    say '* Parsing translation files...';
+    $LOCALE = (conf_get('locale'))[0][0];
+    my @lang = split m/[_]/, $LOCALE;
+    Parser::Lang::parse($lang[0]) or err(2, 'Failed to parse translation files!', 1);
+    undef @lang;
+    say ' Success';
+}
 
-# Expire old logs.
-API::Log::expire_logs();
+# Setup database.
+sub setup_database {
+    given (lc((conf_get('database:format'))[0][0])) {
+        when ('sqlite') {
+            # SQLite.
+            if ($ENFEAT !~ /sqlite/) { err(2, 'Auto not built with SQLite support. Aborting.', 1) }
+            if (!conf_get('database:filename')) { err(2, 'Missing required configuration value database:filename. Aborting.', 1) }
 
-# Connect to database.
-our $DB;
-given (lc((conf_get('database:format'))[0][0])) {
-    when ('sqlite') {
-        # SQLite.
-        if ($ENFEAT !~ /sqlite/) { err(2, 'Auto not built with SQLite support. Aborting.', 1) }
-        if (!conf_get('database:filename')) { err(2, 'Missing required configuration value database:filename. Aborting.', 1) }
+            # Import DBD::SQLite.
+            require DBD::SQLite;
 
-        # Import DBD::SQLite.
-        require DBD::SQLite;
-
-        if (!-e "$bin{etc}/".(conf_get('database:filename'))[0][0]) {
-            # Create <database:filename> if it's missing.
-            open my $dbfh, '>', "$bin{etc}/".(conf_get('database:filename'))[0][0];
-            close $dbfh;
-            chmod 0755, "$bin{etc}/".(conf_get('database:filename'))[0][0];
+            if (!-e "$bin{etc}/".(conf_get('database:filename'))[0][0]) {
+                # Create <database:filename> if it's missing.
+                open my $dbfh, '>', "$bin{etc}/".(conf_get('database:filename'))[0][0];
+                close $dbfh;
+                chmod 0755, "$bin{etc}/".(conf_get('database:filename'))[0][0];
+            }
+            # Connect to database.
+            $DB = DBI->connect("dbi:SQLite:dbname=$bin{etc}/".(conf_get('database:filename'))[0][0]) or err(2, 'Failed to connect to database!', 1);
         }
-        # Connect to database.
-        $DB = DBI->connect("dbi:SQLite:dbname=$bin{etc}/".(conf_get('database:filename'))[0][0]) or err(2, 'Failed to connect to database!', 1);
+        when ('mysql') {
+            # MySQL.
+            if ($ENFEAT !~ /mysql/) { err(2, 'Auto not built with MySQL support. Aborting.', 1) }
+            my @reqcval = qw(database:host database:name database:username database:password);
+            foreach (@reqcval) { if (!conf_get($_)) { err(2, "Missing required configuration value $_. Aborting.", 1) } }
+            undef @reqcval;
+
+            # Import DBD::mysql.
+            require DBD::mysql;
+
+            # Connect to database.
+            if (conf_get('database:port')) {
+                # If we were given a port, connect with it.
+                $DB = DBI->connect('DBI:mysql:database='.(conf_get('database:name'))[0][0].';host='.(conf_get('database:host'))[0][0].';port='.(conf_get('database:port'))[0][0],
+                    (conf_get('database:username'))[0][0], (conf_get('database:password'))[0][0]) or err(2, 'Failed to connect to database!', 1);;
+            }
+            else {
+                # If not, connect without specifying a port.
+                $DB = DBI->connect('DBI:mysql:database='.(conf_get('database:name'))[0][0].';host='.(conf_get('database:host'))[0][0],
+                    (conf_get('database:username'))[0][0], (conf_get('database:password'))[0][0]) or err(2, 'Failed to connect to database!', 1);;
+            }
+        }
+        when ('pgsql') {
+            # PostgreSQL.
+            if ($ENFEAT !~ /pgsql/) { err(2, 'Auto not built with PostgreSQL support. Aborting.', 1) }
+            my @reqcval = qw(database:name database:host database:username database:password);
+            foreach (@reqcval) { if (!conf_get($_)) { err(2, "Missing required configuration value $_. Aborting.", 1) } }
+            undef @reqcval;
+
+            # Import DBD::Pg.
+            require DBD::Pg;
+
+            # Connect to database.
+            if (conf_get('database:port')) {
+                # If a specific port was given, use it.
+                $DB = DBI->connect('dbi:Pg:db='.(conf_get('database:name'))[0][0].';host='.(conf_get('database:host'))[0][0].';port='.(conf_get('database:port'))[0][0],
+                    (conf_get('database:username'))[0][0], (conf_get('database:password'))[0][0]) or err(2, 'Failed to connect to database!', 1);
+            }
+            else {
+                # We were not given a port, connect using PGPORT (usually 5432)
+                $DB = DBI->connect('dbi:Pg:db='.(conf_get('database:name'))[0][0].';host='.(conf_get('database:host'))[0][0],
+                    (conf_get('database:username'))[0][0], (conf_get('database:password'))[0][0]) or err(2, 'Failed to connect to database!', 1);
+            }
+        }
+        # Unknown database format.
+        default { err(2, 'Unknown database format \''.lc((conf_get('database:format'))[0][0]).'\'. Aborting.', 1) }
     }
-    when ('mysql') {
-        # MySQL.
-        if ($ENFEAT !~ /mysql/) { err(2, 'Auto not built with MySQL support. Aborting.', 1) }
-        my @reqcval = qw(database:host database:name database:username database:password);
-        foreach (@reqcval) { if (!conf_get($_)) { err(2, "Missing required configuration value $_. Aborting.", 1) } }
-        undef @reqcval;
-
-        # Import DBD::mysql.
-        require DBD::mysql;
-
-        # Connect to database.
-        if (conf_get('database:port')) {
-            # If we were given a port, connect with it.
-            $DB = DBI->connect('DBI:mysql:database='.(conf_get('database:name'))[0][0].';host='.(conf_get('database:host'))[0][0].';port='.(conf_get('database:port'))[0][0],
-                (conf_get('database:username'))[0][0], (conf_get('database:password'))[0][0]) or err(2, 'Failed to connect to database!', 1);;
-        }
-        else {
-            # If not, connect without specifying a port.
-            $DB = DBI->connect('DBI:mysql:database='.(conf_get('database:name'))[0][0].';host='.(conf_get('database:host'))[0][0],
-                (conf_get('database:username'))[0][0], (conf_get('database:password'))[0][0]) or err(2, 'Failed to connect to database!', 1);;
-        }
-    }
-    when ('pgsql') {
-        # PostgreSQL.
-        if ($ENFEAT !~ /pgsql/) { err(2, 'Auto not built with PostgreSQL support. Aborting.', 1) }
-        my @reqcval = qw(database:name database:host database:username database:password);
-        foreach (@reqcval) { if (!conf_get($_)) { err(2, "Missing required configuration value $_. Aborting.", 1) } }
-        undef @reqcval;
-
-        # Import DBD::Pg.
-        require DBD::Pg;
-
-        # Connect to database.
-        if (conf_get('database:port')) {
-            # If a specific port was given, use it.
-            $DB = DBI->connect('dbi:Pg:db='.(conf_get('database:name'))[0][0].';host='.(conf_get('database:host'))[0][0].';port='.(conf_get('database:port'))[0][0],
-                (conf_get('database:username'))[0][0], (conf_get('database:password'))[0][0]) or err(2, 'Failed to connect to database!', 1);
-        }
-        else {
-            # We were not given a port, connect using PGPORT (usually 5432)
-            $DB = DBI->connect('dbi:Pg:db='.(conf_get('database:name'))[0][0].';host='.(conf_get('database:host'))[0][0],
-                (conf_get('database:username'))[0][0], (conf_get('database:password'))[0][0]) or err(2, 'Failed to connect to database!', 1);
-        }
-    }
-    # Unknown database format.
-    default { err(2, 'Unknown database format \''.lc((conf_get('database:format'))[0][0]).'\'. Aborting.', 1) }
 }
 
 # Setup loop.
-our $loop;
-if ($loop = (conf_get('loop'))[0][0]) {
-    $loop = eval {
-        require 'IO/Async/Loop/'.ucfirst($loop).'.pm';
-        ('IO::Async::Loop::'.ucfirst($loop))->new;
-    };
-    $logger->log(FATAL => 'Specified \'loop\' option does not exist or is not installed on this system') if !$loop;
+sub setup_loop {
+    if ($loop = (conf_get('loop'))[0][0]) {
+        $loop = eval {
+            require 'IO/Async/Loop/'.ucfirst($loop).'.pm';
+            ('IO::Async::Loop::'.ucfirst($loop))->new;
+        };
+        $logger->log(FATAL => 'Specified \'loop\' option does not exist or is not installed on this system') if !$loop;
+    }
+    else {
+        $logger->log(FATAL => 'No \'loop\' option specified. This is required.');
+    }
 }
-else {
-    $logger->log(FATAL => 'No \'loop\' option specified. This is required.');
-}
-
-# Ratelimit timer.
-Core::IRC::clear_usercmd_timer();
 
 # Parse privileges.
-our (%PRIVILEGES);
-# If there are any privsets.
-if (conf_get('privset')) {
-    # Get them.
-    my %tcprivs = conf_get('privset');
+sub parse_privs {
+    # If there are any privsets.
+    if (conf_get('privset')) {
+        # Get them.
+        my %tcprivs = conf_get('privset');
 
-    foreach my $tckpriv (keys %tcprivs) {
-        # For each privset, get the inner values.
-        my %mcprivs = conf_get("privset:$tckpriv");
+        foreach my $tckpriv (keys %tcprivs) {
+            # For each privset, get the inner values.
+            my %mcprivs = conf_get("privset:$tckpriv");
 
-        # Iterate through them.
-        foreach my $mckpriv (keys %mcprivs) {
-            # Switch statement for the values.
-            given ($mckpriv) {
-                # If it's 'priv', save it as a privilege.
-                when ('priv') {
-                    if (defined $PRIVILEGES{$tckpriv}) {
-                        # If this privset exists, push to it.
-                        for (0..@{($mcprivs{$mckpriv})[0]}) {
-                            push @{ $PRIVILEGES{$tckpriv} }, ($mcprivs{$mckpriv})[0][$_];
-                        }
-                    }
-                    else {
-                        # Otherwise, create it.
-                        @{ $PRIVILEGES{$tckpriv} } = (($mcprivs{$mckpriv})[0][0]);
-                        if (scalar @{($mcprivs{$mckpriv})[0]} > 1) {
-                            for (1..@{($mcprivs{$mckpriv})[0]}) {
+            # Iterate through them.
+            foreach my $mckpriv (keys %mcprivs) {
+                # Switch statement for the values.
+                given ($mckpriv) {
+                    # If it's 'priv', save it as a privilege.
+                    when ('priv') {
+                        if (defined $PRIVILEGES{$tckpriv}) {
+                            # If this privset exists, push to it.
+                            for (0..@{($mcprivs{$mckpriv})[0]}) {
                                 push @{ $PRIVILEGES{$tckpriv} }, ($mcprivs{$mckpriv})[0][$_];
                             }
                         }
-                    }
-                }
-                # If it's 'inherit', inherit the privileges of another privset.
-                when ('inherit') {
-                    # If the privset we're inheriting exists, continue.
-                    if (defined $PRIVILEGES{($mcprivs{$mckpriv})[0][0]}) {
-                        # Iterate through each privilege.
-                        foreach (@{ $PRIVILEGES{($mcprivs{$mckpriv})[0][0]} }) {
-                            # And save them to the privset inheriting them
-                            if (defined $PRIVILEGES{$tckpriv}) {
-                                # If this privset exists, push to it.
-                                push @{ $PRIVILEGES{$tckpriv} }, $_;
+                        else {
+                            # Otherwise, create it.
+                            @{ $PRIVILEGES{$tckpriv} } = (($mcprivs{$mckpriv})[0][0]);
+                            if (scalar @{($mcprivs{$mckpriv})[0]} > 1) {
+                                for (1..@{($mcprivs{$mckpriv})[0]}) {
+                                    push @{ $PRIVILEGES{$tckpriv} }, ($mcprivs{$mckpriv})[0][$_];
+                                }
                             }
-                            else {
-                                # Otherwise, create it.
-                                @{ $PRIVILEGES{$tckpriv} } = ($_);
+                        }
+                    }
+                    # If it's 'inherit', inherit the privileges of another privset.
+                    when ('inherit') {
+                        # If the privset we're inheriting exists, continue.
+                        if (defined $PRIVILEGES{($mcprivs{$mckpriv})[0][0]}) {
+                            # Iterate through each privilege.
+                            foreach (@{ $PRIVILEGES{($mcprivs{$mckpriv})[0][0]} }) {
+                                # And save them to the privset inheriting them
+                                if (defined $PRIVILEGES{$tckpriv}) {
+                                    # If this privset exists, push to it.
+                                    push @{ $PRIVILEGES{$tckpriv} }, $_;
+                                }
+                                else {
+                                    # Otherwise, create it.
+                                    @{ $PRIVILEGES{$tckpriv} } = ($_);
+                                }
                             }
                         }
                     }
@@ -407,106 +468,119 @@ if (conf_get('privset')) {
     }
 }
 
-# Successful startup.
-our $STARTTIME = time;
-say '* Auto successfully started at '.POSIX::strftime('%Y-%m-%d %I:%M:%S %p', localtime).q{.};
-alog 'Auto successfully started.';
+sub print_success {
+    # Successful startup.
+    $STARTTIME = time;
+    say '* Auto successfully started at '.POSIX::strftime('%Y-%m-%d %I:%M:%S %p', localtime).q{.};
+    alog 'Auto successfully started.';
+}
 
-# If we're on Windows, disable forking.
-if ($OSNAME =~ /win/i) {
+# Daemonize.
+sub daemonize {
+    # If we're on Windows, disable forking.
+    if ($OSNAME =~ /win/i) {
+        if (!$DEBUG) {
+            say '!!! Forking unavailable (OS is Microsoft Windows), continuing in debug mode.';
+            $DEBUG = 1;
+        }
+    }
+
+    # Fork into the background if not in debug mode.
     if (!$DEBUG) {
-        say '!!! Forking unavailable (OS is Microsoft Windows), continuing in debug mode.';
-        $DEBUG = 1;
-    }
-}
-
-# Fork into the background if not in debug mode.
-if (!$DEBUG) {
-    say '*** Becoming a daemon...';
-    open STDIN, '<', '/dev/null' or err(2, "Can't read /dev/null: $ERRNO", 1);
-    open STDOUT, '>>', '/dev/null' or err(2, "Can't write to /dev/null: $ERRNO", 1);
-    open STDERR, '>>', '/dev/null' or err(2, "Can't write to /dev/null: $ERRNO", 1);
-    $APID = fork;
-    if ($APID != 0) {
-        alog '* Successfully forked into the background. Process ID: '.$APID;
-        # Figure out where to throw auto.pid.
-        my $pidfile;
-        if ($UPREFIX) { $pidfile = "$bin{cwd}/auto.pid" }
-        else { $pidfile = "$Bin/auto.pid" }
-        open my $FPID, '>', $pidfile or exit;
-        print {$FPID} "$APID\n" or exit;
-        close $FPID or exit;
-        exit;
-    }
-    POSIX::setsid() or err(2, "Can't start a new session: $ERRNO", 1);
-}
-else {
-    $APID = $PID;
-}
-
-# Events.
-API::Std::event_add('on_preconnect');
-# CAP.
-my %tcsvrs = conf_get('server');
-foreach my $svr (keys %tcsvrs) {
-    $Proto::IRC::cap{$svr} = 'multi-prefix';
-}
-undef %tcsvrs;
-
-# Load modules.
-if (conf_get('module')) {
-    alog '* Loading modules...';
-    dbug '* Loading modules...';
-    foreach (@{ (conf_get('module'))[0] }) {
-        my $module = mod_load($_);
-        if ($module) {
-            alog "* Module $_ failed to load: $module";
-            dbug "* Module $_ failed to load: $module";
+        say '*** Becoming a daemon...';
+        open STDIN, '<', '/dev/null' or err(2, "Can't read /dev/null: $ERRNO", 1);
+        open STDOUT, '>>', '/dev/null' or err(2, "Can't write to /dev/null: $ERRNO", 1);
+        open STDERR, '>>', '/dev/null' or err(2, "Can't write to /dev/null: $ERRNO", 1);
+        $APID = fork;
+        if ($APID != 0) {
+            alog '* Successfully forked into the background. Process ID: '.$APID;
+            # Figure out where to throw auto.pid.
+            my $pidfile;
+            if ($UPREFIX) { $pidfile = "$bin{cwd}/auto.pid" }
+            else { $pidfile = "$Bin/auto.pid" }
+            open my $FPID, '>', $pidfile or exit;
+            print {$FPID} "$APID\n" or exit;
+            close $FPID or exit;
+            exit;
         }
-        else {
-            alog "* Module $_ loaded.";
-            dbug "* Module $_ loaded.";
+        POSIX::setsid() or err(2, "Can't start a new session: $ERRNO", 1);
+    }
+    else {
+        $APID = $PID;
+    }
+}
+
+sub prepare {
+    # Events.
+    API::Std::event_add('on_preconnect');
+    # CAP.
+    my %tcsvrs = conf_get('server');
+    foreach my $svr (keys %tcsvrs) {
+        $Proto::IRC::cap{$svr} = 'multi-prefix';
+    }
+    undef %tcsvrs;
+}
+
+# Load modules from configuration.
+sub load_modules {
+    # Load modules.
+    if (conf_get('module')) {
+        alog '* Loading modules...';
+        dbug '* Loading modules...';
+        foreach (@{ (conf_get('module'))[0] }) {
+            my $module = mod_load($_);
+            if ($module) {
+                alog "* Module $_ failed to load: $module";
+                dbug "* Module $_ failed to load: $module";
+            }
+            else {
+                alog "* Module $_ loaded.";
+                dbug "* Module $_ loaded.";
+            }
         }
     }
 }
 
-## Create sockets.
-alog '* Connecting to servers...';
-dbug '* Connecting to servers...';
-# Get servers from config.
-my %cservers = conf_get('server');
-# Set the socket hash.
-our %SOCKET;
-# Iterate through each configured server.
-foreach my $cskey (keys %cservers) {
-    Lib::Auto::ircsock(\%{$cservers{$cskey}}, $cskey);
+# Create IRC sockets from configuration.
+sub setup_sockets {
+    alog '* Connecting to servers...';
+    dbug '* Connecting to servers...';
+    # Get servers from config.
+    my %cservers = conf_get('server');
+    # Iterate through each configured server.
+    foreach my $cskey (keys %cservers) {
+        Lib::Auto::ircsock(\%{$cservers{$cskey}}, $cskey);
+    }
+    
+    # Success!
+    if (keys %SOCKET) {
+        alog '** Success: Connected to server(s).';
+        dbug '** Success: Connected to server(s).';
+    }
+    else {
+        err(2, 'No IRC connections -- Exiting program.', 1);
+    }
 }
 
-# Success!
-if (keys %SOCKET) {
-    alog '** Success: Connected to server(s).';
-    dbug '** Success: Connected to server(s).';
-}
-else {
-    err(2, 'No IRC connections -- Exiting program.', 1);
-}
-
-# Create core commands.
-API::Std::cmd_add('MODLOAD', 2, 'cfunc.modules', \%Core::Cmd::HELP_MODLOAD, \&Core::Cmd::cmd_modload);
-API::Std::cmd_add('MODUNLOAD', 2, 'cfunc.modules', \%Core::Cmd::HELP_MODUNLOAD, \&Core::Cmd::cmd_modunload);
-API::Std::cmd_add('MODRELOAD', 2, 'cfunc.modules', \%Core::Cmd::HELP_MODRELOAD, \&Core::Cmd::cmd_modreload);
-API::Std::cmd_add('MODLIST', 2, 'cfunc.modules', \%Core::Cmd::HELP_MODLIST, \&Core::Cmd::cmd_modlist);
-API::Std::cmd_add('SHUTDOWN', 2, 'cmd.shutdown', \%Core::Cmd::HELP_SHUTDOWN, \&Core::Cmd::cmd_shutdown);
-API::Std::cmd_add('RESTART', 2, 'cmd.restart', \%Core::Cmd::HELP_RESTART, \&Core::Cmd::cmd_restart);
-API::Std::cmd_add('REHASH', 2, 'cmd.rehash', \%Core::Cmd::HELP_REHASH, \&Core::Cmd::cmd_rehash);
-API::Std::cmd_add('HELP', 2, 0, \%Core::Cmd::HELP_HELP, \&Core::Cmd::cmd_help);
-# Aliases, if any.
-if (conf_get('aliases:alias')) {
-    my $aliases = (conf_get('aliases:alias'))[0];
-    foreach (@{$aliases}) {
-        if ($_ =~ m/\s/xsm) {
-            my @data = split /\s/xsm, $_;
-            API::Std::cmd_alias($data[0], join ' ', @data[1..$#data]);
+# Create core commands and aliases.
+sub setup_cmds {
+    # Create core commands.
+    API::Std::cmd_add('MODLOAD', 2, 'cfunc.modules', \%Core::Cmd::HELP_MODLOAD, \&Core::Cmd::cmd_modload);
+    API::Std::cmd_add('MODUNLOAD', 2, 'cfunc.modules', \%Core::Cmd::HELP_MODUNLOAD, \&Core::Cmd::cmd_modunload);
+    API::Std::cmd_add('MODRELOAD', 2, 'cfunc.modules', \%Core::Cmd::HELP_MODRELOAD, \&Core::Cmd::cmd_modreload);
+    API::Std::cmd_add('MODLIST', 2, 'cfunc.modules', \%Core::Cmd::HELP_MODLIST, \&Core::Cmd::cmd_modlist);
+    API::Std::cmd_add('SHUTDOWN', 2, 'cmd.shutdown', \%Core::Cmd::HELP_SHUTDOWN, \&Core::Cmd::cmd_shutdown);
+    API::Std::cmd_add('RESTART', 2, 'cmd.restart', \%Core::Cmd::HELP_RESTART, \&Core::Cmd::cmd_restart);
+    API::Std::cmd_add('REHASH', 2, 'cmd.rehash', \%Core::Cmd::HELP_REHASH, \&Core::Cmd::cmd_rehash);
+    API::Std::cmd_add('HELP', 2, 0, \%Core::Cmd::HELP_HELP, \&Core::Cmd::cmd_help);
+    # Aliases, if any.
+    if (conf_get('aliases:alias')) {
+        my $aliases = (conf_get('aliases:alias'))[0];
+        foreach (@{$aliases}) {
+            if ($_ =~ m/\s/xsm) {
+                my @data = split /\s/xsm, $_;
+                API::Std::cmd_alias($data[0], join ' ', @data[1..$#data]);
+            }
         }
     }
 }
@@ -551,8 +625,5 @@ sub mod_load {
         undef
     }
 }
-
-# Infinite loop.
-$loop->loop_forever;
 
 # vim: set ai et sw=4 ts=4:
