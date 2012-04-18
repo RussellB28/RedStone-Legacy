@@ -35,6 +35,8 @@ Auto IRC Bot 3.0: Change Log
     * Made bind optional in server blocks.
     * Spotify: New module that adds spotify searching and spotify uri information.
     * LastFM: New module that apps last.fm now playing and auto-annoucements of your now playing.
+    * Autojoin: Added module to manage autojoin from IRC. This will later replace the configuration autojoin.
+    * Sockets: We now use IO::Async which provides us with various loop methods. This adds the 'loop' option to the configration.
 
 3.0 Alpha 11
 ===============================================================================

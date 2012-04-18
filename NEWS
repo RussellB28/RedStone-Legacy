@@ -34,6 +34,8 @@ In this alpha12 release, we have added:
 * Made bind optional in server blocks.
 * Spotify: New module that adds spotify searching and spotify uri information.
 * LastFM: New module that apps last.fm now playing and auto-annoucements of your now playing.
+* Autojoin: Added module to manage autojoin from IRC. This will later replace the configuration autojoin.
+* Sockets: We now use IO::Async which provides us with various loop methods. This adds the 'loop' option to the configration.
 
 Bug fixes:
 
@@ -45,6 +47,7 @@ Bug fixes:
 * match_user/has_priv: Fixed a bug where only one block can be matched even if a user fits into multiple. This could cause you not to get some privileges.
 * module loading: Fixed a bug where mod_load would say a module loaded fine when it really didn't.
 * Fixed a bug in API::Socket that'd cause the function to not return upon an error.
+* Fixed a bug where Auto wouldn't exit if a non-IRC socket was still running.
 
 Incompatibilities:
 
