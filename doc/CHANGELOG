@@ -37,6 +37,7 @@ Auto IRC Bot 3.0: Change Log
     * LastFM: New module that apps last.fm now playing and auto-annoucements of your now playing.
     * Autojoin: Added module to manage autojoin from IRC. This will later replace the configuration autojoin.
     * Sockets: We now use IO::Async which provides us with various loop methods. This adds the 'loop' option to the configration.
+    * Auto::HTTP: Exposed Net::Async::HTTP to Auto. This allows for modules to make non-blocking http requests.
 
 3.0 Alpha 11
 ===============================================================================
