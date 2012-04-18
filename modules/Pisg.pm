@@ -533,7 +533,7 @@ Optinally, append the following:
      run_script "/home/xelhua/Auto/scripts/run-stats.pl";
      notify_msg 0;
      run_delay 15;
- };
+ }
 
 =head2 pisg
 
