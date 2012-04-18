@@ -71,6 +71,7 @@ BEGIN {
         RSTAGE => 'd',
     };
 }
+use Auto::HTTP;
 use Auto::Logger;
 our $logger = Auto::Logger->new;
 $logger->on(FATAL => sub { say "ERROR: @_[1..$#_]"; exit; }, 'core.fatal');
@@ -93,7 +94,7 @@ local $PROGRAM_NAME = 'auto';
 binmode(STDOUT, ':encoding(UTF-8)');
 
 # Global variables.
-our ($DEBUG, $NUC, $configfile, $ENFEAT, $CONF, %SETTINGS, $LOCALE, $DB, $loop, %PRIVILEGES, $STARTTIME, %SOCKET, $APID);
+our ($DEBUG, $NUC, $configfile, $ENFEAT, $CONF, %SETTINGS, $LOCALE, $DB, $loop, %PRIVILEGES, $STARTTIME, %SOCKET, $APID, $http);
 
 sub boot {
     # Check buildfiles
@@ -157,6 +158,9 @@ sub boot {
     # Daemonize.
     daemonize();
     
+    # Setup Auto::HTTP.
+    $http = Auto::HTTP->new;
+
     # Prepare for sockets.
     prepare();
     
