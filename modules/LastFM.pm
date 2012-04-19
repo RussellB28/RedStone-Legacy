@@ -18,11 +18,12 @@ our $RUN_DELAY = 30;
 sub _init {
     # PostgreSQL is not supported, yet.
     if ($Auto::ENFEAT =~ /pgsql/) { err(3, 'Unable to load LastFM: PostgreSQL is not supported.', 0); return }
+    if ($Auto::ENFEAT =~ /mysql/) { err(3, 'Unable to load LastFM: MySQL is not supported.', 0); return }
 
 
     # Create `lastfm` table.
-    $Auto::DB->do('CREATE TABLE IF NOT EXISTS lastfm (net TEXT, chan TEXT, user TEXT, lastsong TEXT)') or return;
-
+    $Auto::DB->do('CREATE TABLE IF NOT EXISTS lastfmchans (net TEXT, chan TEXT, user TEXT, lastsong TEXT)') or return;
+    $Auto::DB->do('CREATE TABLE IF NOT EXISTS lastfmalias (net TEXT, user TEXT, alias TEXT)') or return;
     # Create our required hooks.
     hook_add('on_connect', 'lastfm.connect', \&M::LastFM::on_connect) or return;
 
@@ -84,16 +85,27 @@ our %HELP_NP = (
 );
 
 our %HELP_LASTFM = (
-    en => "This command controls the LastFM Module. \2Syntax:\2 LASTFM <ENABLE|DISABLE|INFO|RUN> [<#channel>[\@network]] [username]",
+    en => "This command controls the LastFM Module. \2Syntax:\2 LASTFM <ENABLE|DISABLE|INFO|ALIAS|UNALIAS|RUN> [<#channel>[\@network]] [username]",
 );
 
 # Subroutine to check if logging for a channel is enabled.
 sub check_status {
     my ($net, $chan) = @_;
-    my $q = $Auto::DB->prepare('SELECT net FROM lastfm WHERE net = ? AND chan = ?') or return 0;
+    my $q = $Auto::DB->prepare('SELECT net FROM lastfmchans WHERE net = ? AND chan = ?') or return 0;
     $q->execute(lc $net, lc $chan) or return 0;
     if ($q->fetchrow_array) {
         return 1;
+    }
+    return 0;
+}
+
+# Subroutine to check if alias exists for a network
+sub check_alias {
+    my ($net, $user) = @_;
+    my $q = $Auto::DB->prepare('SELECT user FROM lastfmalias WHERE net = ? AND alias = ?') or return 0;
+    $q->execute($net, $user) or return 0;
+    if (my @data = $q->fetchrow_array) {
+        return $data[0];
     }
     return 0;
 }
@@ -102,16 +114,32 @@ sub check_status {
 sub cmd_np {
     my ($src, @argv) = @_;
 
+    my $uname;
+
     if (!defined $argv[0]) {
-        notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
-        return;
+        if(check_alias(lc($src->{svr}), $src->{nick}))
+        {
+            $uname = check_alias(lc($src->{svr}), $src->{nick});
+        }
+        else
+        {        
+            notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
+            return;
+        }
+    }
+    else
+    {
+        $uname = $argv[0];
     }
 
-    given(uc $argv[0]) {
-
-        my $uname = $argv[0];
+    #given(uc $argv[0]) {
 
         my $xml = new XML::Simple;
+
+        if(check_alias(lc($src->{svr}), $uname))
+        {
+            $uname = check_alias(lc($src->{svr}), $uname);
+        }
 
         my $xml_url = "http://ws.audioscrobbler.com/2.0/user/".$uname."/recenttracks.xml";
         my $agent = LWP::UserAgent->new();
@@ -125,13 +153,13 @@ sub cmd_np {
         if(!$result->is_success)
         {
             if(lc($result->content) =~ m/private/)
-	        {
+	    {
                 privmsg($src->{svr}, $src->{chan}, "The LastFM user '$uname' has made their recent tracks private. You will need to login to LastFM and have access to view this users tracks.");
             }
             if(lc($result->content) =~ m/no user/)
-	        {
+	    {
                 privmsg($src->{svr}, $src->{chan}, "There is no LastFM user with the username '$uname'.");
-	        }
+	    }
             return 1;
         }
 
@@ -166,7 +194,7 @@ sub cmd_np {
         privmsg($src->{svr}, $src->{chan}, "$uname is not playing anything at the moment but last played: '$track - $artist' on $played_time");
         return 1;
 
-    }
+    #}
 
    return 1;
 }
@@ -203,7 +231,7 @@ sub cmd_lastfm {
                 return;
             }
             notice($src->{svr}, $src->{nick}, "LastFM is already enabled for $chan\@$svr.") and return if check_status($svr, $chan);
-            my $dbq = $Auto::DB->prepare('INSERT INTO lastfm (net, chan, user, lastsong) VALUES (?, ?, ?, 0)');
+            my $dbq = $Auto::DB->prepare('INSERT INTO lastfmchans (net, chan, user, lastsong) VALUES (?, ?, ?, 0)');
             if ($dbq->execute($svr, lc $chan, $argv[2])) {
                 $svr = fix_net($svr);
                 privmsg($src->{svr}, $src->{chan}, "LastFM enabled for $chan\@$svr with username ".$argv[2].".");
@@ -237,7 +265,7 @@ sub cmd_lastfm {
                 return;
             }
             notice($src->{svr}, $src->{nick}, "LastFM is already disabled for $chan\@$svr.") and return if !check_status($svr, $chan);
-            my $dbq = $Auto::DB->prepare('DELETE FROM lastfm WHERE net = ? AND chan = ?');
+            my $dbq = $Auto::DB->prepare('DELETE FROM lastfmchans WHERE net = ? AND chan = ?');
             if ($dbq->execute($svr, lc $chan)) {
                 $svr = fix_net($svr);
                 privmsg($src->{svr}, $src->{chan}, "LastFM disabled for $chan\@$svr.");
@@ -246,6 +274,55 @@ sub cmd_lastfm {
             }
             else {
                 privmsg($src->{svr}, $src->{chan}, 'Failed to disable lastfm.');
+            }
+        }
+        when ('ALIAS') {
+            my $user;
+            my $svr = lc($src->{svr});
+            if (!defined $argv[2]) {
+                notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
+                return;
+            }
+            $user = $argv[2];
+
+            if(!fix_net($svr)) {
+                privmsg($src->{svr}, $src->{chan}, "I'm not configured for $svr.");
+                return;
+            }
+            notice($src->{svr}, $src->{nick}, "$user is already alised on $svr.") and return if check_alias($svr, $user);
+            my $dbq = $Auto::DB->prepare('INSERT INTO lastfmalias (net, user, alias) VALUES (?, ?, ?)');
+            if ($dbq->execute($svr, $argv[1], $argv[2])) {
+                $svr = fix_net($svr);
+                privmsg($src->{svr}, $src->{chan}, "LastFM User ".$argv[1]." is now aliased as ".$argv[2]."");
+                slog("[\2LastFM\2] LastFM User ".$argv[1]." is now aliased as ".$argv[2]."");
+            }
+            else {
+                privmsg($src->{svr}, $src->{chan}, 'Failed to Alias User');
+            }
+
+        }
+        when ('UNALIAS') {
+            my $user;
+            my $svr = lc($src->{svr});
+            if (!defined $argv[1]) {
+                notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
+                return;
+            }
+            $user = $argv[1];
+
+            if(!fix_net($svr)) {
+                privmsg($src->{svr}, $src->{chan}, "I'm not configured for $svr.");
+                return;
+            }
+            notice($src->{svr}, $src->{nick}, "$user is not aliased on $svr") and return if !check_alias($svr, $user);
+            my $dbq = $Auto::DB->prepare('DELETE FROM lastfmalias WHERE net = ? AND alias = ?');
+            if ($dbq->execute($svr, $user)) {
+                $svr = fix_net($svr);
+                privmsg($src->{svr}, $src->{chan}, "The alias $user has been deleted from $svr.");
+                slog("[\2LastFM\2] The alias $user has been deleted from $svr.");
+            }
+            else {
+                privmsg($src->{svr}, $src->{chan}, 'Failed to delete Alias');
             }
         }
         when ('RUN') {
@@ -294,7 +371,7 @@ sub cmd_lastfm {
 
 sub on_connect {
     my ($svr) = @_;
-    my $dbh = $Auto::DB->prepare('SELECT chan FROM lastfm WHERE net = ?');
+    my $dbh = $Auto::DB->prepare('SELECT chan FROM lastfmchans WHERE net = ?');
     $dbh->execute(lc $svr);
     my @data = $dbh->fetchall_arrayref;
     foreach my $first (@data) {
@@ -307,7 +384,7 @@ sub on_connect {
 }
 
 sub process_feed {
-    my $dbh = $Auto::DB->prepare('SELECT net, chan, user, lastsong FROM lastfm WHERE 1');
+    my $dbh = $Auto::DB->prepare('SELECT net, chan, user, lastsong FROM lastfmchans WHERE 1');
     $dbh->execute();
     my $i = 0;
     my @data = $dbh->fetchall_arrayref;
@@ -337,7 +414,7 @@ sub process_feed {
 	            {
                     privmsg(fix_net($second->[0]), $second->[1], "[LastFM] There is no LastFM user with the username '$uname'.");
 	            }
-                my $dbq = $Auto::DB->prepare('UPDATE lastfm SET lastsong=? WHERE net = ? AND chan = ?');
+                my $dbq = $Auto::DB->prepare('UPDATE lastfmchans SET lastsong=? WHERE net = ? AND chan = ?');
                 $dbq->execute("NONE", lc $second->[0], $second->[1]);
             }
 
@@ -346,7 +423,7 @@ sub process_feed {
 	        if($data->{'total'} eq "0")
 	        {
                 privmsg(fix_net($second->[0]), $second->[1], "[LastFM] $uname has never played anything.");
-                my $dbq = $Auto::DB->prepare('UPDATE lastfm SET lastsong=? WHERE net = ? AND chan = ?');
+                my $dbq = $Auto::DB->prepare('UPDATE lastfmchans SET lastsong=? WHERE net = ? AND chan = ?');
                 $dbq->execute("NONE", lc $second->[0], $second->[1]);
 	        }
 
@@ -357,10 +434,14 @@ sub process_feed {
             {
 		        if($data->{'track'}->{$key}->{'nowplaying'} eq "true")
 		        {
-                    my $dbq = $Auto::DB->prepare('UPDATE lastfm SET lastsong=? WHERE net = ? AND chan = ?');
-                    $dbq->execute($key." - ".$data->{'track'}->{$key}->{'artist'}->{'content'}, lc $second->[0], $second->[1]);
-                    privmsg(fix_net($second->[0]), $second->[1], "[LastFM] $uname is now playing: $key - ".$data->{'track'}->{$key}->{'artist'}->{'content'});
-		        }
+				my $oldtrack = "$key - ".$data->{'track'}->{$key}->{'artist'}->{'content'}."";
+			        if($oldtrack ne $second->[3])
+                    {         
+                    		my $dbq = $Auto::DB->prepare('UPDATE lastfmchans SET lastsong=? WHERE net = ? AND chan = ?');
+                    		$dbq->execute($key." - ".$data->{'track'}->{$key}->{'artist'}->{'content'}, lc $second->[0], $second->[1]);
+                    		privmsg(fix_net($second->[0]), $second->[1], "[LastFM] $uname is now playing: $key - ".$data->{'track'}->{$key}->{'artist'}->{'content'});
+					}
+				}
 		    }
         }
     }
