@@ -521,7 +521,7 @@ Optinally, append the following:
 
  * notify_msg: This enables or disables messaging the channel upon being assigned or unassigned from that channel. Defaults to 0.
 
- * run_delay: This determines how long Auto waits before allowing RUN to be ran again. Defaults to 30.
+ * run_delay: This determines how many minutes Auto waits before allowing RUN to be ran again. Defaults to 30 Minutes.
 
 =head2 Example
 
