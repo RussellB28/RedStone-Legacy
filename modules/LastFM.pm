@@ -142,10 +142,7 @@ sub cmd_np {
         }
 
         my $xml_url = "http://ws.audioscrobbler.com/2.0/user/".$uname."/recenttracks.xml";
-        my $agent = LWP::UserAgent->new();
-        $agent->agent('Auto IRC Bot');
-
-        $agent->timeout(60);
+        my $agent = Furl->new(agent => 'Auto IRC Bot', timeout => 5);
 
         my $request = HTTP::Request->new(GET => $xml_url);
         my $result = $agent->request($request);
@@ -278,10 +275,19 @@ sub cmd_lastfm {
         }
         when ('ALIAS') {
             my $user;
+			my $nick;
             my $svr = lc($src->{svr});
             if (!defined $argv[2]) {
                 notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
                 return;
+            }
+			
+			if ($argv[1] =~ m/(.*)\@(.*)/) {
+                $nick = $1;
+                $svr = lc($2);
+            }
+            else {
+                $nick = $argv[1];
             }
             $user = $argv[2];
 
@@ -291,7 +297,7 @@ sub cmd_lastfm {
             }
             notice($src->{svr}, $src->{nick}, "$user is already alised on $svr.") and return if check_alias($svr, $user);
             my $dbq = $Auto::DB->prepare('INSERT INTO lastfmalias (net, user, alias) VALUES (?, ?, ?)');
-            if ($dbq->execute($svr, $argv[1], $argv[2])) {
+            if ($dbq->execute($svr, $nick, $argv[2])) {
                 $svr = fix_net($svr);
                 privmsg($src->{svr}, $src->{chan}, "LastFM User ".$argv[1]." is now aliased as ".$argv[2]."");
                 slog("[\2LastFM\2] LastFM User ".$argv[1]." is now aliased as ".$argv[2]."");
@@ -302,21 +308,28 @@ sub cmd_lastfm {
 
         }
         when ('UNALIAS') {
-            my $user;
+			my $nick;
             my $svr = lc($src->{svr});
             if (!defined $argv[1]) {
                 notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
                 return;
             }
-            $user = $argv[1];
+			
+            if ($argv[1] =~ m/(.*)\@(.*)/) {
+                $nick = $1;
+                $svr = lc($2);
+            }
+            else {
+                $nick = $argv[1];
+            }
 
             if(!fix_net($svr)) {
                 privmsg($src->{svr}, $src->{chan}, "I'm not configured for $svr.");
                 return;
             }
-            notice($src->{svr}, $src->{nick}, "$user is not aliased on $svr") and return if !check_alias($svr, $user);
+            notice($src->{svr}, $src->{nick}, "$user is not aliased on $svr") and return if !check_alias($svr, $nick);
             my $dbq = $Auto::DB->prepare('DELETE FROM lastfmalias WHERE net = ? AND alias = ?');
-            if ($dbq->execute($svr, $user)) {
+            if ($dbq->execute($svr, $nick)) {
                 $svr = fix_net($svr);
                 privmsg($src->{svr}, $src->{chan}, "The alias $user has been deleted from $svr.");
                 slog("[\2LastFM\2] The alias $user has been deleted from $svr.");
@@ -396,10 +409,7 @@ sub process_feed {
 
             my $uname = $second->[2];
             my $xml_url = "http://ws.audioscrobbler.com/2.0/user/".$uname."/recenttracks.xml";
-            my $agent = LWP::UserAgent->new();
-            $agent->agent('Auto IRC Bot');
-
-            $agent->timeout(60);
+			my $agent = Furl->new(agent => 'Auto IRC Bot', timeout => 5);
 
             my $request = HTTP::Request->new(GET => $xml_url);
             my $result = $agent->request($request);

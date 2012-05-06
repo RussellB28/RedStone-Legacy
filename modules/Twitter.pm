@@ -10,7 +10,7 @@ use API::IRC qw(notice privmsg cpart cjoin);
 use API::Log qw(slog dbug alog);
 use XML::RSS::Parser::Lite;
 use LWP::Simple;
-use LWP::UserAgent;
+use Furl;
 use HTML::Entities;
 use TryCatch;
 our $ENABLE_RUN = 0;
@@ -245,10 +245,7 @@ sub cmd_twitter {
                             my $t_url = decode_entities($it->get('url'));
 
                             my $tweet_url = "http://ur.cx/api/create.php?url=$t_url";
-                            my $agent = LWP::UserAgent->new();
-                            $agent->agent('RedStone IRC Bot');
-
-                            $agent->timeout(60);
+                            my $agent = Furl->new(agent => 'Auto IRC Bot', timeout => 5);
 
                             my $request = HTTP::Request->new(GET => $tweet_url);
                             my $result = $agent->request($request);
@@ -333,10 +330,7 @@ sub process_feed {
                     if($t_url ne $second->[3])  
                     {
                         my $lfm_url = "http://ur.cx/api/create.php?url=$t_url";
-                        my $agent = LWP::UserAgent->new();
-                        $agent->agent('RedStone IRC Bot');
-
-                        $agent->timeout(60);
+                        my $agent = Furl->new(agent => 'Auto IRC Bot', timeout => 5);
 
                         my $request = HTTP::Request->new(GET => $lfm_url);
                         my $result = $agent->request($request);
@@ -376,7 +370,7 @@ sub fix_net {
 
 # Start initialization.
 API::Std::mod_init('Twitter', 'Xelhua', '1.00', '3.0.0a11');
-# build: perl=5.010000
+# build: cpan=Furl,LWP::Simple,XML::RSS::Parser::Lite,HTML::Entities,TryCatch perl=5.010000
 
 __END__
 
