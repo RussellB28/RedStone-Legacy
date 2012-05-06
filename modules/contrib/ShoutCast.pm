@@ -15,6 +15,7 @@ our $RadioSvrVersion;
 our $radiosid;
 our $radioecho;
 our $radioechochannel;
+our $AutomatedNewSong;
 our %EchoChannels;
 
 # Initialization subroutine.
@@ -35,6 +36,7 @@ sub _init {
 	$RadioSvrVersion = (conf_get('SCversion') ? (conf_get('SCversion'))[0][0] : "2");
 	$radiohost = (conf_get('radiourl') ? (conf_get('radiourl'))[0][0] : "");
 	$radioport = (conf_get('radioport') ? (conf_get('radioport'))[0][0] : "");
+	$AutomatedNewSong = (conf_get('AutomatedNewSong') ? (conf_get('AutomatedNewSong'))[0][0] : "1");
 	if($RadioSvrVersion == 2) {
 		$radiosid = (conf_get('StreamID') ? (conf_get('StreamID'))[0][0] : "");
 		if($radiohost =~ /http/) {
@@ -124,14 +126,8 @@ sub on_connect {
 		$i++;
     }
 
-
-	timer_add('ShoutCast',2,$radioecho,sub {
-		while(($key,$value) = each(%EchoChannels)) {
-			my @arr = ();
-			while(($key2,$value2) = each(%{$EchoChannels{$key}})) {
-				push(@arr,$value2);
-			}
-			my $chanvar = join(',',@arr);
+	if($AutomatedNewSong == 1) {
+		timer_add('ShoutCast',2,$radioecho,sub {
 			my $ua = Furl->new(
 				agent => 'Mozilla/5.0',
 				timeout => 5,
@@ -149,9 +145,17 @@ sub on_connect {
 						}
 						if(($song eq $oldsong) && ($nextsong eq $oldnextsong)) {
 						} else {
-							$oldsong = $song;
-							$oldnextsong = $nextsong;
-							privmsg($svr, $chanvar, "\2New song:\2 ".$song." \2Next song:\2 ".$nextsong);
+							while(($key,$value) = each(%EchoChannels)) {
+								my @arr = ();
+								while(($key2,$value2) = each(%{$EchoChannels{$key}})) {
+									push(@arr,$value2);
+								}
+								my $chanvar = join(',',@arr);
+								
+								$oldsong = $song;
+								$oldnextsong = $nextsong;
+								privmsg($key, $chanvar, "\2New song:\2 ".$song." \2Next song:\2 ".$nextsong);
+							}
 						}
 					} else {
 						if($oldsong eq "NOTHING") {
@@ -176,15 +180,23 @@ sub on_connect {
 							$song = $1;
 							if($song eq $oldsong) {
 							} else {
-								privmsg($svr, $chanvar, "New song: ".$song);
-								$oldsong = $song;
+								while(($key,$value) = each(%EchoChannels)) {
+									my @arr = ();
+									while(($key2,$value2) = each(%{$EchoChannels{$key}})) {
+										push(@arr,$value2);
+									}
+									my $chanvar = join(',',@arr);
+								
+									$oldsong = $song;
+									privmsg($key, $chanvar, "New song: ".$song);
+								}
 							}
 						}
 					}
 				}
 			}
-		}
-	});
+		});
+	}
 }
 
 sub on_chanjoin {
@@ -268,7 +280,7 @@ sub cmd_shoutcast {
             }
         }
 		if (add($svr, $channel)) {
-			privmsg($src->{svr}, $src->{chan}, "$channel\@$svr was added to my radio echo channel list.");
+			privmsg($src->{svr}, $src->{chan}, "\2$channel\@$svr\2 was added to my radio echo channel list.");
 		} else {
             privmsg($src->{svr}, $src->{chan}, 'Failed to add to radio echo\'ing channels.');
         }
@@ -289,7 +301,7 @@ sub cmd_shoutcast {
             }
         }
 		if (del($network, $channel)) {
-			privmsg($src->{svr}, $src->{chan}, "$channel\@$svr was removed from my radio echo'ing channels list.");
+			privmsg($src->{svr}, $src->{chan}, "\2$channel\@$svr\2 was removed from my radio echo'ing channels list.");
 		} else {
             privmsg($src->{svr}, $src->{chan}, 'Failed to delete from radio echo channel list.');
         }
@@ -999,6 +1011,7 @@ sub on_rehash {
 	$RadioSvrVersion = (conf_get('SCversion') ? (conf_get('SCversion'))[0][0] : "2");
 	$radiohost = (conf_get('radiourl') ? (conf_get('radiourl'))[0][0] : "");
 	$radioport = (conf_get('radioport') ? (conf_get('radioport'))[0][0] : "");
+	$AutomatedNewSong = (conf_get('AutomatedNewSong') ? (conf_get('AutomatedNewSong'))[0][0] : "1");
 	if($RadioSvrVersion == 2) {
 		$radiosid = (conf_get('StreamID') ? (conf_get('StreamID'))[0][0] : "");
 		if($radiohost =~ /http/) {
@@ -1078,6 +1091,13 @@ Where <1/2> is the version of ShoutCast on the station.
 Where <ID> is the ID of the stream in the ShoutCast server
 
  StreamID 1;
+ 
+ 
+ 
+ AutomatedNewSong <0/1>;
+Where 1 means it will (default) and 0 meant it won't automatically fetch the new song being played by the defined radio in the config.
+
+ AutomatedNewSong 1;
  
 =head1 DEPENDENCIES
 
