@@ -6,7 +6,7 @@ package Core::IRC;
 use strict;
 use warnings;
 use English qw(-no_match_vars);
-use API::Std qw(hook_add timer_add conf_get);
+use API::Std qw(hook_add timer_add conf_get trans);
 use API::IRC qw(notice usrc);
 
 # Events.
