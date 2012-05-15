@@ -59,7 +59,7 @@ hook_add('on_privmsg', 'irc.privmsg.parse', sub {
                     }
                     else {
                         # Send them a notice about their bad deed.
-                        notice($data{svr}, $data{nick}, API::Std::trans('Rate limit exceeded').q{.});
+                        notice($data{svr}, $data{nick}, trans('Rate limit exceeded').q{.});
                     }
                 }
             }
@@ -102,7 +102,7 @@ hook_add('on_privmsg', 'irc.privmsg.parse', sub {
                     }
                     else {
                         # Send them a notice about their bad deed.
-                        notice($data{svr}, $data{nick}, API::Std::trans('Rate limit exceeded').q{.});
+                        notice($data{svr}, $data{nick}, trans('Rate limit exceeded').q{.});
                     }
                 }
                 elsif ($API::Std::CMDS{$cmd}{lvl} == 3) {
