@@ -194,7 +194,7 @@ Oper - Auto oper-on-connect module.
 
 =head1 VERSION
 
- 1.01
+ 1.02
 
 =head1 SYNOPSIS
 
