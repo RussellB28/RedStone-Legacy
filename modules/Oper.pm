@@ -37,13 +37,16 @@ sub _void {
 }
 
 our %HELP_ZLINE = (
-    en => "Will use an IRC zline command.",
+    en => "Will use an IRC zline command. \2SYNTAX:\2 ZLINE [TIME] [MASK USER@HOST] [REASON]",
+	#nl => "Voert het IRC zline commando uit. \2SYNTAX:\2 ZLINE [TIJD] [MASKER GEBRUIKER@HOST] [REDEN]",
 );
 our %HELP_GLINE = (
-    en => "Will use an IRC gline command.",
+    en => "Will use an IRC gline command. \2SYNTAX:\2 GLINE [TIME] [MASK USER@HOST] [REASON]",
+	#nl => "Voert het IRC gline commando uit. \2SYNTAX:\2 GLINE [TIJD] [MASKER GEBRUIKER@HOST] [REDEN]",
 );
 our %HELP_SPAMFILTER = (
-    en => "Will use an IRC spamfilter command.",
+    en => "Will use an IRC spamfilter command. \2SYNTAX:\2 SPAMFILTER [ADD|DEL|REMOVE|+|-] [c|p|n|N|P|q|d|a|t|u] [kill|tempshun|shun|kline|gline|zline|gzline|block|dccblock|viruschan|warn] [tkltime] [reason] [regex]",
+	#nl => "Voert het IRC spamfilter commando uit. \2SYNTAX:\2 SPAMFILTER [ADD|DEL|REMOVE|+|-] [c|p|n|N|P|q|d|a|t|u] [kill|tempshun|shun|kline|gline|zline|gzline|block|dccblock|viruschan|warn] [tkltime] [REDEN] [regex]",
 );
 
 # On connect subroutine.
@@ -121,42 +124,66 @@ sub kill {
 
 sub cmd_zline {
 	my ($src, @argv) = @_;
-	if(!defined($argv[0])) {
+	if(!defined($argv[2])) {
 		privmsg($src->{svr},$src->{chan},trans('Not enough parameters').q{.});
+		privmsg($src->{svr},$src->{chan},trans('SYNTAX: ZLINE [TIME] [MASK USER@HOST] [REASON]').q{.});
 		return;
 	}
 	
-	my $msg = join(' ',@argv);
-	Auto::socksnd($src->{svr}, "ZLINE ".$msg);
+	my $msg = join(' ',@argv[2 .. $#argv]);
+	Auto::socksnd($src->{svr}, "ZLINE ".$argv[1]." ".$argv[0]." ".$msg);
 	return 1;
 }
 
 sub cmd_gline {
 	my ($src, @argv) = @_;
-	if(!defined($argv[0])) {
+	if(!defined($argv[2])) {
 		privmsg($src->{svr},$src->{chan},trans('Not enough parameters').q{.});
+		privmsg($src->{svr},$src->{chan},trans('SYNTAX: GLINE [TIME] [MASK USER@HOST] [REASON]').q{.});
 		return;
 	}
-	my $msg = join(' ',@argv);
-	Auto::socksnd($src->{svr}, "GLINE ".$msg);
+	
+	my $msg = join(' ',@argv[2 .. $#argv]);
+	Auto::socksnd($src->{svr}, "GLINE ".$argv[1]." ".$argv[0]." ".$msg);
 	return 1;
 }
 
 sub cmd_spamfilter {
 	my ($src, @argv) = @_;
-	if(!defined($argv[0])) {
+	if(!defined($argv[5])) {
 		privmsg($src->{svr},$src->{chan},trans('Not enough parameters').q{.});
 		return;
 	}
-	my $msg = join(' ',@argv);
-	Auto::socksnd($src->{svr}, "SPAMFILTER ".$msg);
+	if($argv[0] =~ /^(add|del|remove|\+|-)$/i) {
+		if($argv[1] =~ /^(c|p|n|N|P|q|d|a|t|u)$/) {
+			if($argv[2] =~ /^(kill|tempshun|shun|kline|gline|zline|gzline|block|dccblock|viruschan|warn)$/i) {
+				if(defined($argv[5])) {
+					my $msg = join(' ',@argv);
+					Auto::socksnd($src->{svr}, "SPAMFILTER ".$msg);
+					return 1;
+				} else {
+					privmsg($src->{svr},$src->{chan},"Please specify all parameters");
+					return;
+				}
+			} else {
+				privmsg($src->{svr},$src->{chan},"Please use the correct action");
+				return;
+			}
+		} else {
+			privmsg($src->{svr},$src->{chan},"Please use the correct type");
+			return;
+		}
+	} else {
+		privmsg($src->{svr},$src->{chan},"Please use add del remove + -");
+		return;
+	}
 	return 1;
 }
 
 # End of the API
 
 # Start initialization.
-API::Std::mod_init('Oper', 'Xelhua', '1.01', '3.0.0a11');
+API::Std::mod_init('Oper', 'Xelhua & Peter Selten/[nas]peter', '1.02', '3.0.0a11');
 # build: perl=5.010000
 
 __END__
