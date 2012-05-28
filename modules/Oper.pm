@@ -198,12 +198,17 @@ Oper - Auto oper-on-connect module.
 
 =head1 SYNOPSIS
 
- No commands are currently associated with Oper.
+ zline
+ gline
+ spamfilter
 
 =head1 DESCRIPTION
 
 This module adds the ability for Auto to oper on networks he is
-configured to do so on.
+configured to do so on. And it adds a few commands that can be 
+used by people configured in the config. Before being able
+to use the commands in this module, you must give people
+the permission: 'auto.ircoperator'
 
 =head1 INSTALL
 
@@ -219,6 +224,8 @@ though:
 This module was written by Matthew Barksdale.
 
 This module is maintained by Xelhua Development Group.
+
+This module was updated by Peter Selten/[nas]peter and currently maintained by RedStone development group.
 
 =head1 LICENSE AND COPYRIGHT
 
