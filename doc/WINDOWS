@@ -1,15 +1,15 @@
-Auto IRC Bot 3.0: Microsoft Windows Notes
+RedStone 1.0: Microsoft Windows Notes
 ===============================================================================
 
-When running Auto on Microsoft Windows, you should be aware of the following:
+When running RedStone on Microsoft Windows, you should be aware of the following:
 
-* Windows support has not been thoroughly tested, some scripts/features may not
+* Windows support has not been thoroughly tested, some scripts/features/modules may not
   function correctly.
 * Forking into the background is disabled.
-* Some file system operations may fail if Auto is installed to a path with
+* Some file system operations may fail if RedStone is installed to a path with
   spaces. Please report these.
 
-For the full power of Auto; run him in a UNIX environment.
+For the full power of RedStone; run him in a UNIX environment.
 
 Since Windows support can be considered experimental, testers are welcome and
 you should report anything you find to malfunction.

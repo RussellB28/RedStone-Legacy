@@ -1,12 +1,14 @@
-Xelhua Development Team: Credits
+All Past and Present Contibutors that have worked
+on both Auto and RedStone are listed below
 
 -----------------------------------------------
 
 Elijah "starcoder" Perrault <elijah@starcoder.info>
+- Base and a few modules
 Matthew Barksdale <mattwb65@gmail.com>
-Timothy "Tim-7967" Estes <tim@xarsys.cz.cc>
-Alexandria "alyx" Wolcott <alyx@woomoo.org>
-
+- Numeroux bug fixes and improvments
+Peter Selten <peter@evosurge.com>
+- Created/Maintains Spell, Unixtime, Translate and Shoutcast Modules
 Matthew "Mab879" Burket <matthew@assignitapp.com>
 - Spanish translations.
 Noah "nridley" Ridley <nridley44@gmail.com>
@@ -20,4 +22,4 @@ Douglas "dwfreed" Freed <dwfreed@mtu.edu>
 
 -----------------------------------------------
 
-Xelhua Development Team @ http://xelhua.org
+Thanks to all those who have helped!
