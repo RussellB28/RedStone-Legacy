@@ -237,6 +237,7 @@ though:
 
  oper_username <username>;
  oper_password <password>;
+ oper_channel <channel>;
 
 =head1 AUTHOR
 
