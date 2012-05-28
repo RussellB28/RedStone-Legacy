@@ -4,7 +4,7 @@
 package M::Oper;
 use strict;
 use warnings;
-use API::Std qw(hook_add hook_del rchook_add rchook_del conf_get);
+use API::Std qw(hook_add hook_del rchook_add rchook_del conf_get trans);
 use API::Log qw(alog dbug);
 
 # Initialization subroutine.
@@ -15,6 +15,11 @@ sub _init {
 	hook_add('on_notice', 'Oper.onnotice', \&M::Oper::on_notice) or return;
     # Add a hook for when we get numeric 491 (ERR_NOOPERHOST)
     rchook_add('491', 'Oper.on491', \&M::Oper::on_num491) or return;
+	
+	#OPER commands:
+	cmd_add('ZLINE', 0, 'auto.ircoperator', \%M::Oper::HELP_ZLINE, \&M::Oper::cmd_zline) or return;
+	cmd_add('GLINE', 0, 'auto.ircoperator', \%M::Oper::HELP_GLINE, \&M::Oper::cmd_gline) or return;
+	cmd_add('SPAMFILTER', 0, 'auto.ircoperator', \%M::Oper::HELP_SPAMFILTER, \&M::Oper::cmd_spamfilter) or return;
     return 1;
 }
 
@@ -24,8 +29,22 @@ sub _void {
     hook_del('on_connect', 'Oper.onconnect') or return;
 	hook_del('on_notice', 'Oper.onnotice') or return;
     rchook_del('491', 'Oper.on491') or return;
+	
+	cmd_del('ZLINE') or return;
+	cmd_del('GLINE') or return;
+	cmd_del('SPAMFILTER') or return;
     return 1;
 }
+
+our %HELP_ZLINE = (
+    en => "Will use an IRC zline command.",
+);
+our %HELP_GLINE = (
+    en => "Will use an IRC gline command.",
+);
+our %HELP_SPAMFILTER = (
+    en => "Will use an IRC spamfilter command.",
+);
 
 # On connect subroutine.
 sub on_connect {
@@ -47,7 +66,6 @@ sub on_notice {
 	if($m =~ /\*\*\* Notice -- Client exiting: (.\w) \((.+?)@(.+?)\) \[(.+?)\]/i) {
 		dbug "$src->{nick} -> $1 - $2 - $3 - $4 - $5 - $6 - $7 - $8";
 	}
-	#*** Notice -- Client connecting at neon.evosurge.net: horid (6c59443a@ircip1.mibbit.com)
 	if($m =~ /\*\*\* Notice -- Client connecting at (.+?): (.+?) \((.+?)@(.+?)\)/i) {
 		dbug "$src->{nick} -> $1 - $2 - $3 - $4 - $5 - $6 - $7 - $8";
 	}
@@ -99,6 +117,40 @@ sub kill {
         Auto::socksnd($svr, "KILL $user :Killed.");
     }
     return 1;
+}
+
+sub cmd_zline {
+	my ($src, @argv) = @_;
+	if(!defined($argv[0])) {
+		privmsg($src->{svr},$src->{chan},trans('Not enough parameters').q{.});
+		return;
+	}
+	
+	my $msg = join(' ',@argv);
+	Auto::socksnd($src->{svr}, "ZLINE ".$msg);
+	return 1;
+}
+
+sub cmd_gline {
+	my ($src, @argv) = @_;
+	if(!defined($argv[0])) {
+		privmsg($src->{svr},$src->{chan},trans('Not enough parameters').q{.});
+		return;
+	}
+	my $msg = join(' ',@argv);
+	Auto::socksnd($src->{svr}, "GLINE ".$msg);
+	return 1;
+}
+
+sub cmd_spamfilter {
+	my ($src, @argv) = @_;
+	if(!defined($argv[0])) {
+		privmsg($src->{svr},$src->{chan},trans('Not enough parameters').q{.});
+		return;
+	}
+	my $msg = join(' ',@argv);
+	Auto::socksnd($src->{svr}, "SPAMFILTER ".$msg);
+	return 1;
 }
 
 # End of the API
