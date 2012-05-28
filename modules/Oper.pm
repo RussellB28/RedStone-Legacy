@@ -77,7 +77,9 @@ sub on_notice {
 		my $DisconnectIP = $4;
 		my $DisconnectReason = $5;
 		dbug "$DisconnectUser disconnected from $DisconnectServer (".$DisconnectIdent."@".$DisconnectIP.") [".$DisconnectReason."]";
-		privmsg($src->{svr},$SCHAN{uc($src->{svr}),"$DisconnectUser disconnected from $DisconnectServer (".$DisconnectIdent."@".$DisconnectIP.") [".$DisconnectReason."]");
+		if(defined($SCHAN{uc($src->{svr})})) {
+			privmsg($src->{svr},$SCHAN{uc($src->{svr}),"$DisconnectUser disconnected from $DisconnectServer (".$DisconnectIdent."@".$DisconnectIP.") [".$DisconnectReason."]");
+		}
 	}
 	if($m =~ /^\*\*\* Notice -- Client connecting at (.+?): (.+?) \((.+?)@(.+?)\)/i) {
 		my $ConnectServer = $1;
@@ -85,7 +87,9 @@ sub on_notice {
 		my $ConnectIdent = $3;
 		my $ConnectIP = $4;
 		dbug "$ConnectUser connected to $ConnectServer (".$ConnectIdent."@".$ConnectIP.")";
-		privmsg($src->{svr},$SCHAN{uc($src->{svr}),"$ConnectUser connected to $ConnectServer (".$ConnectIdent."@".$ConnectIP.")");
+		if(defined($SCHAN{uc($src->{svr})})) {
+			privmsg($src->{svr},$SCHAN{uc($src->{svr}),"$ConnectUser connected to $ConnectServer (".$ConnectIdent."@".$ConnectIP.")");
+		}
 	}
 }
 
