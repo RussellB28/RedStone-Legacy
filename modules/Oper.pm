@@ -5,12 +5,14 @@ package M::Oper;
 use strict;
 use warnings;
 use API::Std qw(hook_add hook_del rchook_add rchook_del conf_get);
-use API::Log qw(alog);
+use API::Log qw(alog dbug);
 
 # Initialization subroutine.
 sub _init {
     # Add a hook for when we connect to a network.
     hook_add('on_connect', 'Oper.onconnect', \&M::Oper::on_connect) or return;
+	#Add a hook for checking connect notices
+	hook_add('on_notice', 'Oper.onnotice', \&M::Oper::on_notice) or return;
     # Add a hook for when we get numeric 491 (ERR_NOOPERHOST)
     rchook_add('491', 'Oper.on491', \&M::Oper::on_num491) or return;
     return 1;
@@ -20,6 +22,7 @@ sub _init {
 sub _void {
     # Delete the hooks.
     hook_del('on_connect', 'Oper.onconnect') or return;
+	hook_del('on_notice', 'Oper.onnotice') or return;
     rchook_del('491', 'Oper.on491') or return;
     return 1;
 }
@@ -35,6 +38,19 @@ sub on_connect {
     # Send the OPER command.
     oper($svr, $u, $p);
     return 1;
+}
+
+sub on_notice {
+	my ($src, $target, @msg) = @_;
+	
+	$m = join(' ',@msg);
+	if($m =~ /\*\*\* Notice -- Client exiting: (.\w) \((.+?)@(.+?)\) \[(.+?)\]/i) {
+		dbug "$src->{nick} -> $1 - $2 - $3 - $4 - $5 - $6 - $7 - $8";
+	}
+	#*** Notice -- Client connecting at neon.evosurge.net: horid (6c59443a@ircip1.mibbit.com)
+	if($m =~ /\*\*\* Notice -- Client connecting at (.+?): (.+?) \((.+?)@(.+?)\)/i) {
+		dbug "$src->{nick} -> $1 - $2 - $3 - $4 - $5 - $6 - $7 - $8";
+	}
 }
 
 # On 491 subroutine
