@@ -1,4 +1,4 @@
-Auto IRC Bot 3.0
+RedStone IRC Bot 1.0
 -------------------------------------------------------------------------------
 
 Table of Contents
@@ -11,14 +11,16 @@ Table of Contents
 -------------------------------------------------------------------------------
 1. DESCRIPTION
 
-Auto IRC Bot is an IRC channel bot that was created in December of 2009, over
-time, it progressed into a bot with an advanced and lightweight module API. Many
-of its features are modules and can be loaded/unloaded to your wish.
+RedStone IRC Bot is an IRC channel bot that was created in
+December of 2009 under the name of Auto. It has siince progressed 
+into a bot with an advanced and lightweight module API. 
+Many of its features are modules and can be loaded/unloaded to your wish.
 
-Using the module API, you can also write your own modules to further extend your
-copy.  If you think your module is useful and should be included in the mainline
-program, you can contact us and request that your module be added to contributed
-modules. There is a chance that it will be accepted.
+Using the module API, you can also write your own modules to
+further extend your copy.  If you think your module is useful
+and should be included in the mainline program, you can
+contact us and request that your module be added to
+contributed modules. There is a chance that it will be accepted.
 
 
 2. DEVELOPERS
@@ -27,37 +29,37 @@ Auto IRC Bot is developed by Ethrik Development Group, a team of people who
 contribute their time and knowledge to the maintenance of Auto, and other
 projects.
 
-    Matthew Barksdale <mattwb65@gmail.com>
     Russell Bradford <russell@rbradford.me>
-    Liam Smith <me@liam.co>
-    Alexandria "alyx" Wolcott <alyx@woomoo.org>
 
 Contributors - Non-developers who contribute to the project greatly.
 
-    None at present.
+    Peter Selten <peter@bnc4free.com>
 
-'Retired' Developers - 
+Previous Contributors - Developers who have previously developer parts of the project.
+	
     Elijah "starcoder" Perrault <elijah@starcoder.info>
-
+    Matthew Barksdale <mattwb65@gmail.com>
+    Liam Smith <me@liam.co>
+    Alexandria "alyx" Wolcott <alyx@woomoo.org>
 
 3. HOW TO INSTALL
 
-Installation documentation is at: 
-http://wiki.xelhua.org/index.php/Auto:Installation_guide (yes, down)
-* This will soon be replaced by the ethrik wiki
+Installation documentation will be provided shortly
 
 
 4. HOW TO UPGRADE
 
-Reserved. Currently there is no method of upgrading version.
+There is currently no method of upgrading to the latest version without re-downloading
+the source from here and transferring your database/config over to the new directory.
 
 
 5. HELP, BUGS, SUGGESTIONS
 
-For help with Auto, you can ask on the forums at http://forums.ethrik.net or in
-our IRC chatroom at irc.ethrik.net #ethrik.
+For help with Auto, You can ask in our IRC chatroom at irc.evosurge.net #RedStone.
 
-To report a bug, please visit the IRC channel.
+This can be accessed using http://webchat.evosurge.net/ if you do not posess an IRC client.
 
-To suggest a feature, it's best to post it on the above link, but you can also
-let us know in our IRC chatroom.
+To report a bug, please visit our IRC channel.
+Thanks for contributing by reporting issues!
+
+To suggest a feature, you can also let us know in our IRC chatroom.
