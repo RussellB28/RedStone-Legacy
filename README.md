@@ -30,12 +30,12 @@ Redstone IRC Bot is developed by Russell Bradford and a team
 of people who contribute their time and knowledge to the
 maintenance of RedStone, and other projects.
 
-+ Russell Bradford &lt;Russell@rbradford.me&gt;
++ Russell Bradford <Russell@rbradford.me>
 
 
 Contributors - Non-developers who contribute to the project greatly.
 
-+ Peter Selten &lt;peter@evosurge.com&gt;
++ Peter Selten <peter@evosurge.com>
 
 Previous Contributors - Developers who have previously developer parts of the project
 
@@ -57,7 +57,7 @@ the source from here and transferring your database/config over to the new direc
 
 ## 5. HELP, BUGS, SUGGESTIONS
 
-For help with Auto, You can ask in our IRC chatroom at irc.evosurge.net &#35;RedStone.
+For help with Auto, You can ask in our IRC chatroom at irc.evosurge.net #RedStone.
 
 This can be accessed using http://webchat.evosurge.net/ if you do not posess an IRC client.
 
