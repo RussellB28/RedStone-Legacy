@@ -4,7 +4,7 @@
 package M::Oper;
 use strict;
 use warnings;
-use API::Std qw(hook_add hook_del rchook_add rchook_del conf_get trans);
+use API::Std qw(hook_add hook_del rchook_add rchook_del conf_get trans cmd_add cmd_del);
 use API::Log qw(alog dbug);
 
 # Initialization subroutine.
@@ -37,11 +37,11 @@ sub _void {
 }
 
 our %HELP_ZLINE = (
-    en => "Will use an IRC zline command. \2SYNTAX:\2 ZLINE [TIME] [MASK USER@HOST] [REASON]",
+    en => "Will use an IRC zline command. \2SYNTAX:\2 ZLINE [TIME] [MASK USER\@HOST] [REASON]",
 	#nl => "Voert het IRC zline commando uit. \2SYNTAX:\2 ZLINE [TIJD] [MASKER GEBRUIKER@HOST] [REDEN]",
 );
 our %HELP_GLINE = (
-    en => "Will use an IRC gline command. \2SYNTAX:\2 GLINE [TIME] [MASK USER@HOST] [REASON]",
+    en => "Will use an IRC gline command. \2SYNTAX:\2 GLINE [TIME] [MASK USER\@HOST] [REASON]",
 	#nl => "Voert het IRC gline commando uit. \2SYNTAX:\2 GLINE [TIJD] [MASKER GEBRUIKER@HOST] [REDEN]",
 );
 our %HELP_SPAMFILTER = (
@@ -65,7 +65,7 @@ sub on_connect {
 sub on_notice {
 	my ($src, $target, @msg) = @_;
 	
-	$m = join(' ',@msg);
+	my $m = join(' ',@msg);
 	if($m =~ /\*\*\* Notice -- Client exiting: (.\w) \((.+?)@(.+?)\) \[(.+?)\]/i) {
 		dbug "$src->{nick} -> $1 - $2 - $3 - $4 - $5 - $6 - $7 - $8";
 	}
