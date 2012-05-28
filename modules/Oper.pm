@@ -7,6 +7,8 @@ use warnings;
 use API::Std qw(hook_add hook_del rchook_add rchook_del conf_get trans cmd_add cmd_del);
 use API::Log qw(alog dbug);
 
+my %SCHAN;
+
 # Initialization subroutine.
 sub _init {
     # Add a hook for when we connect to a network.
@@ -20,6 +22,7 @@ sub _init {
 	cmd_add('ZLINE', 0, 'auto.ircoperator', \%M::Oper::HELP_ZLINE, \&M::Oper::cmd_zline) or return;
 	cmd_add('GLINE', 0, 'auto.ircoperator', \%M::Oper::HELP_GLINE, \&M::Oper::cmd_gline) or return;
 	cmd_add('SPAMFILTER', 0, 'auto.ircoperator', \%M::Oper::HELP_SPAMFILTER, \&M::Oper::cmd_spamfilter) or return;
+	
     return 1;
 }
 
@@ -55,6 +58,7 @@ sub on_connect {
     # Get the configuration values.
     my $u = (conf_get("server:$svr:oper_username"))[0][0] if conf_get("server:$svr:oper_username");
     my $p = (conf_get("server:$svr:oper_password"))[0][0] if conf_get("server:$svr:oper_password");
+	my $SCHAN{uc($svr)} = (conf_get("server:$svr:oper_channel"))[0][0] if conf_get("server:$svr:oper_channel");
     # They don't exist - don't continue.
     return if !$u or !$p;
     # Send the OPER command.
@@ -66,11 +70,22 @@ sub on_notice {
 	my ($src, $target, @msg) = @_;
 	
 	my $m = join(' ',@msg);
-	if($m =~ /\*\*\* Notice -- Client exiting: (.\w) \((.+?)@(.+?)\) \[(.+?)\]/i) {
-		dbug "$src->{nick} -> $1 - $2 - $3 - $4 - $5 - $6 - $7 - $8";
+	if($m =~ /^\*\*\* Notice -- Client exiting at (.+?): (.+?)!(.+?)@(.+?) \((.+?)\)$/i) {
+		my $DisconnectServer = $1;
+		my $DisconnectUser = $2;
+		my $DisconnectIdent = $3;
+		my $DisconnectIP = $4;
+		my $DisconnectReason = $5;
+		dbug "$DisconnectUser disconnected from $DisconnectServer (".$DisconnectIdent."@".$DisconnectIP.") [".$DisconnectReason."]";
+		privmsg($src->{svr},$SCHAN{uc($src->{svr}),"$DisconnectUser disconnected from $DisconnectServer (".$DisconnectIdent."@".$DisconnectIP.") [".$DisconnectReason."]");
 	}
-	if($m =~ /\*\*\* Notice -- Client connecting at (.+?): (.+?) \((.+?)@(.+?)\)/i) {
-		dbug "$src->{nick} -> $1 - $2 - $3 - $4 - $5 - $6 - $7 - $8";
+	if($m =~ /^\*\*\* Notice -- Client connecting at (.+?): (.+?) \((.+?)@(.+?)\)/i) {
+		my $ConnectServer = $1;
+		my $ConnectUser = $2;
+		my $ConnectIdent = $3;
+		my $ConnectIP = $4;
+		dbug "$ConnectUser connected to $ConnectServer (".$ConnectIdent."@".$ConnectIP.")";
+		privmsg($src->{svr},$SCHAN{uc($src->{svr}),"$ConnectUser connected to $ConnectServer (".$ConnectIdent."@".$ConnectIP.")");
 	}
 }
 
