@@ -57,6 +57,7 @@ sub cmd_ety {
 			$lol1 =~ s/<\/a>//g;
 			$lol1 =~ s/\+ -(.+?).//g;
 			$lol1 =~ s/\(1\)//g;
+			$lol1 =~ s/<\/dd><dt>(.*)//;
 			privmsg($src->{svr},$src->{chan},"$lol1");
 		} else {
 			privmsg($src->{svr},$src->{chan},"An error occurred while retrieving the etymology.");
