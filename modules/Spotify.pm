@@ -14,6 +14,8 @@ use API::IRC qw(privmsg notice);
 our $spotify;
 our $xmlp;
 our $json;
+our $RLimit = 30;
+our $LastSpotify;
 
 # Initialization subroutine.
 sub _init {
@@ -47,65 +49,70 @@ our %HELP_SPOTIFY = (
 # Command callback.
 sub cmd_spotify {
     my ($src, @args) = @_;
-    notice($src->{svr}, $src->{chan}, "Invalid parameters. \2Syntax:\2 SPOTIFY <search string>") and return if !@args;
-    my $search = uri_encode(join ' ', @args);
-    my $furl = Furl->new;
-    my $res = $furl->get("http://ws.spotify.com/search/1/track.json?q=$search");
-    privmsg($src->{svr}, $src->{chan}, 'Request failed.') and return if !$res->is_success; 
-    my $data = $json->allow_nonref->relaxed->escape_slash->loose->allow_singlequote->allow_barekey->decode($res->content);
-    privmsg($src->{svr}, $src->{chan}, "Query returned no results.") and return if $data->{info}->{num_results} == 0;
-    my $i = 0;
-    my $max = (conf_get('spotify:max') ? (conf_get('spotify:max'))[0][0] : 5);
-    privmsg($src->{svr}, $src->{chan}, "Got ".$data->{info}->{num_results}." results. Displaying top ".$max."...");
-    foreach (@{$data->{tracks}}) {
-        $i++;
-        my $artists;
-        foreach my $artist (@{$_->{artists}}) {
-            $artists = $artist->{name} and next if !$artists;
-            $artists = $artists. ", ".$artist->{name} if $artists;
-        }
-        privmsg($src->{svr}, $src->{chan}, "$i. \2URI:\2 ".$_->{href}." \2Name:\2 ".$_->{name}." \2Artist:\2 ".$artists);
-        privmsg($src->{svr}, $src->{chan}, 'Reached max output. Stopping.') and last if $i >= $max;
-    }
+	if(eval(time()-$LastSpotify) >= $RLimit) {
+		notice($src->{svr}, $src->{chan}, "Invalid parameters. \2Syntax:\2 SPOTIFY <search string>") and return if !@args;
+		my $search = uri_encode(join ' ', @args);
+		my $furl = Furl->new;
+		my $res = $furl->get("http://ws.spotify.com/search/1/track.json?q=$search");
+		privmsg($src->{svr}, $src->{chan}, 'Request failed.') and return if !$res->is_success; 
+		my $data = $json->allow_nonref->relaxed->escape_slash->loose->allow_singlequote->allow_barekey->decode($res->content);
+		privmsg($src->{svr}, $src->{chan}, "Query returned no results.") and return if $data->{info}->{num_results} == 0;
+		my $i = 0;
+		my $max = (conf_get('spotify:max') ? (conf_get('spotify:max'))[0][0] : 5);
+		privmsg($src->{svr}, $src->{chan}, "Got ".$data->{info}->{num_results}." results. Displaying top ".$max."...");
+		foreach (@{$data->{tracks}}) {
+			$i++;
+			my $artists;
+			foreach my $artist (@{$_->{artists}}) {
+				$artists = $artist->{name} and next if !$artists;
+				$artists = $artists. ", ".$artist->{name} if $artists;
+			}
+			privmsg($src->{svr}, $src->{chan}, "$i. \2URI:\2 ".$_->{href}." \2Name:\2 ".$_->{name}." \2Artist:\2 ".$artists);
+			privmsg($src->{svr}, $src->{chan}, 'Reached max output. Stopping.') and last if $i >= $max;
+		}
+		$LastSpotify = time();
+	}
     return 1;
 }
 
 # Hook callback.
 sub on_privmsg {
     my ($src, $chan, @msg) = @_;
-
-    # Check if the message contains a spotify url.
-    foreach my $smw (@msg) {
-        if ($smw =~ m{^(spotify:(artist|album|track):\w+)$}gmx) {
-            my ($uri, $type) = ($1, $2);
-            my $xml = $spotify->lookup(uri => $uri);
-            if (my $tree = $xmlp->parse($xml)) {
-                if ($type eq 'artist') {
-                    privmsg($src->{svr}, $chan, sprintf("\2%s\2: Artist: %s", $uri, $tree->{artist}->{name}));
-                }
-                elsif ($type eq 'album') {
-                    privmsg($src->{svr}, $chan, sprintf("\2%s\2: Album: %s, Artist: %s, Year: %s", $uri, $tree->{album}->{name}, $tree->{album}->{artist}->{name}, $tree->{album}->{released}));
-                }
-                elsif ($type eq 'track') {
-                    my $artists;
-                    my $id;
-                    if ($uri =~ m/spotify:track:(\w+)/) {
-                        $id = $1;
-                    }
-                    if (ref($tree->{track}->{artist}) eq 'ARRAY') {
-                       foreach (@{$tree->{track}->{artist}}) {
-                            $artists = $_->{name} and next if !$artists;
-                            $artists .= ", ".$_->{name};
-                        }
-                    }
-                    else {
-                        $artists = $tree->{track}->{artist}->{name};
-                    }
-                    privmsg($src->{svr}, $chan, sprintf("\2%s\2: Track: %s, Album: %s, Artist(s): %s URL: http://open.spotify.com/track/%s", $uri, $tree->{track}->{name}, $tree->{track}->{album}->{name}, $artists, $id));
-                }
-            }
-        }
-    }
+	if(eval(time()-$LastSpotify) >= $RLimit) {
+		# Check if the message contains a spotify url.
+		foreach my $smw (@msg) {
+			if ($smw =~ m{^(spotify:(artist|album|track):\w+)$}gmx) {
+				my ($uri, $type) = ($1, $2);
+				my $xml = $spotify->lookup(uri => $uri);
+				if (my $tree = $xmlp->parse($xml)) {
+					if ($type eq 'artist') {
+						privmsg($src->{svr}, $chan, sprintf("\2%s\2: Artist: %s", $uri, $tree->{artist}->{name}));
+					}
+					elsif ($type eq 'album') {
+						privmsg($src->{svr}, $chan, sprintf("\2%s\2: Album: %s, Artist: %s, Year: %s", $uri, $tree->{album}->{name}, $tree->{album}->{artist}->{name}, $tree->{album}->{released}));
+					}
+					elsif ($type eq 'track') {
+						my $artists;
+						my $id;
+						if ($uri =~ m/spotify:track:(\w+)/) {
+							$id = $1;
+						}
+						if (ref($tree->{track}->{artist}) eq 'ARRAY') {
+						   foreach (@{$tree->{track}->{artist}}) {
+								$artists = $_->{name} and next if !$artists;
+								$artists .= ", ".$_->{name};
+							}
+						}
+						else {
+							$artists = $tree->{track}->{artist}->{name};
+						}
+						privmsg($src->{svr}, $chan, sprintf("\2%s\2: Track: %s, Album: %s, Artist(s): %s URL: http://open.spotify.com/track/%s", $uri, $tree->{track}->{name}, $tree->{track}->{album}->{name}, $artists, $id));
+					}
+				}
+			}
+		}
+		$LastSpotify = time();
+	}
     return 1;
 }
 
