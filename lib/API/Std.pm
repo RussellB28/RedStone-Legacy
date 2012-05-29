@@ -302,6 +302,7 @@ sub timer_del {
     $name = lc $name;
 
     if (defined $Auto::TIMERS{$name}) {
+		$Auto::TIMERS{$name}->stop;
         delete $Auto::TIMERS{$name};
         return 1;
     }
