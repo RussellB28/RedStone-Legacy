@@ -6,12 +6,18 @@ use strict;
 use warnings;
 use Furl;
 use URI::Escape;
-use API::Std qw(cmd_add cmd_del trans);
+use API::Std qw(cmd_add cmd_del trans hook_add hook_del conf_get);
 use API::IRC qw(privmsg);
+my $IRCRelay;
+
 
 # Initialization subroutine.
 sub _init {
 	cmd_add('youtube', 0, 0, \%M::YouTube::HELP_YOUTUBE, \&M::YouTube::cmd_spell) or return;
+	hook_add('on_rehash', 'YT.rehash', \&M::YouTube::on_rehash) or return;
+	hook_add('on_cprivmsg', 'YT.privmsg', \&M::YouTube::on_privmsg) or return;
+	
+	$IRCRelay = (conf_get('youtube-echo') ? (conf_get('youtube-echo'))[0][0] : "0");
 	# Success.
     return 1;
 }
@@ -20,11 +26,13 @@ sub _init {
 sub _void {
 	cmd_del('youtube') or return;
 	
+	hook_del('on_rehash', 'YT.rehash') or return;
+	hook_del('on_cprivmsg', 'YT.privmsg') or return;
     # Success.
     return 1;
 }
 
-our %HELP_SPELL = (
+our %HELP_YOUTUBE = (
     en => "",
 	#nl => "",
 );
@@ -69,6 +77,61 @@ sub cmd_spell {
 	}
 }
 
+sub on_rehash {
+	$IRCRelay = (conf_get('youtube-echo') ? (conf_get('youtube-echo'))[0][0] : "0");
+}
+
+sub on_privmsg {
+	my ($src, $chan, @msg) = @_;
+	my $text = join(' ',@msg);
+	if($text =~ m,youtube.com/watch\?v=(.*),i) {
+		if($IRCRelay == 0) {
+			return;
+		}
+		my $url = "http://www.youtube.com/watch?v=".$1;
+		# Create an instance of Furl.
+		my $ua = Furl->new(
+			agent => 'Auto IRC Bot',
+			timeout => 5,
+		);
+		my $response = $ua->get($url);
+		if ($response->is_success) {
+			my $var = $response->content;
+			my ($Title,$YoutubeLikes,$YoutubeDislikes,$YoutubeUser,$YoutubeLength,$minutes,$seconds);
+			if($var =~ m{<TITLE.*?>(.*?)</TITLE>}is) {
+				$Title = $1;
+				$Title =~ s/        //;
+				$Title =~ s/     //;
+				$Title =~ s/  //;
+				$Title =~ s/\n//g;
+				$Title =~ s/ - YouTube//;
+			}
+			if($var =~ /<span class="likes">(.+?)<\/span>/) {
+				$YoutubeLikes = $1;
+			}
+			if($var =~ /<span class="dislikes">(.+?)<\/span>/) {
+				$YoutubeDislikes = $1;
+			}
+			#if($var =~ /<a href="\/user\/(.+?)" class="yt-user-name author" rel="author"  dir="ltr">/) {
+			if($var =~ /<a href="\/user\/(.+\w)" class="yt-user-name author" rel="author" dir="ltr">(.+\w)<\/a>/) {
+				$YoutubeUser = $1;
+			}
+			if($var =~ /"length_seconds": (.+?),/) {
+				$YoutubeLength = $1;
+				$minutes = int(eval($YoutubeLength/60));
+				$seconds = eval($YoutubeLength-($minutes * 60));
+				if(length($seconds) == 1) {
+					$YoutubeLength = $minutes.":0".$seconds;
+				} else {
+					$YoutubeLength = $minutes.":".$seconds;
+				}
+			}
+			
+			privmsg($src->{svr},$chan,"\x0306Title: ".$Title." - \x0302Likes: ".$YoutubeLikes." - \x0304Dislikes: ".$YoutubeDislikes." - \x0311Author: ".$YoutubeUser." - \x0309Length: ".$YoutubeLength);
+		}
+	}
+}
+
 # Start initialization.
 API::Std::mod_init('YouTube', '[NAS]peter', '1.00', '3.0.0a11');
 # build: perl=5.010000 cpan=Furl
@@ -77,7 +140,7 @@ __END__
 
 =head1 NAME
 
-Spell - IRC interface to check the spelling of certain words
+YouTube - Will search for YouTube videos.
 
 =head1 VERSION
 
@@ -85,17 +148,20 @@ Spell - IRC interface to check the spelling of certain words
  
 =head1 SYNOPSIS
 
- <~[nas]peter> ^spell sxy
- <&StatsBot> sxy is spelled incorrectly.
- <&StatsBot> Suggestions: sexy, Sky, sky, Say, Sly, say, sly, soy, spy, sty, Sax, sax, sex, six, shy.
-
+ <@Peter> &youtube test
+ <+Melon> Title: Zen Magnets require more - intellect than you might think. Description: Certainly harder than in this video
+ <@Peter> http://www.youtube.com/watch?v=wOv0AkphLhE
+ <+Melon> Title: Never Let Go of Childhood Wonder. - Likes: 7,757 - Dislikes: 205 - Author: ZenMagnet - Length: 4:31
+ 
 =head1 DESCRIPTION
 
-This creates several ShoutCast specific commands, that can check the spelling of a single word.
+This will search YouTube videos. When something is defined, it can fetch some data of a video.
 
 =head1 CONFIGURATION
 
-No configurable options.
+ youtube-echo <1/0>;
+ 
+ 1 equals echo data of links, 0 equals don't.
 
 =head1 DEPENDENCIES
 
