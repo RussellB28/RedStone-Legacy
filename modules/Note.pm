@@ -27,7 +27,7 @@ sub _init {
 sub _void {
 	cmd_del('note') or return;
 	
-	hook_del('on_rcjoin') or return;
+	hook_del('on_rcjoin', 'Note_onrcjoin') or return;
     # Success.
     return 1;
 }
