@@ -219,6 +219,6 @@ else { installmods($PREFIX) }
 println q{};
 
 # Success!
-println "Done. Auto successfully installed.";
+println "Done. RedStone successfully installed.";
 
 # vim: set ai et sw=4 ts=4:
