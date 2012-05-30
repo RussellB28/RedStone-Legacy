@@ -33,8 +33,8 @@ sub _void {
 }
 
 our %HELP_YOUTUBE = (
-    en => "",
-	#nl => "",
+    en => "Searches YouTube videos. \2SYNTAX:\2 YOUTUBE [TEXT TO SEARCH]",
+	#nl => "Zoekt naar YouTube videos. \2SYNTAX:\2 YOUTUBE [TEXT TO SEARCH]",
 );
 
 sub cmd_spell {
