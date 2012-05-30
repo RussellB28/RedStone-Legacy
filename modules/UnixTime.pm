@@ -16,7 +16,7 @@ sub _init {
 		# Success.
 		return 1;
 	} else {
-		return 0;
+		cmd_add('UNIXTIME', 0, 0, \%M::UnixTime::HELP_UNIXTIME, \&M::UnixTime::cmd_unixtime2) or return;
 	}
 }
 
@@ -53,6 +53,27 @@ sub cmd_unixtime {
 		$output = `$timevariable`;
 		$output =~ s/\n//g;
 		privmsg($src->{svr}, $src->{chan}, "Unixtime format: \2$argv[0]\2 is \2$output\2");
+	} else {
+		privmsg($src->{svr}, $src->{chan}, "ERROR: Incorrect time format.");
+	}
+    return 1;
+}
+
+sub cmd_unixtime2 {
+	my ($src, @argv) = @_;
+	if(!defined($argv[0])) {
+		privmsg($src->{svr}, $src->{chan}, trans('Too little parameters').q{.});
+        return;
+	}
+	if(defined($argv[1])) {
+		privmsg($src->{svr}, $src->{chan}, trans('Too many parameters').q{.});
+        return;
+	}
+	if(Scalar::Util::looks_like_number($argv[0])) {
+		my $time = time;
+		my @months = ("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec");
+		my ($sec, $min, $hour, $day,$month,$year) = (localtime($time))[0,1,2,3,4,5];
+		privmsg($src->{svr}, $src->{chan}, "Unixtime format: \2$argv[0]\2 is \2".$months[$month]." ".$day.", ".($year+1900)." ".$hour.":".$min.":".$sec."\2");
 	} else {
 		privmsg($src->{svr}, $src->{chan}, "ERROR: Incorrect time format.");
 	}
@@ -96,4 +117,3 @@ This module is released under the same licensing terms as Auto itself.
 =cut
 
 # vim: set ai et ts=4 sw=4:
-

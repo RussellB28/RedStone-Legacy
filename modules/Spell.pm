@@ -4,7 +4,6 @@
 package M::Spell;
 use strict;
 use warnings;
-use Furl;
 use URI::Escape;
 use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(privmsg);
@@ -39,48 +38,52 @@ sub cmd_spell {
 		privmsg($src->{svr}, $src->{chan}, trans('Too many parameters').q{.});
         return;
 	}
-	# Create an instance of Furl.
-	my $ua = Furl->new(
-		agent => 'Auto IRC Bot',
-		timeout => 5,
-	);
 	my $url = 'http://www.phigita.net/spell-check/word-suggest?q='.uri_escape($argv[0]);
-	my $response = $ua->get($url);
-	if ($response->is_success) {
-		my $content = $response->content;
-		$content =~ s/\n//g;
-		$content =~ s/(.*)<\/tr><\/table><\/form><\/div><div id="m" class="l"><ul class="compact"><li><a class="fl" href="http:\/\/www.phigita.net\/">Start<\/a><\/li>//;
-		$content =~ s/<\/div><br><div id="o"><div id="p">Copyright (.*)//;
-		if($content =~ /<b><font color="#990033">"(.+?)" is misspelled.<\/font>/) { #<\/b><p><\/p><b>Here are some suggestions:<\/b><div><ol>
-			privmsg($src->{svr}, $src->{chan},"\2".$argv[0]."\2 is spelled \204incorrectly\2.");
-			my @Results = ();
-			if($content =~ /Here are some suggestions:/) {
-				$content =~ s/<li><a href="http:\/\/www.google.com\/search\?ie=utf-8&amp;oe=utf-8&amp;q=define:(......)">//g;
-				while($content =~ m/<li><a href="http:\/\/www.google.com\/search\?ie=utf-8&amp;oe=utf-8&amp;q=define:(.+?)">/) {
-					my $var = $1;
-					$content =~ s/<li><a href="http:\/\/www.google.com\/search\?ie=utf-8&amp;oe=utf-8&amp;q=define:$1">//;
-					push(@Results, $var);
-				}
-				privmsg($src->{svr}, $src->{chan},"\2Suggestions:\2 ".join(', ',@Results).".");
-				return;
-			} else {
-				privmsg($src->{svr}, $src->{chan},"There are \2no\2 suggestions for \2$argv[0]");
+	$Auto::http->request(
+		url => $url,
+		on_response => sub {
+			if (!$response->is_success) {
+				privmsg($src->{svr}, $src->{chan}, "An error occurred while retrieving the spelling.");
 				return;
 			}
-		} elsif($content =~ /<b><font color="#006600">"(.+?)" is spelled correctly.<\/font><\/b><p><\/p><b>Here are some suggestions:<\/b><div><ol>/) {
-			privmsg($src->{svr}, $src->{chan}," \2".$1."\2 is spelled \203correctly\2.");
-		} else {
+			
+			my $content = $response->content;
+			$content =~ s/\n//g;
+			$content =~ s/(.*)<\/tr><\/table><\/form><\/div><div id="m" class="l"><ul class="compact"><li><a class="fl" href="http:\/\/www.phigita.net\/">Start<\/a><\/li>//;
+			$content =~ s/<\/div><br><div id="o"><div id="p">Copyright (.*)//;
+			if($content =~ /<b><font color="#990033">"(.+?)" is misspelled.<\/font>/) { #<\/b><p><\/p><b>Here are some suggestions:<\/b><div><ol>
+				privmsg($src->{svr}, $src->{chan},"\2".$argv[0]."\2 is spelled \204incorrectly\2.");
+				my @Results = ();
+				if($content =~ /Here are some suggestions:/) {
+					$content =~ s/<li><a href="http:\/\/www.google.com\/search\?ie=utf-8&amp;oe=utf-8&amp;q=define:(......)">//g;
+					while($content =~ m/<li><a href="http:\/\/www.google.com\/search\?ie=utf-8&amp;oe=utf-8&amp;q=define:(.+?)">/) {
+						my $var = $1;
+						$content =~ s/<li><a href="http:\/\/www.google.com\/search\?ie=utf-8&amp;oe=utf-8&amp;q=define:$1">//;
+						push(@Results, $var);
+					}
+					privmsg($src->{svr}, $src->{chan},"\2Suggestions:\2 ".join(', ',@Results).".");
+					return;
+				} else {
+					privmsg($src->{svr}, $src->{chan},"There are \2no\2 suggestions for \2$argv[0]");
+					return;
+				}
+			} elsif($content =~ /<b><font color="#006600">"(.+?)" is spelled correctly.<\/font><\/b><p><\/p><b>Here are some suggestions:<\/b><div><ol>/) {
+				privmsg($src->{svr}, $src->{chan}," \2".$1."\2 is spelled \203correctly\2.");
+			} else {
+				privmsg($src->{svr}, $src->{chan}, "An error occurred while retrieving the spelling.");
+			}
+			
+		},
+		on_error => sub {
 			privmsg($src->{svr}, $src->{chan}, "An error occurred while retrieving the spelling.");
+			return;
 		}
-	} else {
-		privmsg($src->{svr}, $src->{chan}, "An error occurred while retrieving the spelling.");
-		return;
-	}
+	);
 }
 
 # Start initialization.
-API::Std::mod_init('Spell', '[NAS]peter', '1.00', '3.0.0a11');
-# build: perl=5.010000 cpan=Furl
+API::Std::mod_init('Spell', '[NAS]peter', '1.01', '3.0.0a11');
+# build: perl=5.010000
 
 __END__
 
@@ -90,7 +93,7 @@ Spell - IRC interface to check the spelling of certain words
 
 =head1 VERSION
 
- 1.00
+ 1.01
  
 =head1 SYNOPSIS
 

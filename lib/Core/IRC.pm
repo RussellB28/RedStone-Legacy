@@ -23,6 +23,7 @@ hook_add('on_privmsg', 'irc.privmsg.parse', sub {
     for (my $i = 4; $i < scalar(@ex); $i++) {
         push(@argv, $ex[$i]);
     }
+    $data{target} = $data{nick};
     my ($cmd, $cprefix, $rprefix);
     # Check if it's to a channel or to us.
     if (lc($ex[2]) eq lc($State::IRC::botinfo{$src->{svr}}{nick})) {
@@ -73,6 +74,7 @@ hook_add('on_privmsg', 'irc.privmsg.parse', sub {
     else {
         # It is coming to us in a channel message.
         $data{chan} = $ex[2];
+        $data{target} = $ex[2];
         # Ensure it's a valid length before continuing.
         if (length($ex[3]) > 1) {
             $cprefix = (conf_get("fantasy_pf"))[0][0];

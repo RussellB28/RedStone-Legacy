@@ -4,15 +4,14 @@
 package M::Translate;
 use strict;
 use warnings;
-use Furl;
 use URI::Escape;
-use API::Std qw(cmd_add cmd_del);
+use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(privmsg);
 
 # Initialization subroutine.
 sub _init {
-	cmd_add('translate', 0, 0, \%M::Spell::HELP_TRANSLATE, \&M::Translate::cmd_trans) or return;
-	cmd_add('tr', 0, 0, \%M::Spell::HELP_TRANSLATE, \&M::Translate::cmd_trans) or return;
+	cmd_add('translate', 0, 0, \%M::Spell::HELP_TRANSLATE, \&M::Translate::cmd_translate) or return;
+	cmd_add('tr', 0, 0, \%M::Spell::HELP_TRANSLATE, \&M::Translate::cmd_translate) or return;
 	# Success.
     return 1;
 }
@@ -31,7 +30,7 @@ our %HELP_TRANSLATE = (
 	#nl => "Vertaalt een ingegeven tekst naar de ingegeven taal. \2Syntax:\2 TRANSLATE <LANDCODE> <TEKST OM TE VERTALEN>",
 );
 
-sub cmd_trans {
+sub cmd_translate {
     my ($src, @argv) = @_;
 	if(!defined($argv[1])) {
 		privmsg($src->{svr}, $src->{chan}, trans('Too little parameters').q{.});
@@ -41,41 +40,45 @@ sub cmd_trans {
 	my $text = join(' ',@argv);
 	$text =~ s/$argv[0] //;
 	$text =~ s/ /\+/g;
-	
-	# Create an instance of Furl.
-    my $ua = Furl->new(
-        agent => 'Auto IRC Bot',
-        timeout => 5,
-    );
+
 	my $url = "http://translate.google.com/?hl=en&tl=".uri_escape($argv[0])."&text=".uri_escape($text);
-	my $response = $ua->get($url);
-	if ($response->is_success) {
-		my $content = $response->content;
-		$content =~ s/<span title="(.+?)" onmouseover="this\.style\.backgroundColor='#ebeff9'" onmouseout="this\.style\.backgroundColor='#fff'">//g;
-		$content =~ s/<\/span>//g;
-		if($content =~ /<span id=result_box class="long_text">(.+?)<\/div><\/div><div id=spell-place-holder style="display:none"><\/div><div id=gt-res-tools>/) {
-			my $var = $1;
-			$var =~ s/&quot;/"/g;
-			$var =~ s/ \+//g;
-			$var =~ s/\+/ /g;
-			$text =~ s/\+/ /g;
-			privmsg($src->{svr}, $src->{chan}, "'\2".$text."\2' translated into '\2".$argv[0]."\2' gave: '\2".$var."\2'");
-		} elsif($content =~ /<span id=result_box class="short_text">(.+?)<\/div><\/div><div id=spell-place-holder style="display:none"><\/div><div id=gt-res-tools>/) {
-			my $var = $1;
-			$var =~ s/&quot;/"/g;
-			$var =~ s/ \+//g;
-			$var =~ s/\+/ /g;
-			$text =~ s/\+/ /g;
-			privmsg($src->{svr}, $src->{chan}, "'\2".$text."\2' translated into '\2".$argv[0]."\2' gave: '\2".$var."\2'");
+	$Auto::http->request(
+		url => $url,
+		on_response => sub {
+			my $response = shift;
+			if (!$response->is_success) {
+				privmsg($src->{svr}, $src->{chan}, "An error occured while retrieving the data.");
+				return;
+			}
+			my $content = $response->content;
+			$content =~ s/<span title="(.+?)" onmouseover="this\.style\.backgroundColor='#ebeff9'" onmouseout="this\.style\.backgroundColor='#fff'">//g;
+			$content =~ s/<\/span>//g;
+			if($content =~ /<span id=result_box class="long_text">(.+?)<\/div><\/div><div id=spell-place-holder style="display:none"><\/div><div id=gt-res-tools>/) {
+				my $var = $1;
+				$var =~ s/&quot;/"/g;
+				$var =~ s/ \+//g;
+				$var =~ s/\+/ /g;
+				$text =~ s/\+/ /g;
+				privmsg($src->{svr}, $src->{chan}, "'\2".$text."\2' translated into '\2".$argv[0]."\2' gave: '\2".$var."\2'");
+			} elsif($content =~ /<span id=result_box class="short_text">(.+?)<\/div><\/div><div id=spell-place-holder style="display:none"><\/div><div id=gt-res-tools>/) {
+				my $var = $1;
+				$var =~ s/&quot;/"/g;
+				$var =~ s/ \+//g;
+				$var =~ s/\+/ /g;
+				$text =~ s/\+/ /g;
+				privmsg($src->{svr}, $src->{chan}, "'\2".$text."\2' translated into '\2".$argv[0]."\2' gave: '\2".$var."\2'");
+			}
+		},
+		on_error => sub {
+			privmsg($src->{svr}, $src->{chan}, "An error occured while retrieving the data.");
+			return;
 		}
-	} else {
-		privmsg($src->{svr}, $src->{chan}, "An error occured while retrieving the data.");
-	}
+	);
 }
 
 # Start initialization.
-API::Std::mod_init('Translate', '[NAS]peter', '1.00', '3.0.0a11');
-# build: perl=5.010000 cpan=Furl
+API::Std::mod_init('Translate', '[NAS]peter', '1.01', '3.0.0a11');
+# build: perl=5.010000
 
 __END__
 
@@ -85,7 +88,7 @@ Translate - This module will translate a given text.
 
 =head1 VERSION
 
- 1.00
+ 1.01
  
 =head1 SYNOPSIS
 

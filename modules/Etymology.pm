@@ -4,7 +4,6 @@
 package M::Etymology;
 use strict;
 use warnings;
-use Furl;
 use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(privmsg);
 
@@ -32,45 +31,46 @@ our %HELP_ETYMOLOGY = (
 sub cmd_ety {
     my ($src, @argv) = @_;
 	if(!defined($argv[0])) {
-		privmsg($src->{svr}, $src->{chan}, trans('Too little parameters').q{.});
+		privmsg($src->{svr}, $src->{target}, trans('Too little parameters').q{.});
         return;
 	}
 	if(defined($argv[1])) {
-		privmsg($src->{svr}, $src->{chan}, trans('Too many parameters').q{.});
+		privmsg($src->{svr}, $src->{target}, trans('Too many parameters').q{.});
         return;
 	}
-	# Create an instance of Furl.
-	my $ua = Furl->new(
-		agent => 'Auto IRC Bot',
-		timeout => 5,
-	);
 	my $url = 'http://www.etymonline.com/index.php?allowed_in_frame=0&search='.$argv[0]."&searchmode=term";
-	my $response = $ua->get($url);
-	if ($response->is_success) {
-		my $content = $response->content;
-		$content =~ s/\n//g;
-		if($content =~ /<dd class="highlight">(.*)<\/dd>/) {
-			my $lol1 = $1;
-			$lol1 =~ s/<span class="foreign">//g;
-			$lol1 =~ s/<\/span>//g;
-			$lol1 =~ s/<a href="(.+?)" class="(.+?)">//g;
-			$lol1 =~ s/<\/a>//g;
-			$lol1 =~ s/\+ -(.+?).//g;
-			$lol1 =~ s/\(1\)//g;
-			$lol1 =~ s/<\/dd><dt>(.*)//;
-			privmsg($src->{svr},$src->{chan},"$lol1");
-		} else {
-			privmsg($src->{svr},$src->{chan},"An error occurred while retrieving the etymology.");
+	$Auto::http->request(
+        url => $url,
+        on_response => sub {
+			my $response = shift;
+			if (!$response->is_success) {
+				privmsg($src->{svr},$src->{target},"An error occurred while retrieving the etymology.");
+				return;
+			}
+			my $content = $response->content;
+			$content =~ s/\n//g;
+			if($content =~ /<dd class="highlight">(.*)<\/dd>/) {
+				my $lol1 = $1;
+				$lol1 =~ s/<span class="foreign">//g;
+				$lol1 =~ s/<\/span>//g;
+				$lol1 =~ s/<a href="(.+?)" class="(.+?)">//g;
+				$lol1 =~ s/<\/a>//g;
+				$lol1 =~ s/\+ -(.+?).//g;
+				$lol1 =~ s/\(1\)//g;
+				$lol1 =~ s/<\/dd><dt>(.*)//;
+				privmsg($src->{svr},$src->{target},"$lol1");
+			}
+		},
+		on_error => sub {
+			privmsg($src->{svr}, $src->{target}, "An error occurred while retrieving the etymology.");
+			return;
 		}
-	} else {
-		privmsg($src->{svr}, $src->{chan}, "An error occurred while retrieving the etymology.");
-		return;
-	}
+	);
 }
 
 # Start initialization.
-API::Std::mod_init('Etymology', '[NAS]peter', '1.00', '3.0.0a11');
-# build: perl=5.010000 cpan=Furl
+API::Std::mod_init('Etymology', '[NAS]peter', '1.01', '3.0.0a11');
+# build: perl=5.010000
 
 __END__
 
@@ -80,7 +80,7 @@ Etymology - IRC interface to retrieve the etymology of a word
 
 =head1 VERSION
 
- 1.00
+ 1.01
  
 =head1 SYNOPSIS
 
