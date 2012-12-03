@@ -36,6 +36,15 @@ sub add_socket {
         on_read_eof => sub {
             API::Socket::on_disconnect($id);
         }
+        on_write_eof => sub {
+            API::Socket::on_disconnect($id);
+        },
+        on_read_error => sub {
+            API::Socket::on_disconnect($id);
+        },
+        on_write_error => sub {
+            API::Socket::on_disconnect($id);
+        },
     );
     $Auto::loop->add($stream);
     alog("add_socket(): Socket $id added.");
