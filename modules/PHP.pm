@@ -55,8 +55,9 @@ sub cmd_php {
 				#<div class="methodsynopsis dc-description"><span class="type">int</span> <span class="methodname"><strong>strpos</strong></span>( <span class="methodparam"><span class="type">string</span> <code class="parameter">$haystack</code></span>, <span class="methodparam"><span class="type"><a href="language.pseudo-types.php#language.types.mixed" class="type mixed">mixed</a></span> <code class="parameter">$needle</code></span>[, <span class="methodparam"><span class="type">int</span> <code class="parameter">$offset</code><span class="initializer"> = 0</span></span>] )</div>
 				#int strpos ( string $haystack , mixed $needle [, int $offset = 0 ] )
 				my $usage = $content;
-				$usage =~ s/<h3 class="title">Parameters<\/h3>(.*)//g;
-				$usage =~ s/(.*)<h3 class="title">Description<\/h3>//g;
+				$usage =~ s/<\/div><br \/><br \/><!--UdmComment-->(.*)//gi;
+				$usage =~ s/<h3 class="title">Parameters<\/h3>(.*)//gi;
+				$usage =~ s/(.*)<h3 class="title">Description<\/h3>//gi;
 				$usage =~ s/<(?:[^>'"]*|(['"]).*?\1)*>//gs;
 				while($usage =~ /  /) {
 					$usage =~ s/  / /g;
