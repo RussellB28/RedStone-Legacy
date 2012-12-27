@@ -64,11 +64,12 @@ sub del_socket {
 sub send_socket {
     my ($id, $data) = @_;
     if (defined($Auto::SOCKET{$id})) {
-        $Auto::SOCKET{$id}{stream}->write("$data\r\n");
         if (Auto::is_ircsock($id)) {
+            $Auto::SOCKET{$id}{stream}->write("$data\r\n");
             dbug "[IRC] $id >> $data";
         }
         else {
+            $Auto::SOCKET{$id}{stream}->write($data);
             dbug "[Socket] $id >> $data";
         }
     }

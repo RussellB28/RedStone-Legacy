@@ -286,7 +286,7 @@ sub timer_add {
             name     => $name,
             function => $sub,
             delay    => $time,
-            repeat   => ($type eq 1 ? 0 : 1)
+            type     => $type
         );
         $Auto::TIMERS{$name} = $timer;
         $timer->go;
@@ -301,8 +301,10 @@ sub timer_del {
     my ($name) = @_;
     $name = lc $name;
 
-    if (defined $Auto::TIMERS{$name}) {
+    if (defined $Auto::TIMERS{$name}) 
+    {
 		$Auto::TIMERS{$name}->stop;
+        $Auto::loop->remove($Auto::TIMERS{$name});
         delete $Auto::TIMERS{$name};
         return 1;
     }
