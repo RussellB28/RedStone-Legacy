@@ -1,4 +1,4 @@
-# Copyright (c) 2012 Ethrik Development Group
+# Copyright (c) 2013 Auto Development Group
 # see doc/LICENSE for license information.
 package Auto::Attributes;
 

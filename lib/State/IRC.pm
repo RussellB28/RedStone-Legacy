@@ -1,5 +1,5 @@
 # lib/State/IRC.pm - IRC state data.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2013 Auto Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package State::IRC;
 use strict;
