@@ -6,7 +6,6 @@ use strict;
 use warnings;
 use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(privmsg notice);
-use LWP::UserAgent;
 use XML::Simple;
 
 # Initialization subroutine.
@@ -37,10 +36,6 @@ our %HELP_WEATHER = (
 sub weather {
     my ($src, @args) = @_;
 
-    # Create an instance of LWP::UserAgent.
-    my $ua = LWP::UserAgent->new();
-    $ua->agent('Auto IRC Bot');
-    $ua->timeout(2);
     # Put together the call to the Wunderground API. 
     if (!defined $args[0]) {
         notice($src->{svr}, $src->{nick}, trans('Not enough parameters').".");
@@ -49,35 +44,44 @@ sub weather {
     my $loc = join(' ', @args);
     $loc =~ s/ /%20/g;
     my $url = "http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=".$loc;
-    # Get the response via HTTP.
-    my $response = $ua->get($url);
 
-    if ($response->is_success) {
-    # If successful, decode the content.
-        my $d = XMLin($response->decoded_content);
-    # And send to channel
-        if (!ref($d->{observation_location}->{country})) {
-            my $windc = $d->{wind_string};
-            if (substr($windc, length($windc) - 1, 1) eq " ") { $windc = substr($windc, 0, length($windc) - 1) }
-            privmsg($src->{svr}, $src->{chan}, "Results for \2".$d->{observation_location}->{full}."\2 - \2Temperature:\2 ".$d->{temperature_string}." \2Wind Conditions:\2 ".$windc." \2Conditions:\2 ".$d->{weather});
-            privmsg($src->{svr}, $src->{chan}, "\2Heat index:\2 ".$d->{heat_index_string}." \2Humidity:\2 ".$d->{relative_humidity}." \2Pressure:\2 ".$d->{pressure_string}." - ".$d->{observation_time});
-        }
-        else {
-        # Otherwise, send an error message.
-            privmsg($src->{svr}, $src->{chan}, 'Location not found.');
-        }
-    }
-    else {
-    # Otherwise, send an error message.
-        privmsg($src->{svr}, $src->{chan}, 'An error occurred while retrieving your weather.');
-    }
+    $Auto::http->request(
+        url => $url,
+        on_response => sub {
+            my $response = shift;
+
+            if ($response->is_success) {
+                # If successful, decode the content.
+                my $d = XMLin($response->decoded_content);
+                # And send to channel
+                if (!ref($d->{observation_location}->{country})) {
+                    my $windc = $d->{wind_string};
+                    if (substr($windc, length($windc) - 1, 1) eq " ") { $windc = substr($windc, 0, length($windc) - 1) }
+                    privmsg($src->{svr}, $src->{target}, "Results for \2".$d->{observation_location}->{full}."\2 - \2Temperature:\2 ".$d->{temperature_string}." \2Wind Conditions:\2 ".$windc." \2Conditions:\2 ".$d->{weather});
+                    privmsg($src->{svr}, $src->{target}, "\2Heat index:\2 ".$d->{heat_index_string}." \2Humidity:\2 ".$d->{relative_humidity}." \2Pressure:\2 ".$d->{pressure_string}." - ".$d->{observation_time});
+                }
+                else {
+                    # Otherwise, send an error message.
+                    privmsg($src->{svr}, $src->{target}, 'Location not found.');
+                }
+            }
+            else {
+                # Otherwise, send an error message.
+                privmsg($src->{svr}, $src->{target}, 'An error occurred while retrieving your weather.');
+            }
+        },
+        on_error => sub {
+            my $error = shift;
+            privmsg($src->{svr}, $src->{target}, "An error occurred while retrieving your weather: $error");
+        },
+    );
 
     return 1;
 }
 
 # Start initialization.
-API::Std::mod_init('Weather', 'Xelhua', '1.00', '3.0.0a11');
-# build: cpan=LWP::UserAgent,XML::Simple perl=5.010000
+API::Std::mod_init('Weather', 'Xelhua', '1.02', '3.0.0a11');
+# build: cpan=XML::Simple perl=5.010000
 
 __END__
 

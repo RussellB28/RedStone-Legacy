@@ -6,7 +6,6 @@ use strict;
 use warnings;
 use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(privmsg notice);
-use Furl;
 use HTML::Tree;
 
 # Initialization subroutine.
@@ -37,40 +36,41 @@ our %HELP_FML = (
 sub cmd_fml {
     my ($src, undef) = @_;
 
-    # Create an instance of Furl.
-    my $ua = Furl->new(
-        agent => 'Auto IRC Bot',
-        timeout => 5,
+    $Auto::http->request(
+        url => 'http://www.fmylife.com/random',
+        on_response => sub {
+            my $rp = shift;
+            if ($rp->is_success) {
+                # If successful, get the content.
+                my $tree = HTML::Tree->new();
+                $tree->parse($rp->decoded_content);
+                my $data = $tree->look_down('_tag', 'div', 'id', qr/^[0-9]/);
+
+                # Parse it.
+                my $fml = $data->as_text;
+                $fml =~ s/\sFML.*//xsm;
+
+                # Return the FML.
+                privmsg($src->{svr}, $src->{target}, "\2Random FML:\2 $fml FML");
+                $tree->delete;
+            }
+            else {
+                # Otherwise, send an error message.
+                privmsg($src->{svr}, $src->{target}, 'An error occurred while retrieving the FML.');
+            }
+        },
+        on_error => sub {
+            my $error = shift;
+            privmsg($src->{svr}, $src->{target}, "An error occurred while retrieving the FML: $error");
+        }
     );
-
-    # Get the random FML via HTTP.
-    my $rp = $ua->get('http://www.fmylife.com/random');
-
-    if ($rp->is_success) {
-        # If successful, get the content.
-        my $tree = HTML::Tree->new();
-        $tree->parse($rp->content);
-        my $data = $tree->look_down('_tag', 'div', 'id', qr/^[0-9]/);
-
-        # Parse it.
-        my $fml = $data->as_text;
-        $fml =~ s/\sFML.*//xsm;
-
-        # Return the FML.
-        privmsg($src->{svr}, $src->{chan}, "\2Random FML:\2 $fml FML");
-        $tree->delete;
-    }
-    else {
-        # Otherwise, send an error message.
-        privmsg($src->{svr}, $src->{chan}, 'An error occurred while retrieving the FML.');
-    }
 
     return 1;
 }
 
 # Start initialization.
-API::Std::mod_init('FML', 'Xelhua', '1.02', '3.0.0a11');
-# build: cpan=Furl,HTML::Tree perl=5.010000
+API::Std::mod_init('FML', 'Xelhua', '1.03', '3.0.0a11');
+# build: cpan=HTML::Tree perl=5.010000
 
 __END__
 
@@ -80,7 +80,7 @@ __END__
 
 =head1 VERSION
 
- 1.02
+ 1.03
 
 =head1 SYNOPSIS
 
@@ -97,10 +97,6 @@ and message it to the channel.
 This module depends on the following CPAN modules:
 
 =over
-
-=item L<Furl>
-
-This is the HTTP agent used by this module.
 
 =item L<HTML::Tree>
 
