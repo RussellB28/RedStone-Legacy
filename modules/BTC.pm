@@ -14,6 +14,9 @@ sub _init {
     # Create the BTC command.
     cmd_add('BTC', 0, 0, \%M::BTC::HELP_BTC, \&M::BTC::cmd_btc) or return;
 
+    # This module currently does not work due to the site being gone -- So Refuse to load it until we can find a new site.
+    return 0;
+
     # Success.
     return 1;
 }
