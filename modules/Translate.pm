@@ -1,5 +1,5 @@
 # Module: Translate. See below for documentation.
-# Copyright (C) 2012 [NAS]peter, et al.
+# Copyright (C) 2013 [NAS]peter, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Translate;
 use strict;
@@ -7,73 +7,91 @@ use warnings;
 use URI::Escape;
 use API::Std qw(cmd_add cmd_del trans);
 use API::IRC qw(privmsg);
+use Encode;
+use HTML::Entities qw(decode_entities);
+use TryCatch;
 
 # Initialization subroutine.
 sub _init {
-	cmd_add('translate', 0, 0, \%M::Spell::HELP_TRANSLATE, \&M::Translate::cmd_translate) or return;
-	cmd_add('tr', 0, 0, \%M::Spell::HELP_TRANSLATE, \&M::Translate::cmd_translate) or return;
-	# Success.
+        cmd_add('translate', 0, 0, \%M::Spell::HELP_TRANSLATE, \&M::Translate::cmd_translate) or return;
+        cmd_add('tr', 0, 0, \%M::Spell::HELP_TRANSLATE, \&M::Translate::cmd_translate) or return;
+        # Success.
     return 1;
 }
 
 # Void subroutine.
 sub _void {
-	cmd_del('translate') or return;
-	cmd_del('tr') or return;
-	
+        cmd_del('translate') or return;
+        cmd_del('tr') or return;
+        
     # Success.
     return 1;
 }
 
 our %HELP_TRANSLATE = (
     en => "Will translate a given sentence to the given language. \2Syntax:\2 TRANSLATE <COUNTRY CODE> <TEXT TO TRANSLATE>",
-	#nl => "Vertaalt een ingegeven tekst naar de ingegeven taal. \2Syntax:\2 TRANSLATE <LANDCODE> <TEKST OM TE VERTALEN>",
+        #nl => "Vertaalt een ingegeven tekst naar de ingegeven taal. \2Syntax:\2 TRANSLATE <LANDCODE> <TEKST OM TE VERTALEN>",
 );
 
 sub cmd_translate {
     my ($src, @argv) = @_;
-	if(!defined($argv[1])) {
-		privmsg($src->{svr}, $src->{chan}, trans('Too little parameters').q{.});
+	my $chn = $src->{chan};
+        if(!defined($argv[1])) {
+                privmsg($src->{svr}, $src->{chan}, trans('Too little parameters').q{.});
         return;
-	}
-	
-	my $text = join(' ',@argv);
-	$text =~ s/$argv[0] //;
-	$text =~ s/ /\+/g;
+        }
+        
+        my $text = join(' ',@argv);
+        $text =~ s/$argv[0] //;
+        $text =~ s/ /\+/g;
 
-	my $url = "http://translate.google.com/?hl=en&tl=".uri_escape($argv[0])."&text=".uri_escape($text);
-	$Auto::http->request(
-		url => $url,
-		on_response => sub {
-			my $response = shift;
-			if (!$response->is_success) {
-				privmsg($src->{svr}, $src->{chan}, "An error occured while retrieving the data.");
-				return;
-			}
-			my $content = $response->content;
-			$content =~ s/<span title="(.+?)" onmouseover="this\.style\.backgroundColor='#ebeff9'" onmouseout="this\.style\.backgroundColor='#fff'">//g;
-			$content =~ s/<\/span>//g;
-			if($content =~ /<span id=result_box class="long_text">(.+?)<\/div><\/div><div id=spell-place-holder style="display:none"><\/div><div id=gt-res-tools>/) {
-				my $var = $1;
-				$var =~ s/&quot;/"/g;
-				$var =~ s/ \+//g;
-				$var =~ s/\+/ /g;
-				$text =~ s/\+/ /g;
-				privmsg($src->{svr}, $src->{chan}, "'\2".$text."\2' translated into '\2".$argv[0]."\2' gave: '\2".$var."\2'");
-			} elsif($content =~ /<span id=result_box class="short_text">(.+?)<\/div><\/div><div id=spell-place-holder style="display:none"><\/div><div id=gt-res-tools>/) {
-				my $var = $1;
-				$var =~ s/&quot;/"/g;
-				$var =~ s/ \+//g;
-				$var =~ s/\+/ /g;
-				$text =~ s/\+/ /g;
-				privmsg($src->{svr}, $src->{chan}, "'\2".$text."\2' translated into '\2".$argv[0]."\2' gave: '\2".$var."\2'");
-			}
-		},
-		on_error => sub {
-			privmsg($src->{svr}, $src->{chan}, "An error occured while retrieving the data.");
-			return;
-		}
-	);
+        try
+        {
+
+        my $url = "http://translate.google.com/?hl=en&tl=".uri_escape_utf8($argv[0])."&text=".uri_escape_utf8($text);
+        $Auto::http->request(
+                url => $url,
+                on_response => sub {
+                        my $response = shift;
+                        if (!$response->is_success) {
+                                privmsg($src->{svr}, $src->{chan}, "An error occured while retrieving the data.");
+                                return;
+                        }
+                        my $content = $response->content;
+                        $content =~ s/<span title="(.+?)" onmouseover="this\.style\.backgroundColor='#ebeff9'" onmouseout="this\.style\.backgroundColor='#fff'">//g;
+                        $content =~ s/<\/span>//g;
+                        if($content =~ /<span id=result_box class="long_text">(.+?)<\/div><\/div><div id=spell-place-holder style="display:none"><\/div><div id=gt-res-tools>/) {
+                                my $var = $1;
+                                $var =~ s/&quot;/"/g;
+                                $var =~ s/ \+//g;
+                                $var =~ s/\+/ /g;
+                                $text =~ s/\+/ /g;
+                                #encode("UTF-8",$var);
+                                #privmsg($src->{svr}, $chn, "'\2".decode("UTF-8", $text)."\2' translated into '\2".$argv[0]."\2' gave: '\2".decode("UTF-8", decode_entities($var))."\2'");
+				privmsg($src->{svr}, $chn, "'\2".$text."\2' translated into '\2".$argv[0]."\2' gave: '\2".decode_entities($var)."\2'");
+                        } elsif($content =~ /<span id=result_box class="short_text">(.+?)<\/div><\/div><div id=spell-place-holder style="display:none"><\/div><div id=gt-res-tools>/) {
+                                my $var = $1;
+                                $var =~ s/&quot;/"/g;
+                                $var =~ s/ \+//g;
+                                $var =~ s/\+/ /g;
+                                $text =~ s/\+/ /g;
+                                #encode("UTF-8",$var);
+                                #privmsg($src->{svr}, $chn, "'\2".decode("UTF-8", $text)."\2' translated into '\2".$argv[0]."\2' gave: '\2".decode("UTF-8", decode_entities($var))."\2'");
+				privmsg($src->{svr}, $chn, "'\2".$text."\2' translated into '\2".$argv[0]."\2' gave: '\2".decode_entities($var)."\2'");
+                        }
+                },
+                on_error => sub {
+                        privmsg($src->{svr}, $src->{chan}, "An error occured while retrieving the data.");
+                        return;
+                }
+        );
+
+        }
+        catch
+        {
+            privmsg($src->{svr}, $src->{chan}, "You tried to enter some complex characters... We need to fix this but in the meantime, please hold!");
+            return 1;
+        }
 }
 
 # Start initialization.
