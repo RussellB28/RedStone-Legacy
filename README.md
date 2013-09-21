@@ -30,7 +30,7 @@ Redstone IRC Bot is developed by Russell Bradford and a team
 of people who contribute their time and knowledge to the
 maintenance of RedStone, and other projects.
 
-+ Russell Bradford <Russell@rbradford.me>
++ Russell Bradford <russell@rbradford.me>
 
 
 Contributors - Non-developers who contribute to the project greatly.
@@ -46,7 +46,9 @@ Previous Contributors - Developers who have previously developer parts of the pr
 
 ## 3. HOW TO INSTALL
 
-Installation documentation will be provided shortly
+To install RedStone, you will need to run './install' in your terminal or command prompt.
+
+For a list of available options that can be disabled or enabled, use './install -h'
 
 
 ## 4. HOW TO UPGRADE

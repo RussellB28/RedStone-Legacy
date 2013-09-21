@@ -6,23 +6,23 @@ Legend:
     ! = In development.
     O = Cancelled.
     ? = Being questioned.
-    + = Planned for Auto v3.1.
+    + = Planned for RedStone v4.0.
     % = Done, but needs significant improvement.
 
  [ ] Cleanup
      [X] Replace println with Perl 5.10's say.
-     [!] Fix inconsistencies in official modules.
-     [!] Fix inconsistencies in hook naming.
+     [+] Fix inconsistencies in official modules.
+     [+] Fix inconsistencies in hook naming.
      [ ] Get rid of the build files. It should've never been added.
      [ ] General clean up.
 
  [X] Language
      [X] Create method of translation.
      [X] Create API functions for translations.
-     [X] Implement foreign language support in command help
+     [?] Implement foreign language support in command help
      [X] Add English strings
-     [X] Add Spanish strings
-     [X] Add French strings
+     [?] Add Spanish strings
+     [?] Add French strings
      [ ] Add Spanish, French and German translations to all official command help hashes.
      [ ] Swap out as many IRC message strings as possible for trans() strings.
 
@@ -51,7 +51,7 @@ Legend:
      [X] Urban Dictionary module
      [X] UNO module
      [%] Google Search module (works but has a memory leak --matthew)
-     [ ] IRC Relay module
+     [?] IRC Relay module
      [ ] (Google?) News module
      [X] QDB module
      [!] Tumblr module
@@ -64,6 +64,6 @@ Legend:
      [?] Bot Talk module
      [O] Minecraft<->IRC module
      [X] 8-Ball module
-     [ ] Auto upgrade script
+     [+] Auto upgrade script
      [X] Channel Stats
      [X] Logger - HTML         
