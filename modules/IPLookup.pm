@@ -57,7 +57,7 @@ sub cmd_iplookup {
                 my $jsonbits = decode_json($jsonresp);
                 if($jsonbits->{"status"} eq "fail")
                 {
-                    privmsg($src->{svr}, $src->{chan}, "An Error Occured: ".$jsonbits->{"message"}." - Did you check that the IP was valid??");
+                    privmsg($src->{svr}, $src->{target}, "An Error Occured: ".$jsonbits->{"message"}." - Did you check that the IP was valid??");
                     return 0;
                 }
 
