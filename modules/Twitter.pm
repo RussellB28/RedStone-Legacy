@@ -1,5 +1,5 @@
 # Module: Twitter. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2013 Arinity Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Twitter;
 use strict;
@@ -8,10 +8,8 @@ use feature qw(switch);
 use API::Std qw(conf_get err trans cmd_add cmd_del hook_add hook_del timer_add timer_del);
 use API::IRC qw(notice privmsg cpart cjoin);
 use API::Log qw(slog dbug alog);
-use XML::RSS::Parser::Lite;
-use LWP::Simple;
-use Furl;
-use HTML::Entities;
+use HTML::Entities qw(decode_entities);
+use Net::Twitter;
 use TryCatch;
 our $ENABLE_RUN = 0;
 our $RUN_DELAY = 30;
@@ -27,17 +25,9 @@ sub _init {
     # Create our required hooks.
     hook_add('on_connect', 'twit.connect', \&M::Twitter::on_connect) or return;
 
-    if (conf_get('twitter:feed_auto')) {
-        $ENABLE_RUN = (conf_get('twitter:feed_auto'))[0][0];
-    }
-
     if (!conf_get('twitter:feed_auto')) {
         err(2, "Twitter: Please verify that you have defined the auto feed value.", 0);
         return;
-    } 
-
-    if (conf_get('twitter:feed_delay')) {
-        $RUN_DELAY = (conf_get('twitter:feed_delay'))[0][0];
     }
 
     if (!conf_get('twitter:feed_delay')) {
@@ -45,6 +35,28 @@ sub _init {
         return;
     }
 
+    if (!conf_get('twitter:consumer_key')) {
+        err(2, "Twitter: Please verify that you have defined the consumer key value.", 0);
+        return;
+    }
+
+    if (!conf_get('twitter:consumer_secret')) {
+        err(2, "Twitter: Please verify that you have defined the consumer secret value.", 0);
+        return;
+    }
+
+    if (!conf_get('twitter:access_token')) {
+        err(2, "Twitter: Please verify that you have defined the access token value.", 0);
+        return;
+    }
+
+    if (!conf_get('twitter:access_secret')) {
+        err(2, "Twitter: Please verify that you have defined the access secret value.", 0);
+        return;
+    }
+
+    $ENABLE_RUN = (conf_get('twitter:feed_auto'))[0][0];
+    $RUN_DELAY = (conf_get('twitter:feed_delay'))[0][0];
 
     cmd_add('TWITTER', 0, 0, \%M::Twitter::HELP_TWITTER, \&M::Twitter::cmd_twitter) or return;
 
@@ -228,48 +240,126 @@ sub cmd_twitter {
                 privmsg($src->{svr}, $src->{chan}, "Twitter is  \2DISABLED\2 for \2$chan\@$svr\2.");
             }
         }
+        when ('FOLLOWS') {
+
+            if (!defined $argv[2] and !defined $src->{chan}) {
+                notice($src->{svr}, $src->{nick}, trans('Not enough parameters').q{.});
+                return;
+            }
+
+            # When no authentication is required:
+            my $nt = Net::Twitter->new(legacy => 0);
+
+            # As of 13-Aug-2010, Twitter requires OAuth for authenticated requests
+            my $nt = Net::Twitter->new(
+                traits   => [qw/API::RESTv1_1/],
+                consumer_key        => (conf_get('twitter:consumer_key'))[0][0],
+                consumer_secret     => (conf_get('twitter:consumer_secret'))[0][0],
+                access_token        => (conf_get('twitter:access_token'))[0][0],
+                access_token_secret => (conf_get('twitter:access_secret'))[0][0],
+            );
+
+            eval {
+                my $follows = $nt->friendship_exists({ screen_name_a => $argv[1], screen_name_b => $argv[2] });
+                if($follows == 1)
+                {
+                    privmsg($src->{svr}, $src->{chan}, "\002$argv[1]\002 is currently following \002$argv[2]\002");
+                }
+                else
+                {
+                    privmsg($src->{svr}, $src->{chan}, "\002$argv[1]\002 is not currently following \002$argv[2]\002");
+                }
+            };
+
+            if ( my $err = $@ ) {
+                if($err =~ "Not authorized")
+                {
+                    privmsg($src->{svr}, $src->{chan}, "Authentication Error Occured.");   
+                    return 0;                 
+                }
+                elsif($err =~ "Could not determine source user")
+                {
+                    privmsg($src->{svr}, $src->{chan}, "User \002$argv[1]\002 does not exist.");   
+                    return 0;                 
+                }
+                elsif($err =~ "Sorry, that page does not exist")
+                {
+                    privmsg($src->{svr}, $src->{chan}, "User \002$argv[2]\002 does not exist.");   
+                    return 0;                 
+                }
+                elsif($err =~ "Could not authenticate you")
+                {
+                    privmsg($src->{svr}, $src->{chan}, "\002Error:\002 API Authentication Failed.");   
+                    privmsg($src->{svr}, $src->{chan}, "This sometimes happens if you use special characters, check there are no hidden/special characters in either screen name.");  
+                    return 0;                 
+                }
+                elsif($err =~ "Malformed UTF-8 character")
+                {
+                    privmsg($src->{svr}, $src->{chan}, "\002Error:\002 Malformed UTF-8 Character Detected. Please remove any special characters that may be causing this error.");   
+                    return 0;                 
+                }
+                privmsg($src->{svr}, $src->{chan}, "An error occured: $@"); 
+                return 0;
+
+                # Left this in for debugging if we ever get problems in the future..
+                #warn "HTTP Response Code: ", $err->code, "\n",
+                #     "HTTP Message......: ", $err->message, "\n",
+                #     "Twitter error.....: ", $err->error, "\n";
+            }
+        }
         default {
             # We don't know this command.
-                try
-                {
-                    my $rp = new XML::RSS::Parser::Lite;
-                    my $xml = get("http://twitter.com/statuses/user_timeline/$argv[0].rss");
+            # When no authentication is required:
+            my $nt = Net::Twitter->new(legacy => 0);
 
-                    if($rp->parse($xml))
-                    {
-                        if($rp->get(0))
-                        {
-                            my $it = $rp->get(0);
-                            my $title = $it->get('title');
-                            my $t_title = decode_entities($title);
-                            my $t_url = decode_entities($it->get('url'));
+            # As of 13-Aug-2010 and now that v1 of the API is deprecated, Twitter requires OAuth for authenticated requests
+            my $nt = Net::Twitter->new(
+                traits   => [qw/API::RESTv1_1/],
+                consumer_key        => (conf_get('twitter:consumer_key'))[0][0],
+                consumer_secret     => (conf_get('twitter:consumer_secret'))[0][0],
+                access_token        => (conf_get('twitter:access_token'))[0][0],
+                access_token_secret => (conf_get('twitter:access_secret'))[0][0],
+            );
 
-                            my $tweet_url = "http://ur.cx/api/create.php?url=$t_url";
-                            my $agent = Furl->new(agent => 'Auto IRC Bot', timeout => 5);
-
-                            my $request = HTTP::Request->new(GET => $tweet_url);
-                            my $result = $agent->request($request);
-
-                            $result->is_success;
-
-                            privmsg($src->{svr}, $src->{chan}, "Latest Tweet from $t_title");
-                            privmsg($src->{svr}, $src->{chan}, "See ".$result->content." for more information.");
-                        }
-                        else
-                        {
-                            privmsg($src->{svr}, $src->{chan}, "Sorry, This Twitter Username does not exist.");
-                        }
-                    }
-                    else
-                    {
-                        privmsg($src->{svr}, $src->{chan}, "Sorry, We could not retrieve the Latest Tweet at this time. Please try again later.");
-                    }
+            eval {
+                my $statuses = $nt->user_timeline({ screen_name => $argv[0], count => 1 });
+                for my $status ( @$statuses ) {
+                    privmsg($src->{svr}, $src->{chan}, "\002$status->{user}{screen_name}:\002 ".decode_entities($status->{text})."");
+                    privmsg($src->{svr}, $src->{chan}, "\002Tweeted:\002 $status->{created_at} :: \002Retweets:\002 $status->{retweet_count} :: \002Link:\002 https://twitter.com/".$argv[0]."/status/$status->{id}");
                 }
-                catch
-                {
-                        privmsg($src->{svr}, $src->{chan}, "Sorry, We could not retrieve the Latest Tweet at this time. Please try again later.");
+            };
 
+            if ( my $err = $@ ) {
+                if($err =~ "Not authorized")
+                {
+                    privmsg($src->{svr}, $src->{chan}, "\002$argv[0]\002 has protected their tweets. We are therefore unable to retrieve the latest tweet.");   
+                    return 0;                 
                 }
+                elsif($err =~ "Sorry, that page does not exist")
+                {
+                    privmsg($src->{svr}, $src->{chan}, "User \002$argv[0]\002 does not exist. Are you sure you have used the correct username or the user has not changed it?");   
+                    return 0;                 
+                }
+                elsif($err =~ "Could not authenticate you")
+                {
+                    privmsg($src->{svr}, $src->{chan}, "\002Error:\002 API Authentication Failed.");   
+                    privmsg($src->{svr}, $src->{chan}, "This sometimes happens if you use special characters, check there are no hidden/special characters in the screen name.");  
+                    return 0;                 
+                }
+                elsif($err =~ "Malformed UTF-8 character")
+                {
+                    privmsg($src->{svr}, $src->{chan}, "\002Error:\002 Malformed UTF-8 Character Detected. Please remove any special characters that may be causing this error.");   
+                    return 0;                 
+                }
+                privmsg($src->{svr}, $src->{chan}, "An error occured: $@"); 
+                return 0;
+
+                # Left this in for debugging if we ever get problems in the future..
+                #warn "HTTP Response Code: ", $err->code, "\n",
+                #     "HTTP Message......: ", $err->message, "\n",
+                #     "Twitter error.....: ", $err->error, "\n";
+            }
+
             return;
         }
     }
@@ -298,59 +388,36 @@ sub process_feed {
     my @data = $dbh->fetchall_arrayref;
     foreach my $first (@data) {
         foreach my $second (@{$first}) {
-                my $t_title;
-                my $t_url;
-                try
-                {
-                    my $rp = new XML::RSS::Parser::Lite;
-                    my $xml = get("http://twitter.com/statuses/user_timeline/$second->[2].rss");
 
-                    if($rp->parse($xml))
+                # As of 13-Aug-2010 and now that v1 of the API is deprecated, Twitter requires OAuth for authenticated requests
+                my $nt = Net::Twitter->new(
+                    traits   => [qw/API::RESTv1_1/],
+                    consumer_key        => (conf_get('twitter:consumer_key'))[0][0],
+                    consumer_secret     => (conf_get('twitter:consumer_secret'))[0][0],
+                    access_token        => (conf_get('twitter:access_token'))[0][0],
+                    access_token_secret => (conf_get('twitter:access_secret'))[0][0],
+                );
+
+            eval {
+                my $statuses = $nt->user_timeline({ screen_name => $second->[2], count => 1 });
+                for my $status ( @$statuses ) {
+                    my $uriformat = "https://twitter.com/".$second->[2]."/status/$status->{id}";
+                    if($uriformat ne $second->[3])
                     {
-                        if($rp->get(0))
-                        {
-                            my $it = $rp->get(0);
-                            my $title = $it->get('title');
-                            #$title =~ s/$second->[2]: - //g;
-                            $t_title = decode_entities($title);
-                            $t_url = decode_entities($it->get('url'));
-                        }
-                        else
-                        {
-                            $t_title = "We were unable to retrieve the latest tweet from Twitter at this time.";
-                            $t_url = "http://twitter.com/".$second->[2];
-                        }
-                    }
-                    else
-                    {
-                        $t_title = "We were unable to retrieve the latest tweet from Twitter at this time.";
-                        $t_url = "http://twitter.com/".$second->[2];
-                    }
-
-                    if($t_url ne $second->[3])  
-                    {
-                        my $lfm_url = "http://ur.cx/api/create.php?url=$t_url";
-                        my $agent = Furl->new(agent => 'Auto IRC Bot', timeout => 5);
-
-                        my $request = HTTP::Request->new(GET => $lfm_url);
-                        my $result = $agent->request($request);
-
-                        $result->is_success;
-
-                        privmsg(fix_net($second->[0]), $second->[1], "[Twitter] Latest Tweet from $t_title");
-                        privmsg(fix_net($second->[0]), $second->[1], "[Twitter] See ".$result->content." for more information.");
+                        privmsg(fix_net($second->[0]), $second->[1], "\002$status->{user}{screen_name}:\002 ".decode_entities($status->{text})."");
+                        privmsg(fix_net($second->[0]), $second->[1], "\002Tweeted:\002 $status->{created_at} :: \002Retweets:\002 $status->{retweet_count} :: \002Link:\002 https://twitter.com/".$second->[2]."/status/$status->{id}");
                         my $dbq = $Auto::DB->prepare('UPDATE twitter SET lasturl=? WHERE net = ? AND chan = ?');
-                        $dbq->execute($t_url, lc $second->[0], $second->[1]);
+                        $dbq->execute($uriformat, lc $second->[0], $second->[1]);
                     }
                 }
-                catch
-                {
-                        $t_title = "We were unable to retrieve the latest tweet from Twitter at this time.";
-                        $t_url = "http://twitter.com/".$second->[2];
-                        privmsg(fix_net($second->[0]), $second->[1], "[Twitter] Latest Tweet from ".$second->[2].": $t_title");
-                        privmsg(fix_net($second->[0]), $second->[1], "[Twitter] See $t_url for more information.");
+            };
 
-                }
+            if ( my $err = $@ ) {
+                warn "Feed for ".$second->[2]." on ".$second->[1]." could not be processed\n",
+                     "HTTP Response Code: ", $err->code, "\n",
+                     "HTTP Message......: ", $err->message, "\n",
+                     "Twitter error.....: ", $err->error, "\n";
+            }
         }
     }
 }
@@ -369,8 +436,8 @@ sub fix_net {
 }
 
 # Start initialization.
-API::Std::mod_init('Twitter', 'Xelhua', '1.00', '3.0.0a11');
-# build: cpan=Furl,LWP::Simple,XML::RSS::Parser::Lite,HTML::Entities,TryCatch perl=5.010000
+API::Std::mod_init('Twitter', 'Russell M Bradford', '1.01', '3.0.0a11');
+# build: cpan=Net::Twitter,HTML::Entities,TryCatch perl=5.010000
 
 __END__
 
@@ -380,25 +447,28 @@ Twitter
 
 =head1 VERSION
 
- 1.00
+ 1.01
 
 =head1 SYNOPSIS
 
- <user> !twitter enable #somechannel@SomeNetwork SomeTwitterUsername
- <auto> Twitter enabled for #somechannel@SomeNetwork with username SomeTwitterUsername.
+ <SomeUser> !twitter enable #somechannel@SomeNetwork SomeTwitterUsername
+ <RedStone> Twitter enabled for #somechannel@SomeNetwork with username SomeTwitterUsername.
 
- <user> !twitter disable #somechannel@SomeNetwork
- <auto> Twitter disabled for #somechannel@SomeNetwork.
+ <SomeUser> !twitter disable #somechannel@SomeNetwork
+ <RedStone> Twitter disabled for #somechannel@SomeNetwork.
 
- <user> !twitter info #somechannel@SomeNetwork
- <auto> Twitter is ENABLED for #somechannel@SomeNetwork.
+ <SomeUser> !twitter info #somechannel@SomeNetwork
+ <RedStone> Twitter is ENABLED for #somechannel@SomeNetwork.
 
- <user> !twitter run
- <auto> Processing Twitter Feeds...
+ <SomeUser> !twitter run
+ <RedStone> Processing Twitter Feeds...
 
- <user> !twitter SomeTwitterUsername
- <auto> Latest Tweet from SomeTwitterUsername: Tweet Message Here
- <auto> See http://short-twitter-url/bleh for more information.
+ <SomeUser> !twitter SomeTwitterUsername
+ <RedStone> SomeTwitterUsername: Tweet Message Here
+ <RedStone> Tweeted: Tue Jun 11 21:00:01 +0000 2013 :: Retweets: 27 :: Link: https://twitter.com/SomeTwitterUsername/status/123456789098765432
+
+ <SomeUser> !twitter follows SomeTwitterUsername AnotherTwitterUsername
+ <RedStone> SomeTwitterUsername is currently following AnotherTwitterUsername
 
 
 =head1 DESCRIPTION
@@ -414,6 +484,10 @@ Simply add the following to your configuration file in a block called twitter { 
     twitter {
         feed_auto <0 or 1>;
         feed_delay <Number of minutes to check feeds>;
+        consumer_key <Your Consumer Key>;
+        consumer_secret <Your Consumer Secret>;
+        access_token <Your Access Token>;
+        access_secret <Your Access Secret>;
     }
 
 =head2 Example
@@ -421,28 +495,38 @@ Simply add the following to your configuration file in a block called twitter { 
     twitter {
         feed_auto 1;
         feed_delay 10;
+        consumer_key "GGTS9HyYydSSsSidRNynbfoug",
+        consumer_secret "e2Z8k1PMeMBr1iansADqCTIUHbRDCumLoL209283",
+        access_token "24507039-Z8LoLSaU33EIkmxATwUD4sD8wcp2fQVWGlLkKD1sl",
+        access_secret "11q2XuKZuZaZu82AK6FtuxUCBWR4xPr0nW8WjvHWyzfY",
     };
 
 =head2 Notes
 
-Due to twitter limitations, only 150 requests can be made per hour. This means if you were
+You will need to create an application on Twitter by visiting https://dev.twitter.com/apps/new
+This will give you a consumer key, consumer secret. Don't forget to click "Create Access Token" after
+creating the Application in order to get your access token and access token secret. When creating the
+application, Read Only permissions should be enough to work for this module at the moment.
+
+Due to twitter limitations, only 180 requests can be made per hour. This means if you were
 to have several feeds polling at a 10 minute interval, it may not work after a while. 
 
 
 =head1 AUTHOR
 
-This module was written by Russell Bradford.
+This module was written by Russell M Bradford.
 
-This module is maintained by Xelhua Development Group.
+This module is maintained by Russell M Bradford.
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2010-2012 Xelhua Development Group. All rights
+This module is Copyright 2013 Russell M Bradford. All rights
 reserved.
 
-This module is released under the same licensing terms as Auto itself.
+This module is released under the same licensing terms as RedStone itself.
 
 =cut
 
 # vim: set ai et ts=4 sw=4:
+
 
