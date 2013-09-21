@@ -1,5 +1,5 @@
 # lib/Lib/Install.pm - Installation subroutines.
-# Copyright (C) 2010-2013 Auto Development Group, et al.
+# Copyright (C) 2013 Russell M Bradford, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package Lib::Install;
 use strict;
@@ -85,13 +85,13 @@ sub checkver {
         }
         elsif ($v eq "version") {
             if ($ver ne $c) {
-                println("!!! NOTICE !!! Your copy of Auto is outdated. Current version: ".$ver." - Latest version: ".$c);
-                println("!!! NOTICE !!! You can get the latest Auto by downloading ".$dll);
+                println("!!! NOTICE !!! Your copy of RedStone is outdated. Current version: ".$ver." - Latest version: ".$c);
+                println("!!! NOTICE !!! You can get the latest RedStone by downloading ".$dll);
                 println("!!! NOTICE !!! Won't install without force.");
                 exit;
             }
             else {
-                println("* Auto is up-to-date.");
+                println("* RedStone is up-to-date.");
             }
         }
     }
@@ -117,7 +117,7 @@ sub installmods {
     chomp $response;
     if (lc $response eq 'y') {
         println 'What modules would you like to install? (separate by commas)';
-        println 'Available modules: ABotStats, AUR, Autojoin, Badwords, Bitly, BotStats, BTC, Calc, ChanTopics, Coin, Dictionary, DNS, EightBall, Eval, Factoids, FML, Greet, HelloChan, Ignore, IPLookup, IsItUp, Karma, LastFM, LinkTitle, Logger, LOLCAT, NickPrefix, OnJoin, Oper, Ping, Pisg, QDB, SASLAuth, Seen, Spotify, Twitter, UNO, Urban, Weather, Werewolf, WerewolfAdmin, WerewolfExtra';
+        println 'Available modules: ABotStats, AUR, Autojoin, Badwords, Bitly, BotStats, BTC, Calc, ChanTopics, Coin, Dictionary, DNS, EightBall, Etymology Eval, Factoids, FML, Greet, Hangman, HelloChan, HostedBy, Ignore, IMDB, IPLookup, IsItUp, Karma, LastFM, LinkTitle, Logger, LOLCAT, NickPrefix, OnJoin, Oper, PHP, Ping, Pisg, QDB, SASLAuth, Seen, Shoutcast, Sickipedia, Spotify, Twitter, Translate, UnixTime, UNO, Urban, Weather, Werewolf, WerewolfAdmin, WerewolfExtra';
         print '> ';
         my $modules = <STDIN>; chomp $modules;
         $modules =~ s/ //g;
