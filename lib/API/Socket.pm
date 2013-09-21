@@ -35,7 +35,7 @@ sub add_socket {
         },
         on_read_eof => sub {
             API::Socket::on_disconnect($id);
-        }
+        },
         on_write_eof => sub {
             API::Socket::on_disconnect($id);
         },
