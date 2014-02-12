@@ -1,5 +1,5 @@
 # Module: Spell. See below for documentation.
-# Copyright (C) 2013 Peter Selten, et al.
+# Copyright (C) 2013-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Spell;
 use strict;
@@ -137,7 +137,7 @@ This module was written by Peter Selten
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2013 Peter Selten.
+This module is Copyright 2013-2014 RedStone Development Group.
 
 Released under the same licensing terms as RedStone itself.
 

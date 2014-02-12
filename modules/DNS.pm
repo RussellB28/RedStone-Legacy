@@ -1,5 +1,5 @@
 # Module: DNS. See below for documentation.
-# Copyright (C) 2010-2012 Ethrik Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::DNS;
 use strict;
@@ -108,13 +108,13 @@ This is the DNS agent this module uses.
 
 This module was written by Matthew Barksdale.
 
-This module is maintained by Ethrik Development Group.
+This module is maintained by RedStone Development Group.
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2010-2012 Ethrik Development Group.
+This module is Copyright 2010-2014 RedStone Development Group.
 
-Released under the same licensing terms as Auto itself.
+Released under the same licensing terms as RedStone itself.
 
 =cut
 

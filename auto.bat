@@ -1,5 +1,5 @@
 :: auto.bat - Launcher for Microsoft Windows.
-:: Copyright (C) 2010-2013  Auto Development Group, et al.
+:: Copyright (C) 2010-2014 RedStone Development Group, et al.
 :: Released under the terms stated in doc/LICENSE.
 :: Clone of `auto`, since Windows likes Batch, not sh.
 

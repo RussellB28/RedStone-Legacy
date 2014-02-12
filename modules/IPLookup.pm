@@ -1,5 +1,5 @@
 # Module: IP Lookup. See below for documentation. 
-# Copyright (C) 2013 Russell M Bradford, et al.
+# Copyright (C) 2013-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::IPLookup;
 
@@ -159,7 +159,7 @@ This module was written by Russell M Bradford <russell[at]rbradford.me>.
 This module is maintained by Russell M Bradford <russell[at]rbradford.me>.
 
 =head1 LICENSE AND COPYRIGHT
-This module is Copyright 2013 Russell M Bradford, et al.
+This module is Copyright 2013-2014 RedStone Development Group, et al.
 This module is released under the same licensing terms as RedStone itself.
 =cut
 

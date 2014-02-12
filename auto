@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # auto - Launcher.
-# Copyright (C) 2010-2013 Auto Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # Written in sh because the user may not have Perl...to run Auto....
 
 PID=bin/auto.pid

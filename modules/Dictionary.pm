@@ -1,5 +1,5 @@
 # Module: Dictionary. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Dictionary;
 use strict;
@@ -96,7 +96,7 @@ DICT command.
 This module adds an extra dependency: Net::Dict. You can get it from the CPAN
 <http://www.cpan.org>.
 
-This module is compatible with Auto v3.0.0a10+.
+This module is compatible with RedStone v3.0.0a10+.
 
 =back
 

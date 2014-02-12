@@ -1,5 +1,5 @@
 # Module: Werewolf. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Werewolf;
 use strict;
@@ -2408,13 +2408,13 @@ This module was written by Elijah Perrault.
 
 Random Fact: Took five days to make.
 
-This module is maintained by Xelhua Development Group.
+This module is maintained by RedStone Development Group.
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright (C) 2010-2012, Xelhua Development Group.
+This module is Copyright (C) 2010-2014 RedStone Development Group.
 
-This module is released under the same terms as Auto itself.
+This module is released under the same terms as RedStone itself.
 
 =cut
 

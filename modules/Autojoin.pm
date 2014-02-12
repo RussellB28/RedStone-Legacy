@@ -1,5 +1,5 @@
 # Module: Autojoin. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Autojoin;
 use strict;
@@ -259,14 +259,14 @@ when you can't delete it.
 
 This module was written by Matthew Barksdale.
 
-This module is maintained by Ethrik Development Group.
+This module is maintained by RedStone Development Group.
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2010-2012 Ethrik Development Group. All rights
+This module is Copyright 2010-2014 RedStone Development Group. All rights
 reserved.
 
-This module is released under the same licensing terms as Auto itself.
+This module is released under the same licensing terms as RedStone itself.
 
 =cut
 

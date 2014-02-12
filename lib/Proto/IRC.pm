@@ -1,5 +1,5 @@
 # lib/Proto/IRC.pm - Subroutines for parsing incoming data from IRC.
-# Copyright (C) 2010-2013 Auto Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package Proto::IRC;
 use strict;

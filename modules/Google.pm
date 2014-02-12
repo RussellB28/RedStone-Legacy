@@ -1,5 +1,5 @@
 # Module: Google. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Google;
 use strict;
@@ -103,13 +103,13 @@ This module provides the actual interface to Google's AJAX API.
 
 This module was written by Elijah Perrault.
 
-This module is maintained by Xelhua Development Group.
+This module is maintained by RedStone Development Group.
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2010-2012 Xelhua Development Group.
+This module is Copyright 2010-2014 RedStone Development Group.
 
-Released under the same licensing terms as Auto itself.
+Released under the same licensing terms as RedStone itself.
 
 =cut
 

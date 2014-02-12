@@ -1,5 +1,5 @@
 # Module: ChanTopics. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::ChanTopics;
 use strict;
@@ -326,7 +326,7 @@ This module adds no extra dependencies.
 
 This module is not compatible with PostgreSQL, yet.
 
-This module is compatible with Auto v3.0.0a10+.
+This module is compatible with RedStone v3.0.0a10+.
 
 Ported from v1.0.
 

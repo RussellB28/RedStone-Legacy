@@ -1,5 +1,5 @@
 # lib/Lib/Install.pm - Installation subroutines.
-# Copyright (C) 2013 Russell M Bradford, et al.
+# Copyright (C) 2013-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package Lib::Install;
 use strict;

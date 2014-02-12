@@ -1,5 +1,5 @@
 # Module: Weather. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Weather;
 use strict;
@@ -122,7 +122,7 @@ From the NE at 9 MPH Gusting to 22 MPH Conditions: Overcast
 This module requires LWP::UserAgent and XML::Simple. Both are 
 obtainable from CPAN <http://www.cpan.org>.
 
-This module is compatible with Auto version 3.0.0a10+.
+This module is compatible with RedStone version 3.0.0a10+.
 
 =back
 

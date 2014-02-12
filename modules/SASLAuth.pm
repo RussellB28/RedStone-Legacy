@@ -1,5 +1,5 @@
 # Module: SASLAuth. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::SASLAuth;
 use strict;
@@ -177,7 +177,7 @@ block(s) you wish to use SASL with:
 This adds an extra dependency: You must build Auto with the 
 --enable-sasl option.
 
-This module is compatible with Auto v3.0.0a10+.
+This module is compatible with RedStone v3.0.0a10+.
 
 =back
 

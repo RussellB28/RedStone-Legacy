@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Auto Development Group
+# Copyright (c) 2013-2014 RedStone Development Group
 # see doc/LICENSE for license information.
 package Auto::Attributes;
 

@@ -1,5 +1,5 @@
 # Module: Eval. See below for documentation.
-# Copyright (C) 2010-2012 Xelhua Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::Eval;
 use strict;
@@ -109,19 +109,19 @@ IRC, returning the output via notice.
 
 This command requires the cmd.eval privilege.
 
-This module is compatible with Auto v3.0.0a10+.
+This module is compatible with RedStone v3.0.0a10+.
 
 =head1 AUTHOR
 
 This module was written by Elijah Perrault.
 
-This module is maintained by Xelhua Development Group.
+This module is maintained by RedStone Development Group.
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2010-2012 Xelhua Development Group.
+This module is Copyright 2010-2014 RedStone Development Group.
 
-This module is released under the same licensing terms as Auto itself.
+This module is released under the same licensing terms as RedStone itself.
 
 =cut
 

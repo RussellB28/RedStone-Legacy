@@ -1,5 +1,5 @@
 # Module: PHP. See below for documentation.
-# Copyright (C) 2012 [NAS]peter, et al.
+# Copyright (C) 2012-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 package M::PHP;
 use strict;
@@ -82,7 +82,7 @@ sub cmd_php {
 }
 
 # Start initialization.
-API::Std::mod_init('PHP', '[NAS]peter', '1.0', '3.0.0a11');
+API::Std::mod_init('PHP', 'Peter', '1.0', '3.0.0a11');
 # build: perl=5.010000 cpan=
 
 __END__
@@ -121,13 +121,13 @@ This module depends on the following CPAN modules:
 
 =head1 AUTHOR
 
-This module was written by [NAS]peter
+This module was written by Peter
 
 =head1 LICENSE AND COPYRIGHT
 
-This module is Copyright 2012 [NAS]peter.
+This module is Copyright 2012-2014 RedStone Development Group.
 
-Released under the same licensing terms as Auto itself.
+Released under the same licensing terms as RedStone itself.
 
 =cut
 

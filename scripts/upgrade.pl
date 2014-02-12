@@ -1,5 +1,5 @@
 # upgrade.pl - Upgrade SQLite database from 3.0.0a3 to 3.0.0a4.
-# Copyright (C) 2010-2013 Auto Development Group, et al.
+# Copyright (C) 2010-2014 RedStone Development Group, et al.
 # This program is free software; rights to this code are stated in doc/LICENSE.
 use 5.010_000;
 use strict;
