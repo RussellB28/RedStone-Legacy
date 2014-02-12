@@ -257,6 +257,7 @@ sub cmd_twitter {
                 consumer_secret     => (conf_get('twitter:consumer_secret'))[0][0],
                 access_token        => (conf_get('twitter:access_token'))[0][0],
                 access_token_secret => (conf_get('twitter:access_secret'))[0][0],
+                ssl                 => 1,
             );
 
             eval {
@@ -319,6 +320,7 @@ sub cmd_twitter {
                 consumer_secret     => (conf_get('twitter:consumer_secret'))[0][0],
                 access_token        => (conf_get('twitter:access_token'))[0][0],
                 access_token_secret => (conf_get('twitter:access_secret'))[0][0],
+                ssl                 => 1,
             );
 
             eval {
@@ -396,6 +398,7 @@ sub process_feed {
                     consumer_secret     => (conf_get('twitter:consumer_secret'))[0][0],
                     access_token        => (conf_get('twitter:access_token'))[0][0],
                     access_token_secret => (conf_get('twitter:access_secret'))[0][0],
+                    ssl                 => 1,
                 );
 
             eval {
@@ -436,7 +439,7 @@ sub fix_net {
 }
 
 # Start initialization.
-API::Std::mod_init('Twitter', 'Russell M Bradford', '1.01', '3.0.0a11');
+API::Std::mod_init('Twitter', 'Russell M Bradford', '1.02', '3.0.0a11');
 # build: cpan=Net::Twitter,HTML::Entities,TryCatch perl=5.010000
 
 __END__
