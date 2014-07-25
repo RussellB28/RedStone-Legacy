@@ -2,45 +2,45 @@
 
 # auto - Launcher.
 # Copyright (C) 2010-2014 RedStone Development Group, et al.
-# Written in sh because the user may not have Perl...to run Auto....
+# Written in sh because the user may not have Perl...to run RedStone....
 
-PID=bin/auto.pid
+PID=bin/redstone.pid
 MODS="Class::Unload DBI"
 
 if [ "$1" = "start" ] ; then
     if [ -e $PID ]; then
     	if [ "$2" = "force" ]; then  
-    	    echo "Starting Auto. . ."
+    	    echo "Starting RedStone. . ."
     	    bin/auto
     	    sleep 2
     	    if [ ! -r $PID ]; then
-    	    	echo "Possible failed startup... check Auto logs for more information."
+    	    	echo "Possible failed startup... check RedStone logs for more information."
     	    fi
         else
-            echo "Auto appears to be running already. Run ./auto start force to start anyway."
+            echo "RedStone appears to be running already. Run ./auto start force to start anyway."
         fi
     else
-    	echo "Starting Auto. . ."
+    	echo "Starting RedStone. . ."
     	bin/auto
     	sleep 2
     	if [ ! -r $PID ]; then
-    		echo "Possible failed startup... check Auto logs for more information"
+    		echo "Possible failed startup... check RedStone logs for more information"
     	fi
     fi
 
 elif [ "$1" = "stop" ]; then
-    echo "Stopping Auto. . ."
+    echo "Stopping RedStone. . ."
     kill -TERM `cat $PID`
 
 elif [ "$1" = "rehash" ]; then
-    echo "Rehashing Auto. . ."
+    echo "Rehashing RedStone. . ."
     kill -HUP `cat $PID`
 
 elif [ "$1" = "status" ]; then
     if [ -e $PID ]; then
-    	echo "Status: Auto appears to be running."
+    	echo "Status: RedStone appears to be running."
     else
-    	echo "Status: Auto appears to not be running."
+    	echo "Status: RedStone appears to not be running."
     fi
 
 elif [ "$1" = "getmodules" ]; then

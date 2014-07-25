@@ -288,8 +288,8 @@ sub ircsock {
 # Shutdown.
 hook_add('on_shutdown', 'shutdown.core_cleanup', sub {
     if (defined $Auto::DB) { $Auto::DB->disconnect }
-    if ($Auto::UPREFIX) { if (-e "$Auto::bin{cwd}/auto.pid") { unlink "$Auto::bin{cwd}/auto.pid" } }
-    else { if (-e "$Auto::Bin/auto.pid") { unlink "$Auto::Bin/auto.pid" } }
+    if ($Auto::UPREFIX) { if (-e "$Auto::bin{cwd}/redstone.pid") { unlink "$Auto::bin{cwd}/redstone.pid" } }
+    else { if (-e "$Auto::Bin/redstone.pid") { unlink "$Auto::Bin/redstone.pid" } }
     return 1;
 });
 

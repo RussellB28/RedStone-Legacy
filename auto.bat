@@ -5,7 +5,7 @@
 
 @echo off
 
-set pidfile=bin/auto.pid
+set pidfile=bin/redstone.pid
 
 if "%1" == "" goto errparams
 if "%1" == "start" goto start
@@ -21,13 +21,13 @@ echo Usage: auto.bat (start|status) [force]
 echo.
 if exist "%pidfile" (
     if "%2" == "force" (
-        echo Starting Auto. . .
+        echo Starting RedStone. . .
         perl bin/auto
     ) else (
-        echo Auto appears to be running already. Run `auto.bat start force` to start anyway.
+        echo RedStone appears to be running already. Run `auto.bat start force` to start anyway.
     )
 ) else (
-    echo Starting Auto. . .
+    echo Starting RedStone. . .
     perl bin/auto
 )
 :end
@@ -35,8 +35,8 @@ if exist "%pidfile" (
 :status
 echo.
 if exist "%pidfile" (
-    echo Status: Auto appears to be running.
+    echo Status: RedStone appears to be running.
 ) else (
-    echo Status: Auto appears to not be running.
+    echo Status: RedStone appears to not be running.
 )
 :end

@@ -498,10 +498,10 @@ sub daemonize {
         $APID = fork;
         if ($APID != 0) {
             alog '* Successfully forked into the background. Process ID: '.$APID;
-            # Figure out where to throw auto.pid.
+            # Figure out where to throw redstone.pid.
             my $pidfile;
-            if ($UPREFIX) { $pidfile = "$bin{cwd}/auto.pid" }
-            else { $pidfile = "$Bin/auto.pid" }
+            if ($UPREFIX) { $pidfile = "$bin{cwd}/redstone.pid" }
+            else { $pidfile = "$Bin/redstone.pid" }
             open my $FPID, '>', $pidfile or exit;
             print {$FPID} "$APID\n" or exit;
             close $FPID or exit;
