@@ -233,7 +233,8 @@ sub ircsock {
         PeerAddr  => $cdata->{'host'}[0],
         PeerPort  => $cdata->{'port'}[0],
         Timeout   => 20,
-        Domain    => ($use6 ? Socket::AF_INET6 : Socket::AF_INET)
+        Domain    => ($use6 ? Socket::AF_INET6 : Socket::AF_INET),
+        SSL_verify_mode => 0x00
     );
 
     # Check for appropriate build data.
